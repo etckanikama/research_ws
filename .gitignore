@@ -6,4 +6,4 @@
 *.text
 *.png
 *.csv
-beego_gazebo
+src/beego_gazebo/
