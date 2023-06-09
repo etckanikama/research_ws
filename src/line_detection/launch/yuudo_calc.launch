@@ -1,0 +1,29 @@
+<!-- 尤度計算を試すためのlaunch -->
+<launch>
+    <!-- 変数の定義 -->
+    <arg name="bag_file_name" default="/home/hirayama-d/catkin_ws/bag/2022-11-10-whilte-lane.bag"/>
+    <arg name="rviz" default="true"/>
+    
+    <!-- rosbagの起動 -->
+    <node pkg="rosbag" name="rosbag" type="play" args= "-l $(arg bag_file_name)"/>
+    
+
+    <!-- rosrunで起動 -->
+    <node pkg="line_detection" name="line_detection" type="line_detection_opencv4_homography.py" />
+    <!-- rosrunで起動 -->
+    <node pkg="line_detection" name="likelihood" type="matching_return.py" output="screen" />
+
+    <!-- rosrunで起動 -->
+    <!-- <node pkg="line_detection" name="points_and_lines" type="sample_rviz"/> -->
+    
+
+
+
+
+
+    <!-- rvizの起動 -->
+    <group if="$(arg rviz)">
+        <node name="rviz" pkg="rviz" type="rviz" args="-d $(find line_detection)/rviz/yuudo_calc.rviz"/>
+    </group>
+
+</launch>

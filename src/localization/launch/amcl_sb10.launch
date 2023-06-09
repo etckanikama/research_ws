@@ -1,0 +1,30 @@
+<launch>
+
+	// launch white lane
+	 <!--white lane polygon  -->
+	<!-- <node name="line_detection"  pkg="line_detection" type="rviz_white_lane_sb.cpp" /> -->
+	<!-- line detection bird's eyes -->
+
+	<!-- particle filter estimate -->
+
+
+	// launch map server --------------------------------------------------------
+	<!-- provide map -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(find localization)/map/map_sb10.yaml" respawn="false" >
+		<param name="use_map_topic" 	value="true"/>
+	</node>
+
+
+	// launch amcl in pepper01/map -----------------------------------------------
+	<!-- AMCL -->
+	<node pkg="amcl" type="amcl" name="amcl" output="screen">
+		<rosparam file="$(find localization)/config/amcl.yaml" command="load" />
+	</node>
+
+
+	// display with rviz ---------------------------------------------------------
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find localization)/rviz/aisin_amcl_sb10.rviz" />
+
+	<!-- line detection bird's eyes -->
+
+</launch>

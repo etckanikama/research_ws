@@ -1,0 +1,18 @@
+<launch>
+    <!-- 変数の定義 -->
+    <arg name="bag_file_name" default="/home/hirayama-d/catkin_ws/src/data_20220615/rosbag_20220615/agv_log_2022-06-15-12-42-06.bag"/>
+    <arg name="rviz" default="true"/>
+    
+    <!-- rosrunで起動 -->
+    <!-- <node pkg="line_detection" name="line_detection" type="line_detection_hsv.py" output="screen"/> -->
+
+    <!-- rosbagの起動 -->
+    <node pkg="rosbag" name="rosbag" type="play" output="screen" args= "$(arg bag_file_name)"/>
+
+
+    <!-- rvizの起動 -->
+    <group if="$(arg rviz)">
+        <node name="rviz" pkg="rviz" type="rviz" args="-d $(find line_detection)/rviz/line_detection.rviz"/>
+    </group>
+
+</launch>

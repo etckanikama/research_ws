@@ -1,0 +1,18 @@
+<launch>
+	<arg name="file_name"		default="agv_log_2022-06-15-12-42-06.bag"/>
+	<arg name="bag_dir_name"	default="/home/yorozu/aisin/rosbag/20220615"/>
+	<arg name="save_dir_name"	default="/home/yorozu/aisin/rosbag/20220615/try01"/>
+
+	<!-- rosbag を再生するノード-->
+	<node pkg="rosbag" name="my_bag" type="play" output="screen" 
+		args="$(arg bag_dir_name)/$(arg file_name) 
+			--topics /front_camera/image
+			-r 0.2" 
+	/>
+
+	<node name="extract" pkg="image_view" type="extract_images" respawn="false" output="screen">
+		<remap from="image" to="/front_camera/image"/>
+		<param name="filename_format" value="$(arg save_dir_name)/front_%04d.jpg" />
+	</node>
+
+</launch>

@@ -1,0 +1,9 @@
+/.catkin_tools/
+/build/
+/devel/
+/logs/
+.vscode/
+*.text
+*.png
+*.csv
+beego_gazebo
