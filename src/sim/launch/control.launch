@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="ns" default="beego"/>
+
+  <group ns="$(arg ns)">
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="joint_state_controller diff_drive_controller">
+    </node>
+  
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+      <param name="tf_prefix" value="$(arg ns)"/>
+    </node>
+
+    <rosparam file="$(find sim)/config/controller.yaml" command="load"/>
+    <param name="diff_drive_controller/base_frame_id" value="$(arg ns)/base_footprint"/> <!-- default: base_link -->
+    <param name="diff_drive_controller/odom_frame_id" value="$(arg ns)/odom"/> <!-- default: odom -->
+  </group>
+  
+</launch>

@@ -1,0 +1,3 @@
+roslaunch gazebo_ros empty_world.launch world_name:=test.world 
+
+

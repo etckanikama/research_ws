@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.0001"/>
+  <arg name="R" default="0.0"/>
+  <arg name="P" default="0.0"/>
+  <arg name="Y" default="0.0"/>
+  <arg name="ns" default="beego"/>
+  <arg name="rviz" default="true"/>
+
+  <group ns="$(arg ns)">
+    <param name="robot_description" command="$(find xacro)/xacro $(find sim)/urdf/beego.urdf"/>
+    <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model $(arg ns) -param robot_description -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)" />
+  </group>
+  
+  <include file="$(find sim)/launch/control.launch">
+    <arg name="ns" value="$(arg ns)"/>
+  </include>
+
+  <group if="$(arg rviz)">
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim)/rviz/beego.rviz"/>
+  </group>
+
+</launch>
