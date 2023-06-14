@@ -145,7 +145,7 @@ void likelihood_value_nomalization()
         {
             particle_value[i] = double(particle_value[i]) / sum; 
         }
-        if (double(sum) == 0.0)
+        if (double(sum) == 0.0)//デバッグ用
         {
             printf("sumがゼロになった\n");
         }
@@ -155,11 +155,12 @@ void likelihood_value_nomalization()
 
 
 // リサンプリングの処理
-void resampling(int cnt)
+void resampling(double ws) // 重みの和を受け取る
 {
     std::cout << "a" << std::endl;
 
-    double rand_width = 1.0 / double(PARTICLE_NUM); // 乱数幅 : 1じゃなくて、806重みの和
+    // double rand_width = 1.0 / double(PARTICLE_NUM); // 乱数幅 : 1じゃなくて、806重みの和
+    double rand_width = ws / double(PARTICLE_NUM);
     std::uniform_real_distribution<float> distr(0, rand_width); // 0~rand_widthの範囲で当確率で発生する
     double rand = distr(engine); // 積み上げ乱数
     double w_sum = particle_value[0]; //積み上げ正規化重み
@@ -177,11 +178,7 @@ void resampling(int cnt)
         particle_new.poses[i] = particle_cloud.poses[i];
         particle_value_new[i] = particle_value[i];
         
-        // std::cout << "コピーのparticle_index = " << i << "\n" << "particle_x = " <<  particle_new.poses[i].position.x << " " << "particle_y = " <<  particle_new.poses[i].position.y << "\n"<< particle_new.poses[i].orientation << std::endl;
-        // std::cout << "コピーのparticle_value_new = " << particle_value_new[i] << std::endl;
     }
-    // std::cout << "積み上げ乱数 " << rand << std::endl;
-    // std::cout << "積み上げ幅 " << rand_width << std::endl;
     // 系統リサンプリングの処理開始
     std::cout << "b" << std::endl;
 
@@ -218,16 +215,7 @@ void resampling(int cnt)
             rand += rand_width; //乱数を積む
             n_after++;
         }
-        std::cout << "処理のあと　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
-
-
-        // // //例外処理
-        // if (n_before == (PARTICLE_NUM - 1)) 
-        // {
-        //     std::cout << "aaa" << std::endl;
-        //     n_before = 0;
-        // }
-  
+        // std::cout << "処理のあと　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
 
     }
 
@@ -238,15 +226,14 @@ void resampling(int cnt)
     {
         // リサンプリング後のパーティクルの更新
         particle_cloud.poses[i] = particle_new.poses[i];
-        particle_value[i] = 1.0 / double(PARTICLE_NUM); // 重みの初期化
+        particle_value[i] = ws / double(PARTICLE_NUM); // 重みの初期化
+        // printf("%")
+        std::cout << "リサンプリング後の代入した重み　" << particle_value[i] << " ws " << ws << std::endl;
 
     }
     
 
 }
-
-
-
 
 
 
@@ -327,11 +314,6 @@ int main(int argc, char **argv)
 
         if (line_posi.points.size() > 0) // このif文を外すと動かない
         {
-            
-            // もともと→状態遷移モデルの場所
-
-
-
             // 尤度計算
             double line_vertical_small = 0;
             double line_vertical_big   = 0;
@@ -383,27 +365,52 @@ int main(int argc, char **argv)
                     }
                 }
 
-                likelihood_value = double(match_count) / double(line_posi.points.size());
-                particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+                // likelihood_value = double(match_count) / double(line_posi.points.size());
+                
+                // likelihood_value = match_count;
+                // particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+                particle_value[i] = match_count;
+
+
+                // 重みの和を計算
+                double ws = 0;
+                for(int i = 0; i < particle_value.size(); i++)
+                {   
+                    ws += particle_value[i];     
+                }
+                
+                printf("尤度計算内での重みの和wsを算出%.32f\n", ws);
+                printf("match_countを算出%d\n", match_count);
+
+                if (match_count != 0)
+                {
+                    resampling(ws); // 白線点群が一つもマッチしなかったときはリサンプリングをスキップ    
+                }
+                else 
+                {
+                    printf("match_countはゼロ\n");
+                }
+                
             }
 
 
             // 重みの正規化 : particle_valueの値を正規化
-            likelihood_value_nomalization();
+            // likelihood_value_nomalization();
   
             //走行中だけリサンプリングを行う
-            std::cout << "v: " << v << " " << "w: " << omega << std::endl; 
+            // std::cout << "v: " << v << " " << "w: " << omega << std::endl; 
             // 常にリサンプリングをするとこの問題が起きるかを調査する
             // resampling(cnt);
-            if (v > 0.002 || std::fabs(omega) > 0.002)
-            {
-                printf("cnt: %d, リサンプリング中\n",cnt);
-                resampling(cnt);
-            }
-            else 
-            {
-                printf("cnt: %d, なにもしない\n",cnt);
-            }
+            // if (v > 0.002 || std::fabs(omega) > 0.002)
+            // {
+            //     printf("cnt: %d, リサンプリング中\n",cnt);
+            //     resampling(cnt);
+            // }
+            // else 
+            // {
+            //     printf("cnt: %d, なにもしない\n",cnt);
+            // }
+            
 
 
             // // 推定結果の自己位置
