@@ -137,18 +137,20 @@ void likelihood_value_nomalization()
         sum += particle_value[i];
     }
     // std::cout << "パーティクルの重みの和" << sum << std::endl;
-    printf("パーティクルの重みの和 %.32f \n",sum);
+    printf("パーティクルの重みの和 %.32f \n",sum);        
+    if (double(sum) == 0.0)
+    {
+        printf("sumがゼロになった\n");
+    }
+
     for (int i = 0; i < PARTICLE_NUM; i++)
     {
         
         if (particle_value[i] != 0)
         {
-            particle_value[i] = double(particle_value[i]) / sum; 
+            particle_value[i] = double(particle_value[i])*100 / sum; 
         }
-        if (double(sum) == 0.0)
-        {
-            printf("sumがゼロになった\n");
-        }
+
 
     }
 }
@@ -159,7 +161,7 @@ void resampling(int cnt)
 {
     std::cout << "a" << std::endl;
 
-    double rand_width = 1.0 / double(PARTICLE_NUM); // 乱数幅 : 1じゃなくて、806重みの和
+    double rand_width = 100.0 / double(PARTICLE_NUM); // 乱数幅 : 1じゃなくて、806重みの和
     std::uniform_real_distribution<float> distr(0, rand_width); // 0~rand_widthの範囲で当確率で発生する
     double rand = distr(engine); // 積み上げ乱数
     double w_sum = particle_value[0]; //積み上げ正規化重み
@@ -189,7 +191,7 @@ void resampling(int cnt)
     while (n_after < PARTICLE_NUM)
     {
         
-        std::cout << "処理のまえ　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
+        // std::cout << "処理のまえ　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
         // if (n_before > PARTICLE_NUM -5)
         // {
         //     std::cout << "超えそう" << n_before << "/" << PARTICLE_NUM <<  std::endl;
@@ -218,16 +220,8 @@ void resampling(int cnt)
             rand += rand_width; //乱数を積む
             n_after++;
         }
-        std::cout << "処理のあと　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
 
-
-        // // //例外処理
-        // if (n_before == (PARTICLE_NUM - 1)) 
-        // {
-        //     std::cout << "aaa" << std::endl;
-        //     n_before = 0;
-        // }
-  
+        // std::cout << "処理のあと　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
 
     }
 
@@ -238,7 +232,7 @@ void resampling(int cnt)
     {
         // リサンプリング後のパーティクルの更新
         particle_cloud.poses[i] = particle_new.poses[i];
-        particle_value[i] = 1.0 / double(PARTICLE_NUM); // 重みの初期化
+        particle_value[i] = 100.0 / double(PARTICLE_NUM); // 重みの初期化
 
     }
     
@@ -291,7 +285,7 @@ int main(int argc, char **argv)
         particle_cloud.poses[i].position.y = dist_coodinate(engine);
         particle_cloud.poses[i].position.z = 0.0;
         particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, dist_theta(engine)); 
-        particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
+        particle_value[i] = 100.0 / double(PARTICLE_NUM); //最初の重みは均一
 
     }
 
@@ -299,6 +293,7 @@ int main(int argc, char **argv)
 
     ros::Rate rate(10.0);
     int cnt = 0;
+    int macth_count_flg = 0;
  
     while (ros::ok())
     {
@@ -385,20 +380,36 @@ int main(int argc, char **argv)
 
                 likelihood_value = double(match_count) / double(line_posi.points.size());
                 particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+                if (match_count != 0)
+                {
+                    macth_count_flg = 1;
+                }
+
+
             }
 
-
-            // 重みの正規化 : particle_valueの値を正規化
-            likelihood_value_nomalization();
-  
+            // ----------------リサンプリングの処理が始まる----------------------
+            
+            likelihood_value_nomalization(); // 重みの正規化 : particle_valueの値を正規化
             //走行中だけリサンプリングを行う
             std::cout << "v: " << v << " " << "w: " << omega << std::endl; 
             // 常にリサンプリングをするとこの問題が起きるかを調査する
             // resampling(cnt);
-            if (v > 0.002 || std::fabs(omega) > 0.002)
+            if (v > 0.02 || std::fabs(omega) > 0.002)
             {
-                printf("cnt: %d, リサンプリング中\n",cnt);
-                resampling(cnt);
+                
+                if (macth_count_flg == 1) //
+                {
+                    printf("cnt: %d, リサンプリング中\n",cnt);
+                    resampling(cnt);
+                    macth_count_flg = 0;
+
+                }
+                else 
+                {
+                    std::cout << " match_coutはゼロ" << std::endl;
+
+                }
             }
             else 
             {
@@ -406,7 +417,7 @@ int main(int argc, char **argv)
             }
 
 
-            // // 推定結果の自己位置
+            // 推定結果の自己位置
             // double estimate_odom_x = 0.0;
             // double estimate_odom_y = 0.0;
             // double estimate_theta  = 0.0;
