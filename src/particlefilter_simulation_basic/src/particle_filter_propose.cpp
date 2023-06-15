@@ -136,12 +136,18 @@ void likelihood_value_nomalization()
     {
         sum += particle_value[i];
     }
+    // std::cout << "パーティクルの重みの和" << sum << std::endl;
+    printf("パーティクルの重みの和 %.32f \n",sum);
     for (int i = 0; i < PARTICLE_NUM; i++)
     {
         
         if (particle_value[i] != 0)
         {
-            particle_value[i] = double(particle_value[i]) / double(sum); 
+            particle_value[i] = double(particle_value[i]) / sum; 
+        }
+        if (double(sum) == 0.0)
+        {
+            printf("sumがゼロになった\n");
         }
 
     }
@@ -151,8 +157,9 @@ void likelihood_value_nomalization()
 // リサンプリングの処理
 void resampling(int cnt)
 {
+    std::cout << "a" << std::endl;
 
-    double rand_width = 1.0 / double(PARTICLE_NUM); // 乱数幅
+    double rand_width = 1.0 / double(PARTICLE_NUM); // 乱数幅 : 1じゃなくて、806重みの和
     std::uniform_real_distribution<float> distr(0, rand_width); // 0~rand_widthの範囲で当確率で発生する
     double rand = distr(engine); // 積み上げ乱数
     double w_sum = particle_value[0]; //積み上げ正規化重み
@@ -167,9 +174,7 @@ void resampling(int cnt)
     // 要素のコピー
     for (int i = 0; i < PARTICLE_NUM; i++)
     {
-        particle_new.poses[i].position.x = particle_cloud.poses[i].position.x;
-        particle_new.poses[i].position.y = particle_cloud.poses[i].position.y;
-        particle_new.poses[i].orientation = particle_cloud.poses[i].orientation;
+        particle_new.poses[i] = particle_cloud.poses[i];
         particle_value_new[i] = particle_value[i];
         
         // std::cout << "コピーのparticle_index = " << i << "\n" << "particle_x = " <<  particle_new.poses[i].position.x << " " << "particle_y = " <<  particle_new.poses[i].position.y << "\n"<< particle_new.poses[i].orientation << std::endl;
@@ -178,9 +183,28 @@ void resampling(int cnt)
     // std::cout << "積み上げ乱数 " << rand << std::endl;
     // std::cout << "積み上げ幅 " << rand_width << std::endl;
     // 系統リサンプリングの処理開始
+    std::cout << "b" << std::endl;
+
+
     while (n_after < PARTICLE_NUM)
     {
-        // std::cout << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
+        
+        std::cout << "処理のまえ　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
+        // if (n_before > PARTICLE_NUM -5)
+        // {
+        //     std::cout << "超えそう" << n_before << "/" << PARTICLE_NUM <<  std::endl;
+        // }
+        // if (n_before > PARTICLE_NUM)
+        // {
+        //     std::cout << "n_beforeがパーティクル数を超えた" << n_before << "/" << PARTICLE_NUM <<  std::endl;
+        // }
+        // if (n_after > PARTICLE_NUM)
+        // {
+        //     std::cout << "n_afterがパーティクル数を超えた" << n_after <<  std::endl;
+        // }
+        // std::cout </< "n_before " << n_before << "n_after " << n_after << std::endl; 
+
+
         if (rand > w_sum) //乱数が重みより大きければ重みを積む
         {
             n_before++;
@@ -188,38 +212,41 @@ void resampling(int cnt)
         }
         else // 乱数が重み以下ならば、リサンプリングし、乱数を積む 
         {
-            particle_new.poses[n_after].position.x = particle_cloud.poses[n_before].position.x;
-            particle_new.poses[n_after].position.y = particle_cloud.poses[n_before].position.y;
-            particle_new.poses[n_after].position.z = particle_cloud.poses[n_before].position.z;
-            particle_new.poses[n_after].orientation = particle_cloud.poses[n_before].orientation;
+            particle_new.poses[n_after] = particle_cloud.poses[n_before];
             particle_value_new[n_after] = particle_value[n_before];
 
             rand += rand_width; //乱数を積む
             n_after++;
         }
+        std::cout << "処理のあと　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
 
-        //例外処理
-        if (n_before == (PARTICLE_NUM - 1)) 
-        {
-            n_before = 0;
-        }
+
+        // // //例外処理
+        // if (n_before == (PARTICLE_NUM - 1)) 
+        // {
+        //     std::cout << "aaa" << std::endl;
+        //     n_before = 0;
+        // }
   
 
     }
+
+    std::cout << "c" << std::endl;
 
     // 元のパーティクルに代入
     for (int i=0; i < PARTICLE_NUM; i++)
     {
         // リサンプリング後のパーティクルの更新
-        particle_cloud.poses[i].position.x = particle_new.poses[i].position.x;
-        particle_cloud.poses[i].position.y = particle_new.poses[i].position.y;
-        particle_cloud.poses[i].position.z = particle_new.poses[i].position.z;
-        particle_cloud.poses[i].orientation = particle_new.poses[i].orientation;
+        particle_cloud.poses[i] = particle_new.poses[i];
         particle_value[i] = 1.0 / double(PARTICLE_NUM); // 重みの初期化
 
     }
+    
 
 }
+
+
+
 
 
 
@@ -262,7 +289,7 @@ int main(int argc, char **argv)
 
         particle_cloud.poses[i].position.x = dist_coodinate(engine);
         particle_cloud.poses[i].position.y = dist_coodinate(engine);
-        particle_cloud.poses[i].position.z = 0.0; 
+        particle_cloud.poses[i].position.z = 0.0;
         particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, dist_theta(engine)); 
         particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
 
@@ -279,27 +306,30 @@ int main(int argc, char **argv)
 
 
         ros::spinOnce();
-        std::cout << line_posi.points.size() << std::endl;
 
-        if (line_posi.points.size() > 0)
+        // パーティクルの位置に状態遷移モデルの適用
+        for (int i = 0; i < PARTICLE_NUM; i++)
+        {
+            // ノイズをのせたvとomegaを生成
+            double v_noise,omega_noise;
+            double roll, pitch, yaw;
+            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            v_noise = v + dist_v_v(engine) * sqrt(abs(v)/DT) + dist_v_omega(engine) * sqrt(abs(omega)/DT);
+            omega_noise = omega + dist_omega_v(engine) * sqrt(abs(v)/DT) + dist_omega_omega(engine) * sqrt(abs(omega)/DT);
+
+            particle_cloud.poses[i].position.x = particle_cloud.poses[i].position.x + v_noise * cos(yaw)*DT;
+            particle_cloud.poses[i].position.y = particle_cloud.poses[i].position.y + v_noise * sin(yaw)*DT;
+            particle_cloud.poses[i].position.z = 0.0; 
+            particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0,0, yaw + omega_noise * DT);
+            // std::cout << "状態遷移モデル内でのprint" << particle_cloud.poses[i].position.x << std::endl;
+        
+        }
+
+        if (line_posi.points.size() > 0) // このif文を外すと動かない
         {
             
-            // パーティクルの位置に状態遷移モデルの適用
-            for (int i = 0; i < PARTICLE_NUM; i++)
-            {
-                // ノイズをのせたvとomegaを生成
-                double v_noise,omega_noise;
-                double roll, pitch, yaw;
-                geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-                v_noise = v + dist_v_v(engine) * sqrt(abs(v)/DT) + dist_v_omega(engine) * sqrt(abs(omega)/DT);
-                omega_noise = omega + dist_omega_v(engine) * sqrt(abs(v)/DT) + dist_omega_omega(engine) * sqrt(abs(omega)/DT);
+            // もともと→状態遷移モデルの場所
 
-                particle_cloud.poses[i].position.x = particle_cloud.poses[i].position.x + v_noise * cos(yaw)*DT;
-                particle_cloud.poses[i].position.y = particle_cloud.poses[i].position.y + v_noise * sin(yaw)*DT;
-                particle_cloud.poses[i].position.z = 0.0; 
-                particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0,0, yaw + omega_noise * DT);
-            
-            }
 
 
             // 尤度計算
@@ -363,32 +393,39 @@ int main(int argc, char **argv)
   
             //走行中だけリサンプリングを行う
             std::cout << "v: " << v << " " << "w: " << omega << std::endl; 
+            // 常にリサンプリングをするとこの問題が起きるかを調査する
+            // resampling(cnt);
             if (v > 0.002 || std::fabs(omega) > 0.002)
             {
                 printf("cnt: %d, リサンプリング中\n",cnt);
                 resampling(cnt);
             }
-
-
-            // 推定結果の自己位置
-            double estimate_odom_x = 0.0;
-            double estimate_odom_y = 0.0;
-            double estimate_theta  = 0.0;
-
-            // 自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
-            for (int i = 0; i < PARTICLE_NUM; i++)
+            else 
             {
-                double roll, pitch, yaw;
-                geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-                estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
-                estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
-                estimate_theta  += particle_value[i] * yaw;
-
+                printf("cnt: %d, なにもしない\n",cnt);
             }
 
-            estimate_posi.pose.pose.position.x = estimate_odom_x;
-            estimate_posi.pose.pose.position.y = estimate_odom_y;
-            estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
+
+            // // 推定結果の自己位置
+            // double estimate_odom_x = 0.0;
+            // double estimate_odom_y = 0.0;
+            // double estimate_theta  = 0.0;
+
+            // // 自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
+            // for (int i = 0; i < PARTICLE_NUM; i++)
+            // {
+            //     double roll, pitch, yaw;
+            //     geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            //     estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
+            //     estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
+            //     estimate_theta  += particle_value[i] * yaw;
+
+            // }
+
+            // estimate_posi.pose.pose.position.x = estimate_odom_x;
+            // estimate_posi.pose.pose.position.y = estimate_odom_y;
+            // estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
+            // std::cout << "推定x " << estimate_posi.pose.pose.position.x << " 推定Y " << estimate_posi.pose.pose.position.y << std::endl;
 
             // 推定した結果をcsvに出力
             // ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x << ", " << estimate_odom_y << std::endl;
@@ -398,7 +435,7 @@ int main(int argc, char **argv)
 
             self_localization_pub.publish(posi);
             particle_cloud_pub.publish(particle_cloud);
-            esitimate_position_pub.publish(estimate_posi);
+            // esitimate_position_pub.publish(estimate_posi);
 
             
         }

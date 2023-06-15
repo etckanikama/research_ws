@@ -145,7 +145,7 @@ class LineDetection:
 		the_src_pts		= np.array([(122.0, 33.0), (555.0, 23.0), (98.0, 353.0), (572.0, 355.0)], dtype=np.float32)
 		the_dst_pts		= np.array([(2.5, 1.0), (2.5, -1.0), (0.5, 0.15), (0.5, -0.15)], dtype=np.float32)
 		self.H		= cv2.getPerspectiveTransform(the_src_pts, the_dst_pts)
-		print("H=", self.H)
+		# print("H=", self.H)
 
 
 		# Subscriber -----------------------------------------------------------
@@ -217,8 +217,8 @@ class LineDetection:
 							the_p.y		= (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							the_p.z		= 0.0
 							the_points.points.append(the_p)
-							print(the_p)
-
+							# print(the_p)	
+				print("白線点群の数",len(the_points.points))
 
 				#---------------------------------------------------------------
 				#		Publish line points & images

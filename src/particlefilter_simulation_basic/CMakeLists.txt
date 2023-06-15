@@ -33,6 +33,7 @@ add_executable(likelihood_distribution.cpp src/likelihood_distribution.cpp)
 add_executable(sub_odom_to_csv.cpp src/sub_odom_to_csv.cpp)
 add_executable(sub_amcl_pose_to_csv.cpp src/sub_amcl_pose_to_csv.cpp)
 add_executable(Inpedance_control_check.cpp src/Inpedance_control_check.cpp)
+add_executable(resample_test.cpp src/resample_test.cpp)
 
 
 target_link_libraries(${PROJECT_NAME}
@@ -44,5 +45,6 @@ target_link_libraries(likelihood_distribution.cpp ${catkin_LIBRARIES})
 target_link_libraries(sub_odom_to_csv.cpp ${catkin_LIBRARIES})
 target_link_libraries(sub_amcl_pose_to_csv.cpp ${catkin_LIBRARIES})
 target_link_libraries(Inpedance_control_check.cpp ${catkin_LIBRARIES})
+target_link_libraries(resample_test.cpp  ${catkin_LIBRARIES})
 
 

@@ -211,7 +211,6 @@ void polygonMatchingLikelihood(const pcl::PointCloud<pcl::PointXYZ>& downsampled
     double line_side_small = 0;
     double line_side_big = 0;
     double likelihood_value = 0;
-    
     // 処理を実装する
     for (int i = 0; i < PARTICLE_NUM; i++) // パーティクル一個一個について計算していく
     {
@@ -433,7 +432,7 @@ int main(int argc, char **argv)
         }
     }
     pointCenterLineDistanceLikelihood(downsampled_cloud, particle_cloud, time_stamp, ofs);
-
+    
 
     // while (ros::ok())
     // {
