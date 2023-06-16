@@ -29,7 +29,7 @@ geometry_msgs::Twist cmd_vel;
 geometry_msgs::PoseWithCovarianceStamped estimate_posi;
 
 // 軌跡の保存用csvファイル
-// std::ofstream ofs("2023-03-29_v0.5w1.0472_time_stamp_hyouka.csv");
+std::ofstream ofs("ccc.csv");
 
 
 // 初期速度指令値
@@ -148,9 +148,8 @@ void likelihood_value_nomalization()
         
         if (particle_value[i] != 0)
         {
-            particle_value[i] = double(particle_value[i])*100 / sum; 
+            particle_value[i] = double(particle_value[i])*100.0 / sum; 
         }
-
 
     }
 }
@@ -171,26 +170,23 @@ void resampling(int cnt)
     
     geometry_msgs::PoseArray particle_new; // リサンプリング後の粒子
     std::vector<double> particle_value_new(PARTICLE_NUM); //リサンプリング後の粒子の重み
-    particle_new.poses.resize(PARTICLE_NUM); //
+    particle_new.poses.resize(PARTICLE_NUM); 
 
     // 要素のコピー
     for (int i = 0; i < PARTICLE_NUM; i++)
     {
         particle_new.poses[i] = particle_cloud.poses[i];
         particle_value_new[i] = particle_value[i];
-        
-        // std::cout << "コピーのparticle_index = " << i << "\n" << "particle_x = " <<  particle_new.poses[i].position.x << " " << "particle_y = " <<  particle_new.poses[i].position.y << "\n"<< particle_new.poses[i].orientation << std::endl;
-        // std::cout << "コピーのparticle_value_new = " << particle_value_new[i] << std::endl;
     }
-    // std::cout << "積み上げ乱数 " << rand << std::endl;
-    // std::cout << "積み上げ幅 " << rand_width << std::endl;
+
+
     // 系統リサンプリングの処理開始
     std::cout << "b" << std::endl;
 
 
     while (n_after < PARTICLE_NUM)
     {
-        
+        //デバッグ用 
         // std::cout << "処理のまえ　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
         // if (n_before > PARTICLE_NUM -5)
         // {
@@ -322,10 +318,6 @@ int main(int argc, char **argv)
 
         if (line_posi.points.size() > 0) // このif文を外すと動かない
         {
-            
-            // もともと→状態遷移モデルの場所
-
-
 
             // 尤度計算
             double line_vertical_small = 0;
@@ -380,22 +372,56 @@ int main(int argc, char **argv)
 
                 likelihood_value = double(match_count) / double(line_posi.points.size());
                 particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+
                 if (match_count != 0)
                 {
                     macth_count_flg = 1;
                 }
+                if (match_count == 0)
+                {
+                    std::cout << "match_count数はゼロです! " << std::endl; 
+                }
+                if (particle_value[i] == 0.0) std::cout << "particle_valueはゼロです" << std::endl;
 
 
             }
 
-            // ----------------リサンプリングの処理が始まる----------------------
+            // ----------------推定値の出力---------------------
+            likelihood_value_nomalization(); //正規化→推定値→リサンプリング
+            // 推定結果の自己位置
+            double estimate_odom_x = 0.0;
+            double estimate_odom_y = 0.0;
+            double estimate_theta  = 0.0;
+
+            // 自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
+            // 100.0にして丸め誤差の問題に対処
+            for (int i = 0; i < PARTICLE_NUM; i++)
+            {
+                double roll, pitch, yaw;
+                geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+                estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
+                estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
+                estimate_theta  += particle_value[i] * yaw;
+
+            }
+
+            estimate_posi.pose.pose.position.x = estimate_odom_x;
+            estimate_posi.pose.pose.position.y = estimate_odom_y;
+            estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
+            std::cout << "推定x " << estimate_posi.pose.pose.position.x << " 推定Y " << estimate_posi.pose.pose.position.y << std::endl;
+
+            // 推定した結果をcsvに出力
+            ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x/100.0 << ", " << estimate_odom_y/100.0 << std::endl;
             
-            likelihood_value_nomalization(); // 重みの正規化 : particle_valueの値を正規化
+
+            // ----------------リサンプリングの処理開始----------------------
+            
+            /// 重みの正規化 : particle_valueの値を正規化→ここでerror
             //走行中だけリサンプリングを行う
             std::cout << "v: " << v << " " << "w: " << omega << std::endl; 
             // 常にリサンプリングをするとこの問題が起きるかを調査する
             // resampling(cnt);
-            if (v > 0.02 || std::fabs(omega) > 0.002)
+            if (v > 0.04 || std::fabs(omega) > 0.002)
             {
                 
                 if (macth_count_flg == 1) //
@@ -415,38 +441,15 @@ int main(int argc, char **argv)
             {
                 printf("cnt: %d, なにもしない\n",cnt);
             }
+            
 
-
-            // 推定結果の自己位置
-            // double estimate_odom_x = 0.0;
-            // double estimate_odom_y = 0.0;
-            // double estimate_theta  = 0.0;
-
-            // // 自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
-            // for (int i = 0; i < PARTICLE_NUM; i++)
-            // {
-            //     double roll, pitch, yaw;
-            //     geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-            //     estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
-            //     estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
-            //     estimate_theta  += particle_value[i] * yaw;
-
-            // }
-
-            // estimate_posi.pose.pose.position.x = estimate_odom_x;
-            // estimate_posi.pose.pose.position.y = estimate_odom_y;
-            // estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
-            // std::cout << "推定x " << estimate_posi.pose.pose.position.x << " 推定Y " << estimate_posi.pose.pose.position.y << std::endl;
-
-            // 推定した結果をcsvに出力
-            // ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x << ", " << estimate_odom_y << std::endl;
 
             cnt++;
             
 
             self_localization_pub.publish(posi);
             particle_cloud_pub.publish(particle_cloud);
-            // esitimate_position_pub.publish(estimate_posi);
+            esitimate_position_pub.publish(estimate_posi);
 
             
         }
