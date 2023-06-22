@@ -112,7 +112,7 @@
     <model name='pole_1'>
       <static>1</static>
         <link name='link_2'>
-          <pose frame=''>0.58 -0.24 0 0 0 0</pose>
+          <pose frame=''>0.55 -0.23 0 0 0 0</pose>
           <inertial>
             <mass>1</mass>
             <inertia>
@@ -162,7 +162,7 @@
         <model name='pole_2'>
           <static>1</static>
             <link name='link_3'>
-              <pose frame=''>0.58 0.25 0 0 0 0</pose>
+              <pose frame=''>0.55 0.24 0 0 0 0</pose>
               <inertial>
                 <mass>1</mass>
                 <inertia>
@@ -212,7 +212,7 @@
         <model name='pole_3'>
           <static>1</static>
             <link name='link_4'>
-              <pose frame=''>4.3 2.3 0 0 0 0</pose>
+              <pose frame=''>3.35 1.97 0 0 0 0</pose>
               <inertial>
                 <mass>1</mass>
                 <inertia>
@@ -261,7 +261,7 @@
         <model name='pole_4'>
           <static>1</static>
             <link name='link_5'>
-              <pose frame=''>4.3 -2.3 0 0 0 0</pose>
+              <pose frame=''>3.35 -1.97 0 0 0 0</pose>
               <inertial>
                 <mass>1</mass>
                 <inertia>

@@ -1,8 +1,16 @@
 <launch>
 	<arg name="file_name"	default="test.bag"/>
 	<arg name="dir_name"	default="/home/hirayama-d/research_ws/bag/"/>
-
+	<!-- gazebo用のrosbag再生 -->
 	<node pkg="rosbag" name="my_bag" type="record" output="screen" 
+			args="-O $(arg dir_name)$(arg file_name) 
+					/beego/my_robo/camera1/image_raw
+					/beego/my_robo/camera1/camera_info
+					/beego/diff_drive_controller/cmd_vel
+					/beego/diff_drive_controller/odom
+					/tf
+					/tf_static"/>
+	<!-- <node pkg="rosbag" name="my_bag" type="record" output="screen" 
 			args="-O $(arg dir_name)$(arg file_name) 
 					/front_realsense/aligned_depth_to_color/camera_info 
 					/front_realsense/aligned_depth_to_color/image_raw 
@@ -16,5 +24,5 @@
 					/scan
 					/amcl_pose
 					/tf
-					/tf_static"/>
+					/tf_static"/> -->
 </launch>

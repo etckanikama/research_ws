@@ -4,8 +4,8 @@
 
 double max_vel = 0.5; //0.5 m/s 
 // double max_omega = 0.2;
-// double max_omega = 0.525; //rad/s → 30 deg/s
-double max_omega = 1.0472; //rad/s → 60 deg/s 
+double max_omega = 0.525; //rad/s → 30 deg/s
+// double max_omega = 1.0472; //rad/s → 60 deg/s 
 
 
 float x_joy = 0.0;

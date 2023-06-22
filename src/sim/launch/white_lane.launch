@@ -14,7 +14,7 @@
     <arg name="debug" value="false"/> -->
   </include>
 
-  <arg name="initial_x" default="8.0"/>
+  <arg name="initial_x" default="0.0"/>
   <include file="$(find sim)/launch/beego.launch">
     <arg name="x" default= "$(arg initial_x)" />
     <arg name="y" value="0.0"/>

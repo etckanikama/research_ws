@@ -103,10 +103,12 @@ class LineDetection:
 		# the_dst_pts		= np.array([(1.5, 0.75), (1.5, -0.5), (0.5, 0.15), (0.5, -0.15)], dtype=np.float32)
 		# self.H		= cv2.getPerspectiveTransform(the_src_pts, the_dst_pts)
         # Homograpy 行列の作成：俯角：0.5rad(28.64deg)---------------
-		cv_points		= np.array([(44.0, 18.0), (603.0, 19.0), (634.0, 338.0), (6.0, 336.0)], dtype=np.float32)
-		ros_points		= np.array([(4.3, 2.3), (4.3, -2.3), (0.58, -0.24), (0.58, 0.25)], dtype=np.float32)
+		# cv_points		= np.array([(44.0, 18.0), (603.0, 19.0), (634.0, 338.0), (6.0, 336.0)], dtype=np.float32)
+		# ros_points		= np.array([(4.3, 2.3), (4.3, -2.3), (0.58, -0.24), (0.58, 0.25)], dtype=np.float32)
+		cv_points		= np.array([(6.0, 7.0), (638.0, 7.0), (640.0, 349.0), (3.0, 346.0)], dtype=np.float32)
+		ros_points		= np.array([(3.35, 1.97), (3.35, -1.97), (0.55, -0.23), (0.55, 0.24)], dtype=np.float32)
 		self.H		= cv2.getPerspectiveTransform(cv_points, ros_points)
-		print("H=", self.H)
+		print("H= ", self.H)
 
 
 		# Subscriber -----------------------------------------------------------
