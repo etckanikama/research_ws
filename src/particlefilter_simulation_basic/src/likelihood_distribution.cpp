@@ -431,25 +431,25 @@ int main(int argc, char **argv)
             pn++;
         }
     }
-    pointCenterLineDistanceLikelihood(downsampled_cloud, particle_cloud, time_stamp, ofs);
+    // pointCenterLineDistanceLikelihood(downsampled_cloud, particle_cloud, time_stamp, ofs);
     
 
-    // while (ros::ok())
-    // {
-    //     ros::spinOnce();
-    //     time_stamp += dt; // dtで時間を積算
+    while (ros::ok())
+    {
+        ros::spinOnce();
+        time_stamp += dt; // dtで時間を積算
 
-    //     // cout << "line_cloud: "<< line_cloud.points.size() << endl;
+        // cout << "line_cloud: "<< line_cloud.points.size() << endl;
 
-    //     if (downsampled_cloud.points.size() > 0)
-    //     {
-    //         // 白線ポリゴンにおけるマッチングによる尤度関数&csvに保存（downsampled_cloud→line_cloud　変更可能)
-    //         // polygonMatchingLikelihood(downsampled_cloud, particle_cloud, time_stamp, ofs);
+        if (downsampled_cloud.points.size() > 0)
+        {
+            // 白線ポリゴンにおけるマッチングによる尤度関数&csvに保存（downsampled_cloud→line_cloud　変更可能)
+            // polygonMatchingLikelihood(downsampled_cloud, particle_cloud, time_stamp, ofs);
             
-    //         // 白線の中心の線分と白線の観測点群との点と直線との距離から求める尤度関数＆csvに保存
-    //         pointCenterLineDistanceLikelihood(downsampled_cloud, particle_cloud, time_stamp, ofs);
+            // 白線の中心の線分と白線の観測点群との点と直線との距離から求める尤度関数＆csvに保存
+            pointCenterLineDistanceLikelihood(downsampled_cloud, particle_cloud, time_stamp, ofs);
     
-    //     }
+        }
 
     //     // if (cnt== 1)
         // {
@@ -460,6 +460,6 @@ int main(int argc, char **argv)
         // publish
         particle_cloud_pub.publish(particle_cloud);
         // line_global_points_pub.publish(line_posi);
-    // }
+    }
     // rate.sleep();
 }

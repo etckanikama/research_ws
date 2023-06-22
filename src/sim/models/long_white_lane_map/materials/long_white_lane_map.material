@@ -1,0 +1,10 @@
+material long_white_lane_map {
+  technique {
+    pass {
+      texture_unit {
+        texture long_white_lane_map.png
+        scale 1 1
+      }
+    }
+  }
+}
