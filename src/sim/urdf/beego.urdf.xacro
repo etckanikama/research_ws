@@ -11,6 +11,10 @@
   <xacro:property name="WHEEL_MASS" value="0.1"/>
   <xacro:property name="WHEEL_RAD" value="0.041"/>
   <xacro:property name="WHEEL_THICK" value="0.015"/>
+    
+  <xacro:arg name="use_nominal_extrinsics" default="false" />
+  <xacro:include filename="$(find sim)/urdf/_d435.urdf.xacro"/>
+
 
   <material name="gray">
     <color rgba="0.75 0.75 0.75 1"/>
@@ -185,7 +189,7 @@
       </geometry>
     </collision>
   </link> -->
-	<link name="camera_link">
+	<!-- <link name="camera_link">
 		<collision>
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<geometry>
@@ -203,14 +207,14 @@
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
 		</inertial>
-	</link>
-
-	<joint name="camera_joint" type="fixed">
+	</link> -->
+  <!-- <link name="camera_link" /> -->
+	<!-- <joint name="camera_joint" type="fixed">
 		<parent link="base_link"/>
 		<child link="camera_link"/>
     <origin rpy="0 0.418879 0" xyz="0.3 0.0 0.21"/> 
 		<axis xyz="0 1 0"/>
-	</joint>
+	</joint> -->
 	
 
   <!-- ===============  Transmission =============== -->
@@ -318,8 +322,11 @@
   <xacro:sensor_d435i parent="camera_link" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:sensor_d435i> -->
+  <xacro:sensor_d435 parent="base_footprint">
+    <origin rpy="0 0.418879 0" xyz="0.3 -${0.0175 + 0.015} 0.21"/>
+  </xacro:sensor_d435>
 
-<gazebo reference="camera_link">
+<!-- <gazebo reference="camera_link">
 		<sensor type="camera" name="camera1">
 			<update_rate>30.0</update_rate>
 			<camera name="head">
@@ -352,7 +359,7 @@
 				<distortionT2>0.0</distortionT2>
 			</plugin>
 		</sensor>
-	</gazebo>
+	</gazebo> -->
 
   
 </robot>
