@@ -13,23 +13,22 @@
 #include <stdlib.h>
 #include <math.h>
 #include <cmath>
-#include <fstream>
 #include <geometry_msgs/Pose.h>
 #include <tf/transform_broadcaster.h>
 #include <random>
 #include <time.h>
-#include <chrono>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-
-
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 sensor_msgs::PointCloud line_posi;
 geometry_msgs::PoseArray particle_cloud; 
 geometry_msgs::Twist cmd_vel;
 geometry_msgs::PoseWithCovarianceStamped estimate_posi;
-
+pcl::PointCloud<pcl::PointXYZ> downsampled_cloud;
 // 軌跡の保存用csvファイル
-std::ofstream ofs("ccc.csv");
+std::ofstream ofs("メディアンなし&ボクセルなし2.0以下.csv");
 
 
 // 初期速度指令値
@@ -76,10 +75,10 @@ double theta_pt[PARTICLE_NUM]= {0.0};
 const int POLYGON_NUM = 10; //ポリゴンの数l棟は8,sbは10
 // sb棟において、エレベータ側の直線をスタート地点とした場合：単位はメートル
 double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545},{9.05, 9.125, 0.545, 1.935},{9.125, 10.205, 1.86, 1.935}, {10.13, 10.205,1.935, 3.01},{11.28, 11.355, 1.76, 3.01},{11.355, 13.5, 1.76, 1.835},{11.41,13.5, 0.75, 0.825},{11.41,11.485, 0.75, -5.0},{10.02,10.095, -0.545, -5.0},{0,10.095, -0.47, -0.545}};
-
-// joy
-double x_joy = 0.0;
-double w_joy = 0.0;
+int flg = 0;
+// // joy
+// double x_joy = 0.0;
+// double w_joy = 0.0;
 
 
 // roll, pitch, yawからクォータニオンにする関数
@@ -98,6 +97,7 @@ void geometry_quat_to_rpy(double& roll, double& pitch, double& yaw, geometry_msg
 	tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);  //rpy are Pass by Reference
 }
 
+// AMCLの推定値をサブスクライブする
 void amcl_poseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
 {
     amcl_pose_x = msg->pose.pose.position.x;
@@ -114,19 +114,29 @@ void velCallback(const nav_msgs::Odometry::ConstPtr &msg)
     robot_y = msg->pose.pose.position.y;
 }
 
-// cbPoint
+// 白線点群を受け取る
 void line_point_cb(const sensor_msgs::PointCloud::ConstPtr &msg)
 {
     line_posi.points = msg->points;
 }
 
-// joyのcmd_velをcallback
-void joy_callback(const sensor_msgs::Joy &joy_msg)
+// ダウンサンプリングした後の点群を読み込む
+// ボクセルダウンサンプリングをしたあとの点群を読み込む
+void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
-    x_joy = joy_msg.axes[1];
-    w_joy = joy_msg.axes[3];
-
+    // PointCloud2メッセージをPCLのPointCloud型に変換する
+    if (flg == 0)
+    {
+        pcl::fromROSMsg(*msg, downsampled_cloud);
+        flg = 1;
+    }
 }
+// joyのcmd_velをcallback
+// void joy_callback(const sensor_msgs::Joy &joy_msg)
+// {
+//     x_joy = joy_msg.axes[1];
+//     w_joy = joy_msg.axes[3];
+// }
 
 // パーティクル数で割って重みの正規化（重みの合計が1になるようにしてる）
 void likelihood_value_nomalization()
@@ -148,7 +158,7 @@ void likelihood_value_nomalization()
         
         if (particle_value[i] != 0)
         {
-            particle_value[i] = double(particle_value[i])*100.0 / sum; 
+            particle_value[i] = double(particle_value[i]) / sum; 
         }
 
     }
@@ -160,7 +170,7 @@ void resampling(int cnt)
 {
     std::cout << "a" << std::endl;
 
-    double rand_width = 100.0 / double(PARTICLE_NUM); // 乱数幅 : 1じゃなくて、806重みの和
+    double rand_width = 1.0 / double(PARTICLE_NUM); // 乱数幅 : 1じゃなくて、806重みの和
     std::uniform_real_distribution<float> distr(0, rand_width); // 0~rand_widthの範囲で当確率で発生する
     double rand = distr(engine); // 積み上げ乱数
     double w_sum = particle_value[0]; //積み上げ正規化重み
@@ -228,7 +238,7 @@ void resampling(int cnt)
     {
         // リサンプリング後のパーティクルの更新
         particle_cloud.poses[i] = particle_new.poses[i];
-        particle_value[i] = 100.0 / double(PARTICLE_NUM); // 重みの初期化
+        particle_value[i] = 1.0 / double(PARTICLE_NUM); // 重みの初期化
 
     }
     
@@ -255,15 +265,16 @@ int main(int argc, char **argv)
     // Subscriber
     ros::Subscriber odom_sub = nh.subscribe("/odom",10, velCallback);
     ros::Subscriber line_points_sub = nh.subscribe("/front_camera/line_points", 1, line_point_cb);
-    ros::Subscriber joy_vel_sub = nh.subscribe("/joy",1, joy_callback);
+    // ros::Subscriber joy_vel_sub = nh.subscribe("/joy",1, joy_callback);
     ros::Subscriber amcl_pose_sub = nh.subscribe("/amcl_pose", 10, amcl_poseCallback);
+    ros::Subscriber line_downsample_points_sub = nh.subscribe<sensor_msgs::PointCloud2>("/front_camera/down_sample_line_points2", 1, pointCloudCallback);
 
     
     nav_msgs::Odometry posi;
-    
+    tf::TransformBroadcaster broadcaster;
 
     posi.header.frame_id = "map";
-    estimate_posi.header.frame_id = "map";
+    // estimate_posi.header.frame_id = "map";
     particle_cloud.header.frame_id = "map";
     particle_cloud.header.stamp = ros::Time::now();
     particle_cloud.poses.resize(PARTICLE_NUM);
@@ -294,6 +305,11 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         time_stamp += DT; // dtで時間を積算
+        for (int i = 0; i < PARTICLE_NUM; i++) //パーティクルにゴミを足し合わせる
+        {
+            if (particle_value[i] == 0.0) std::cout << "これでもゼロになった！！" << std::endl;
+        }
+
 
 
         ros::spinOnce();
@@ -316,7 +332,14 @@ int main(int argc, char **argv)
         
         }
 
-        if (line_posi.points.size() > 0) // このif文を外すと動かない
+        for (int i = 0; i < PARTICLE_NUM; i++) //パーティクルにゴミを足し合わせる
+        {
+            particle_value[i] += 0.001;
+        }
+
+        
+        // if (downsampled_cloud.points.size() > 0)
+        if (line_posi.points.size() > 0) 
         {
 
             // 尤度計算
@@ -383,78 +406,102 @@ int main(int argc, char **argv)
                 }
                 if (particle_value[i] == 0.0) std::cout << "particle_valueはゼロです" << std::endl;
 
-
             }
 
-            // ----------------推定値の出力---------------------
-            likelihood_value_nomalization(); //正規化→推定値→リサンプリング
-            // 推定結果の自己位置
-            double estimate_odom_x = 0.0;
-            double estimate_odom_y = 0.0;
-            double estimate_theta  = 0.0;
-
-            // 自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
-            // 100.0にして丸め誤差の問題に対処
-            for (int i = 0; i < PARTICLE_NUM; i++)
+            for (int i = 0; i < PARTICLE_NUM; i++) //パーティクルにゴミを足し合わせる
             {
-                double roll, pitch, yaw;
-                geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-                estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
-                estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
-                estimate_theta  += particle_value[i] * yaw;
-
+                particle_value[i] += 0.001;
             }
-
-            estimate_posi.pose.pose.position.x = estimate_odom_x;
-            estimate_posi.pose.pose.position.y = estimate_odom_y;
-            estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
-            std::cout << "推定x " << estimate_posi.pose.pose.position.x << " 推定Y " << estimate_posi.pose.pose.position.y << std::endl;
-
-            // 推定した結果をcsvに出力
-            ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x/100.0 << ", " << estimate_odom_y/100.0 << std::endl;
-            
-
-            // ----------------リサンプリングの処理開始----------------------
-            
-            /// 重みの正規化 : particle_valueの値を正規化→ここでerror
-            //走行中だけリサンプリングを行う
-            std::cout << "v: " << v << " " << "w: " << omega << std::endl; 
-            // 常にリサンプリングをするとこの問題が起きるかを調査する
-            // resampling(cnt);
-            if (v > 0.04 || std::fabs(omega) > 0.002)
-            {
-                
-                if (macth_count_flg == 1) //
-                {
-                    printf("cnt: %d, リサンプリング中\n",cnt);
-                    resampling(cnt);
-                    macth_count_flg = 0;
-
-                }
-                else 
-                {
-                    std::cout << " match_coutはゼロ" << std::endl;
-
-                }
-            }
-            else 
-            {
-                printf("cnt: %d, なにもしない\n",cnt);
-            }
-            
-
-
-            cnt++;
-            
-
-            self_localization_pub.publish(posi);
-            particle_cloud_pub.publish(particle_cloud);
-            esitimate_position_pub.publish(estimate_posi);
 
             
         }
 
+        for (int i = 0; i < PARTICLE_NUM; i++) //パーティクルにゴミを足し合わせる
+        {
+            particle_value[i] += 0.001;
+        }
+
+        // 推定値の出力＆リサンプリング等を白線点群がなくても行うようにしてみた...?
+        // ----------------推定値の出力---------------------
+        likelihood_value_nomalization(); //正規化→推定値→リサンプリング
+        // 推定結果の自己位置
+        double estimate_odom_x = 0.0;
+        double estimate_odom_y = 0.0;
+        double estimate_theta  = 0.0;
+
+        // 自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
+        // 100.0にして丸め誤差の問題に対処
+        for (int i = 0; i < PARTICLE_NUM; i++)
+        {
+            double roll, pitch, yaw;
+            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
+            estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
+            estimate_theta  += particle_value[i] * yaw;
+
+        }
+
+        estimate_posi.pose.pose.position.x = estimate_odom_x;
+        estimate_posi.pose.pose.position.y = estimate_odom_y;
+        estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
+        // std::cout << "推定x " << estimate_posi.pose.pose.position.x << " 推定Y " << estimate_posi.pose.pose.position.y << std::endl;
+        // std::cout << "amcl推定値x " << amcl_pose_x << ", " << " amcl推定y " << amcl_pose_y << std::endl; 
+        // 推定した結果をcsvに出力
+        ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x << ", " << estimate_odom_y << std::endl;
+        
+
+        // ----------------リサンプリングの処理開始----------------------
+        
+        /// 重みの正規化 : particle_valueの値を正規化→ここでerror
+        //走行中だけリサンプリングを行う
+        // std::cout << "v: " << v << " " << "w: " << omega << std::endl; 
+        // 常にリサンプリングをするとこの問題が起きるかを調査する
+        // resampling(cnt);
+        if (v > 0.04 || std::fabs(omega) > 0.002)
+        {
+            
+            if (macth_count_flg == 1) //
+            {
+                printf("cnt: %d, リサンプリング中\n",cnt);
+                resampling(cnt);
+                macth_count_flg = 0;
+            }
+            else 
+            {
+                std::cout << " match_coutはゼロ" << std::endl;
+
+            }
+        }
+        else 
+        {
+            printf("cnt: %d, なにもしない\n",cnt);
+        }
+        
+
+
+        cnt++;
+        
+
+        self_localization_pub.publish(posi);
+        particle_cloud_pub.publish(particle_cloud);
+
+        // estimate_posiだけ別の名前でTFを出力する
+        
+        tf::StampedTransform transform_esti_pose;
+        transform_esti_pose.setOrigin(tf::Vector3(estimate_posi.pose.pose.position.x, estimate_posi.pose.pose.position.y, estimate_posi.pose.pose.position.z));
+        transform_esti_pose.setRotation(tf::Quaternion(estimate_posi.pose.pose.orientation.x,estimate_posi.pose.pose.orientation.y,estimate_posi.pose.pose.orientation.z,estimate_posi.pose.pose.orientation.w));
+        ROS_INFO_STREAM(estimate_posi.pose.pose.position.x);    
+        transform_esti_pose.stamp_ = ros::Time::now();
+        transform_esti_pose.frame_id_ = "map";
+        transform_esti_pose.child_frame_id_ = "dha_esti_pose";
+        broadcaster.sendTransform(transform_esti_pose);
+
+        geometry_msgs::PoseWithCovarianceStamped estimate_posi;
+        estimate_posi.header.frame_id = "dha_esti_pose";
+        esitimate_position_pub.publish(estimate_posi);
+
         rate.sleep();
+
         
     }
 

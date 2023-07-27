@@ -50,16 +50,17 @@ import	time
 import	numpy as np
 import	cv2
 import	random
+import open3d as o3d
 import	tf.transformations
 from	std_msgs.msg		import Bool, Float32MultiArray, Float64MultiArray
 from	geometry_msgs.msg	import PoseStamped, Point, Quaternion, Point32
 from	geometry_msgs.msg	import Pose2D, Twist, PoseArray, Pose
 from	geometry_msgs.msg	import TransformStamped
 from	sensor_msgs.msg		import Image, CameraInfo
-from	sensor_msgs.msg		import PointCloud
+from	sensor_msgs.msg		import PointCloud,PointCloud2,PointField
 from	cv_bridge			import CvBridge
-
-
+from std_msgs.msg import Header
+import  sensor_msgs.point_cloud2 as pc2
 ################################################################################
 #                             Grobal Definition                                #
 ################################################################################
@@ -67,7 +68,7 @@ from	cv_bridge			import CvBridge
 # HSV range(L棟廊下のパラメータ:realsense)-----------------------------------------------------------
 # H_LOW	= 0
 # H_HIGH	= 20
-# S_LOW	= 21
+# S_LOW	=  21
 # S_HIGH	= 73
 # V_LOW	= 120
 # V_HIGH	= 255
@@ -81,7 +82,9 @@ V_LOW	= 253
 V_HIGH	= 255
 # -----------------------------------------------------------------------------
 # Median filter ----------------------------------------------------------------
-MEDIAN_RGB_SIZE	= 9
+# MEDIAN_RGB_SIZE	= 9
+# MEDIAN_HSV_SIZE	= 3
+MEDIAN_RGB_SIZE	= 1
 MEDIAN_HSV_SIZE	= 3
 
 # Point Cloud Skip Num ---------------------------------------------------------
@@ -92,6 +95,8 @@ SKIP_W_NUM		= 4
 LINE_DETECTION_TIME		= 0.1				# 白線検出処理周期[s]
 IMAGE_SUB_TIME_THRE		= 0.1				# Subscribe時間遅れ許容範囲[s] LINE_DETECTION_TIME以下の値
 
+# ボクセルダウンサンプリングのパラメータ
+VOXEL_SIZE = 0.03  # ボクセルサイズを設定:何センチ？？？
 
 
 #################################################################################
@@ -117,6 +122,7 @@ class LineDetection:
 		rospy.init_node("line_detection")
 
 
+
 		# Valuables ------------------------------------------------------------
 		# openCV ----------------------------
 		self.bridge				= CvBridge()
@@ -133,7 +139,7 @@ class LineDetection:
 		self.v_high			= rospy.get_param('~v_high', V_HIGH)
 		self.hsv_low		= np.array([self.h_low, self.s_low, self.v_low], np.uint8)
 		self.hsv_high		= np.array([self.h_high, self.s_high, self.v_high], np.uint8)
-
+	
 		# Median filter size ----------------
 		self.median_rgb_size	= rospy.get_param('~median_rgb_size', MEDIAN_RGB_SIZE)
 		self.median_hsv_size	= rospy.get_param('~median_hsv_size', MEDIAN_HSV_SIZE)
@@ -165,6 +171,7 @@ class LineDetection:
 		self.front_hsv_median_image_pub			= rospy.Publisher('/front_camera/hsv_median_image', Image, queue_size=1)		# Front HSV Median Image(after RGB median)
 		self.front_hsv_median_mask_image_pub	= rospy.Publisher('/front_camera/hsv_median_mask_image', Image, queue_size=1)	# Front HSV Median Mask Image(after RGB median)
 		self.line_points_pub					= rospy.Publisher('/front_camera/line_points', PointCloud, queue_size=1)		# Line Points
+		self.line_points_downsampling_pub 		= rospy.Publisher('/front_camera/down_sample_line_points2',PointCloud2, queue_size=10)
 
 
 		# Timer func ------------------------------------------------------------
@@ -208,7 +215,7 @@ class LineDetection:
 				the_color_h		= self.front_hsv_median_mask_img.shape[0]
 				the_color_w		= self.front_hsv_median_mask_img.shape[1]
 				the_points		= PointCloud()
-				the_points.header.frame_id	= 'front_realsense_link'
+				the_points.header.frame_id	= 'dha_esti_pose'
 				for the_v in range(0, the_color_h, SKIP_H_NUM):
 					for the_u in range(0, the_color_w, SKIP_W_NUM):
 						if self.front_hsv_median_mask_img[the_v, the_u] > 250:
@@ -216,8 +223,10 @@ class LineDetection:
 							the_p.x		= (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							the_p.y		= (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							the_p.z		= 0.0
-							the_points.points.append(the_p)
-							# print(the_p)	
+							if the_p.x <= 2.0:#p.xが2.5以下だけthe_pointにappend(実機のキャリブレーション上限が2.5なので2.5までは保証されているのでは？)
+								print(the_p.x, the_p.y)
+								the_points.points.append(the_p)
+							print(the_p)	
 				print("白線点群の数",len(the_points.points))
 
 				#---------------------------------------------------------------
@@ -225,6 +234,58 @@ class LineDetection:
 				#---------------------------------------------------------------
 				# white line point publish
 				self.line_points_pub.publish(the_points)
+  				# #---------------------------------------------------------------
+				# #		ダウンサンプリング
+				# #---------------------------------------------------------------
+				# the_color_h		= self.front_hsv_median_mask_img.shape[0]
+				# the_color_w		= self.front_hsv_median_mask_img.shape[1]
+
+				# # the_points		= PointCloud()
+				# # the_points.header.frame_id	= 'beego/odom'
+				# header = Header()
+				# header.stamp = rospy.Time.now()
+				# header.frame_id = 'front_realsense_link'
+				# fields = [
+				# 	PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),
+            	# 	PointField(name="y", offset=4, datatype=PointField.FLOAT32, count=1),
+            	# 	PointField(name="z", offset=8, datatype=PointField.FLOAT32, count=1)
+        		# ]
+
+				# the_points_array = []
+				# for the_v in range(0, the_color_h, SKIP_H_NUM):
+				# 	for the_u in range(0, the_color_w, SKIP_W_NUM):
+				# 		if self.front_hsv_median_mask_img[the_v, the_u] > 250:
+				# 			x = (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
+				# 			y = (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
+				# 			z = 0.0
+				# 			the_points_array.append([x,y,z])							# the_p		= Point32()
+				# 			# the_p.x		= (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
+				# 			# the_p.y		= (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
+				# 			# the_p.z		= 0.0
+				# 			# the_points.points.append(the_p)
+				# 			# print(the_p)
+				# print(the_points_array)
+
+				# # # ダウンサンプリングする前の点群をpublish
+				# # line_msg = pc2.create_cloud_xyz32(header, the_points_array)
+				# # line_msg.fields = fields
+				# # self.line_points_pub.publish(line_msg)
+
+				# # open3dによるボクセルダウンサンプリング 
+				# pcd = o3d.geometry.PointCloud()
+				# pcd.points = o3d.utility.Vector3dVector(the_points_array)
+				# downsampled = pcd.voxel_down_sample(VOXEL_SIZE)
+				# downsampled_points = []
+				# for point in downsampled.points:
+				# 	downsampled_points.append((point[0],point[1],point[2]))
+				# 	print(point[0],point[1])
+				# downsampled_msg = pc2.create_cloud_xyz32(header, downsampled_points)
+				# downsampled_msg.fields = fields
+				# # # PointCloud2メッセージを作成
+				# # # cloud_msg = pc2.create_cloud_xyz32(header, the_points_array)
+				# # # cloud_msg.fields = fields
+				# # # print("cloud_msg:",type(cloud_msg))
+				# self.line_points_downsampling_pub.publish(downsampled_msg)
 
 				# hsv median mask image
 				the_hsv_median_mask_msg	= self.bridge.cv2_to_imgmsg(self.front_hsv_median_mask_img, encoding="mono8")
