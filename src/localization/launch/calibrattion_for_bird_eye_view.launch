@@ -1,0 +1,30 @@
+<launch>
+    // launch realsense 起動
+    <include file="$(find line_detection)/launch/donkey_front_realsense_eco.launch"/>
+
+    <!-- line_detection -->
+	<node pkg="line_detection" type="line_detection_opencv5_homography_timer.py" name="line_detection" output="screen"/>
+    
+    // launch line_detection to pointcloud2 -----------------------------------------------------
+    <!-- <node pkg="line_detection" type="rgbdxyz_check.cpp" name="pointcloud_hsv_filter" output="screen"/> -->
+    <!-- <node pkg="line_detection" type="line_detection_opencv5_homography_timer.py" name="line_detection" output="screen"/> -->
+    // launch white lane publisher 
+	<!-- <node pkg="particlefilter_simulation_basic" type="rectangle_marker_node" name="rectangle_marker_node"/> -->
+
+
+
+
+
+
+	// display with rviz ---------------------------------------------------------
+	<node pkg="rviz" type="rviz" name="rviz"/>
+
+	<!-- line detection bird's eyes -->
+
+</launch>
+<!-- realsenseの起動 -->
+
+<!-- line_detection 白線点群のpublish -->
+
+<!-- 地図のpublisher -->
+<!-- rviz -->

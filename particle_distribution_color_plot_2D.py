@@ -17,7 +17,9 @@ except ValueError:
     
 
 # CSVファイルのパス
-csv_file_path = f"/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_distance/particle_coodinate_distribution_time_stamp_gazebo_down_sample_distance{param_value}.csv"
+# csv_file_path = f"/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_distance/particle_coodinate_distribution_time_stamp_gazebo_down_sample_distance{param_value}.csv"
+csv_file_path = f"/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_distance/20230826_boxel_nasi_{param_value}_0.0_0.0.csv"
+
 # /home/hirayama-d/research_ws/src/particlefilter_simulation_basic/particle_coodinate_distribution_time_stamp_gazebo_down_sample_8.1.csv
 # CSVファイルを読み込んでリストに格納
 data = []
@@ -31,7 +33,7 @@ data_np = np.array(data[:400],dtype=float)
 
 x = data_np[:,1]
 y = data_np[:,2]
-value = data_np[:,4]
+value = data_np[:,4]*400
 print(type(x[0]),type(y),type(value))
 
 # 3Dグラフの作成
@@ -39,7 +41,7 @@ print(type(x[0]),type(y),type(value))
 fig, ax = plt.subplots()
 
 # x, y, valueのデータを散布図としてプロット
-scatter = ax.scatter(y, x, c=value ,s=100,vmin=0.0, vmax=0.0015,cmap='viridis')  # cにvalueを指定して、カラーマップをviridisに設定
+scatter = ax.scatter(y, x, c=value ,s=100,vmin=0.0, vmax=0.6,cmap='viridis')  # cにvalueを指定して、カラーマップをviridisに設定
 # vmax=0.0015,
 # カラーバーの追加
 cbar = plt.colorbar(scatter)

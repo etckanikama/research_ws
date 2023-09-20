@@ -2,27 +2,29 @@
 <launch>
   <arg name="beego" default="true"/>
   <arg name="rviz" default="true"/>
-  
   <!--beego無しのマップを保存してあるので、このあとにworldは保存しないようにする  -->
   <!-- 事前に保存済みの画像を貼り付けたworldを開く（sb_map.world) -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find sim)/worlds/sb_map.world"/>
+    <!-- <arg name="world_name" value="$(find sim)/worlds/sb_map.world"/> -->
     <!-- <arg name="world_name" value="$(find sim)/worlds/long_white_lane_map.world"/>  -->
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
     <arg name="headless" value="false"/>
-    <arg name="debug" value="false"/> -->
+    <arg name="debug" value="false"/>
   </include>
 
-  <arg name="initial_x" default="0.0"/>
+  <arg name="initial_x" default="10.7"/>
+  <arg name="initial_y" default="3.0"/>
+  <arg name="initial_yaw" default="-1.57"/>
   <include file="$(find sim)/launch/beego.launch">
     <arg name="x" default= "$(arg initial_x)" />
-    <arg name="y" value="0.0"/>
+    <arg name="y" default= "$(arg initial_y)"/>
     <arg name="z" value="0.0"/>
     <arg name="R" value="0.0"/>
     <arg name="P" value="0.0"/>
-    <arg name="Y" value="0.0"/>
+    <arg name="Y" default= "$(arg initial_yaw)"/>
     <arg name="ns" default="beego"/>
     <arg name="rviz" default="true"/>
   </include>

@@ -1,0 +1,6 @@
+<launch>
+  <!-- ノードの実行 -->
+  <node pkg="line_detection" type="polygon_publisher" name="polygon_publisher">
+    <param name="param_file" type="string" value="$(find line_detection)/config/polygon_params.csv"/>
+  </node>
+</launch>

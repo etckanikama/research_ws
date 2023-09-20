@@ -1,0 +1,10 @@
+material sb_map_new {
+  technique {
+    pass {
+      texture_unit {
+        texture sb_map_new.png
+        scale 1 1
+      }
+    }
+  }
+}

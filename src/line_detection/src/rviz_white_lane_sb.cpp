@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     
     visualization_msgs::Marker m1;
     // m1.header.frame_id = "map";
-    m1.header.frame_id = "beego/odom";
+    m1.header.frame_id = "map";
     m1.header.stamp = ros::Time::now();
     m1.ns = "basic_shapes";
     m1.id = 0;
@@ -48,13 +48,13 @@ int main(int argc, char** argv)
     m1.pose.orientation.y = 0;
     m1.pose.orientation.z = 0;
     m1.pose.orientation.w = 1;
-    m1.color.r = 0.0f;
-    m1.color.g = 1.0f;
+    m1.color.r = 1.0f;
+    m1.color.g = 0.0f;
     m1.color.b = 0.0f;
-    m1.color.a = 1.0f;
+    m1.color.a = 0.5f;
     
     visualization_msgs::Marker m2;
-    m2.header.frame_id = "beego/odom";
+    m2.header.frame_id = "map";
     m2.header.stamp = ros::Time::now();
     m2.ns = "basic_shapes";
     m2.id = 0;
@@ -73,14 +73,14 @@ int main(int argc, char** argv)
     m2.pose.orientation.y = 0;
     m2.pose.orientation.z = 0;
     m2.pose.orientation.w = 1;
-    m2.color.r = 0.0f;
-    m2.color.g = 1.0f;
+    m2.color.r = 1.0f;
+    m2.color.g = 0.0f;
     m2.color.b = 0.0f;
-    m2.color.a = 1.0f;
+    m2.color.a = 0.5f;
 
 
     visualization_msgs::Marker m3;
-    m3.header.frame_id = "beego/odom";
+    m3.header.frame_id = "map";
     m3.header.stamp = ros::Time::now();
     m3.ns = "basic_shapes";
     m3.id = 0;
@@ -99,13 +99,13 @@ int main(int argc, char** argv)
     m3.pose.orientation.y = 0;
     m3.pose.orientation.z = 0;
     m3.pose.orientation.w = 1;
-    m3.color.r = 0.0f;
-    m3.color.g = 1.0f;
+    m3.color.r = 1.0f;
+    m3.color.g = 0.0f;
     m3.color.b = 0.0f;
-    m3.color.a = 1.0f;
+    m3.color.a = 0.5f;
 
     visualization_msgs::Marker m4;
-    m4.header.frame_id = "beego/odom";
+    m4.header.frame_id = "map";
     m4.header.stamp = ros::Time::now();
     m4.ns = "basic_shapes";
     m4.id = 0;
@@ -124,13 +124,13 @@ int main(int argc, char** argv)
     m4.pose.orientation.y = 0;
     m4.pose.orientation.z = 0;
     m4.pose.orientation.w = 1;
-    m4.color.r = 0.0f;
-    m4.color.g = 1.0f;
+    m4.color.r = 1.0f;
+    m4.color.g = 0.0f;
     m4.color.b = 0.0f;
-    m4.color.a = 1.0f;
+    m4.color.a = 0.5f;
 
     visualization_msgs::Marker m5;
-    m5.header.frame_id = "beego/odom";
+    m5.header.frame_id = "map";
     m5.header.stamp = ros::Time::now();
     m5.ns = "basic_shapes";
     m5.id = 0;
@@ -149,13 +149,13 @@ int main(int argc, char** argv)
     m5.pose.orientation.y = 0;
     m5.pose.orientation.z = 0;
     m5.pose.orientation.w = 1;
-    m5.color.r = 0.0f;
-    m5.color.g = 1.0f;
+    m5.color.r = 1.0f;
+    m5.color.g = 0.0f;
     m5.color.b = 0.0f;
-    m5.color.a = 1.0f;
+    m5.color.a = 0.5f;
 
     visualization_msgs::Marker m6;
-    m6.header.frame_id = "beego/odom";
+    m6.header.frame_id = "map";
     m6.header.stamp = ros::Time::now();
     m6.ns = "basic_shapes";
     m6.id = 0;
@@ -174,13 +174,13 @@ int main(int argc, char** argv)
     m6.pose.orientation.y = 0;
     m6.pose.orientation.z = 0;
     m6.pose.orientation.w = 1;
-    m6.color.r = 0.0f;
-    m6.color.g = 1.0f;
+    m6.color.r = 1.0f;
+    m6.color.g = 0.0f;
     m6.color.b = 0.0f;
-    m6.color.a = 1.0f;
+    m6.color.a = 0.5f;
 
     visualization_msgs::Marker m7;
-    m7.header.frame_id = "beego/odom";
+    m7.header.frame_id = "map";
     m7.header.stamp = ros::Time::now();
     m7.ns = "basic_shapes";
     m7.id = 0;
@@ -199,13 +199,13 @@ int main(int argc, char** argv)
     m7.pose.orientation.y = 0;
     m7.pose.orientation.z = 0;
     m7.pose.orientation.w = 1;
-    m7.color.r = 0.0f;
-    m7.color.g = 1.0f;
+    m7.color.r = 1.0f;
+    m7.color.g = 0.0f;
     m7.color.b = 0.0f;
-    m7.color.a = 1.0f;
+    m7.color.a = 0.5f;
 
     visualization_msgs::Marker m8;
-    m8.header.frame_id = "beego/odom";
+    m8.header.frame_id = "map";
     m8.header.stamp = ros::Time::now();
     m8.ns = "basic_shapes";
     m8.id = 0;
@@ -224,14 +224,14 @@ int main(int argc, char** argv)
     m8.pose.orientation.y = 0;
     m8.pose.orientation.z = 0;
     m8.pose.orientation.w = 1;
-    m8.color.r = 0.0f;
-    m8.color.g = 1.0f;
+    m8.color.r = 1.0f;
+    m8.color.g = 0.0f;
     m8.color.b = 0.0f;
-    m8.color.a = 1.0f;
+    m8.color.a = 0.5f;
 
 
     visualization_msgs::Marker m9;
-    m9.header.frame_id = "beego/odom";
+    m9.header.frame_id = "map";
     m9.header.stamp = ros::Time::now();
     m9.ns = "basic_shapes";
     m9.id = 0;
@@ -250,13 +250,13 @@ int main(int argc, char** argv)
     m9.pose.orientation.y = 0;
     m9.pose.orientation.z = 0;
     m9.pose.orientation.w = 1;
-    m9.color.r = 0.0f;
-    m9.color.g = 1.0f;
+    m9.color.r = 1.0f;
+    m9.color.g = 0.0f;
     m9.color.b = 0.0f;
-    m9.color.a = 1.0f;
+    m9.color.a = 0.5f;
 
     visualization_msgs::Marker m10;
-    m10.header.frame_id = "beego/odom";
+    m10.header.frame_id = "map";
     m10.header.stamp = ros::Time::now();
     m10.ns = "basic_shapes";
     m10.id = 0;
@@ -275,10 +275,10 @@ int main(int argc, char** argv)
     m10.pose.orientation.y = 0;
     m10.pose.orientation.z = 0;
     m10.pose.orientation.w = 1;
-    m10.color.r = 0.0f;
-    m10.color.g = 1.0f;
+    m10.color.r = 1.0f;
+    m10.color.g = 0.0f;
     m10.color.b = 0.0f;
-    m10.color.a = 1.0f;
+    m10.color.a = 0.5f;
     // visualization_msgs::Marker robot_maker;
     // robot_maker.header.frame_id = "map";
     // robot_maker.header.stamp = ros::Time::now();

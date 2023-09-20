@@ -92,7 +92,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>12.63 6.62 0.01</size>
+              <size>12.63 6.62 0.001</size>
             </box>
           </geometry>
           <material>
@@ -111,7 +111,7 @@
     <model name='pole_1'>
       <static>1</static>
       <link name='link_2'>
-        <pose>0.55 -0.23 0 0 -0 0</pose>
+        <pose>0.5 -0.15 0 0 -0 0</pose>
         <inertial>
           <mass>1</mass>
           <inertia>
@@ -160,7 +160,7 @@
     <model name='pole_2'>
       <static>1</static>
       <link name='link_3'>
-        <pose>0.55 0.24 0 0 -0 0</pose>
+        <pose>0.5 0.22 0 0 -0 0</pose>
         <inertial>
           <mass>1</mass>
           <inertia>
@@ -209,7 +209,7 @@
     <model name='pole_3'>
       <static>1</static>
       <link name='link_4'>
-        <pose>3.35 1.97 0 0 -0 0</pose>
+        <pose>1.9 1.1 0 0 -0 0</pose>
         <inertial>
           <mass>1</mass>
           <inertia>
@@ -258,7 +258,7 @@
     <model name='pole_4'>
       <static>1</static>
       <link name='link_5'>
-        <pose>3.35 -1.97 0 0 -0 0</pose>
+        <pose>1.9 -1.1 0 0 -0 0</pose>
         <inertial>
           <mass>1</mass>
           <inertia>
@@ -323,7 +323,7 @@
         <pose>0 0 0 0 0 -0.000841</pose>
         <scale>1 1 1</scale>
         <link name='link_2'>
-          <pose>0.549806 -0.230462 0 0 0 -0.000841</pose>
+          <pose>0.52 -0.21 0 0 0 -0.000841</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -333,7 +333,7 @@
         <pose>0 0 0 0 0 -0.000841</pose>
         <scale>1 1 1</scale>
         <link name='link_3'>
-          <pose>0.550202 0.239537 0 0 0 -0.000841</pose>
+          <pose>0.52 0.18 0 0 0 -0.000841</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -343,7 +343,7 @@
         <pose>0 0 0 0 0 -0.000841</pose>
         <scale>1 1 1</scale>
         <link name='link_4'>
-          <pose>3.35166 1.96718 0 0 0 -0.000841</pose>
+          <pose>9.97 6.2 0 0 0 -0.000841</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -353,7 +353,7 @@
         <pose>0 0 0 0 0 -0.000841</pose>
         <scale>1 1 1</scale>
         <link name='link_5'>
-          <pose>3.34834 -1.97282 0 0 0 -0.000841</pose>
+          <pose>9.97 -6.2 0 0 0 -0.000841</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -363,7 +363,7 @@
         <pose>6.315 -0.31 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>6.315 -0.31 0 0 -0 0</pose>
+          <pose>6.315 -0.32 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>

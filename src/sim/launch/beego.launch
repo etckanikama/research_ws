@@ -10,7 +10,7 @@
   <arg name="rviz" default="true"/>
 
   <group ns="$(arg ns)">
-    <param name="robot_description" command="$(find xacro)/xacro $(find sim)/urdf/beego.urdf"/>
+    <param name="robot_description" command="$(find xacro)/xacro $(find sim)/urdf/beego.urdf.xacro"/>
     <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model $(arg ns) -param robot_description -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)" />
   </group>
   
@@ -19,7 +19,7 @@
   </include>
 
   <group if="$(arg rviz)">
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim)/rviz/beego.rviz"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim)/rviz/realsense_beego.rviz"/>
   </group>
 
 </launch>

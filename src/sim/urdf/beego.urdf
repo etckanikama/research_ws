@@ -71,7 +71,7 @@
     </inertial>
   </link>
 
-  <joint name="right_wheel_joint" type="continuous">
+  <joint name="right_wheel_joint" type="fixed">
     <origin xyz="0.02225 -0.1308 -0.01" rpy="${-M_PI/2} 0 0"/>
     <parent link="base_link"/>
     <child link="right_wheel_link"/>
@@ -107,7 +107,7 @@
     </inertial>
   </link>
 
-  <joint name="left_wheel_joint" type="continuous">
+  <joint name="left_wheel_joint" type="fixed">
     <origin xyz="0.02225 0.1308 -0.01" rpy="${M_PI/2} 0 0"/>
     <parent link="base_link"/>
     <child link="left_wheel_link"/>
@@ -286,38 +286,31 @@
 
   <gazebo reference="base_link">
     <selfCollide>true</selfCollide>
-    <mu1 value="0.05"/>
-    <mu2 value="0.05"/>
+    <mu1 value="0.0"/>
+    <mu2 value="0.0"/>
   </gazebo>
 
   <gazebo reference="left_wheel_link">
     <selfCollide>true</selfCollide>
-    <mu1 value="1.0"/>
-    <mu2 value="1.0"/>
+    <mu1 value="0.0"/>
+    <mu2 value="0.0"/>
     <!--<kp value="10000000.0"/>
     <kd value="1.0"/>-->
   </gazebo>
 
   <gazebo reference="right_wheel_link">
     <selfCollide>true</selfCollide>
-    <mu1 value="1.0"/>
-    <mu2 value="1.0"/>
+    <mu1 value="0.0"/>
+    <mu2 value="0.0"/>
     <!--<kp value="10000000.0"/>
     <kd value="1.0"/>-->
   </gazebo>
 
   <gazebo reference="caster_link">
     <selfCollide>true</selfCollide>
-    <mu1 value="0.1"/>
-    <mu2 value="0.1"/>
+    <mu1 value="0.0"/>
+    <mu2 value="0.0"/>
   </gazebo>
-
-  <!-- <xacro:arg name="use_nominal_extrinsics" default="false" />
-  <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
-
-  <xacro:sensor_d435i parent="camera_link" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </xacro:sensor_d435i> -->
 
 <gazebo reference="camera_link">
 		<sensor type="camera" name="camera1">
@@ -352,7 +345,7 @@
 				<distortionT2>0.0</distortionT2>
 			</plugin>
 		</sensor>
-	</gazebo>
+	</gazebo> -->
 
   
 </robot>

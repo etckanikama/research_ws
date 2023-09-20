@@ -17,7 +17,7 @@
 					/front_realsense/color/camera_info 
 					/front_realsense/color/image_raw
 					/head_camera/camera_info
-					/head_camera/image_raw
+					/head_camera/image_raw	
 					/joy
 					/odom
 					/cmd_vel

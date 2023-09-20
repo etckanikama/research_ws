@@ -51,7 +51,7 @@ LINE_DETECTION_TIME		= 0.1				# 白線検出処理周期[s]
 IMAGE_SUB_TIME_THRE		= 0.1				# Subscribe時間遅れ許容範囲[s] LINE_DETECTION_TIME以下の値
 
 # ボクセルダウンサンプリングのパラメータ
-VOXEL_SIZE = 0.03  # ボクセルサイズを設定:何センチ？？？
+VOXEL_SIZE = 0.001  # ボクセルサイズを設定:何センチ？？？
 
 
 #################################################################################
@@ -105,15 +105,27 @@ class LineDetection:
         # Homograpy 行列の作成：俯角：0.5rad(28.64deg)---------------
 		# cv_points		= np.array([(44.0, 18.0), (603.0, 19.0), (634.0, 338.0), (6.0, 336.0)], dtype=np.float32)
 		# ros_points		= np.array([(4.3, 2.3), (4.3, -2.3), (0.58, -0.24), (0.58, 0.25)], dtype=np.float32)
-		cv_points		= np.array([(6.0, 7.0), (638.0, 7.0), (640.0, 349.0), (3.0, 346.0)], dtype=np.float32)
-		ros_points		= np.array([(3.35, 1.97), (3.35, -1.97), (0.55, -0.23), (0.55, 0.24)], dtype=np.float32)
+		# cv_points		= np.array([(6.0, 7.0), (638.0, 7.0), (640.0, 349.0), (3.0, 346.0)], dtype=np.float32)
+		# ros_points		= np.array([(3.35, 1.97), (3.35, -1.97), (0.55, -0.23), (0.55, 0.24)], dtype=np.float32)
+		# # Homograpy 行列の作成：俯角：0.418879rad(24deg)---------------＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
+		# # cv_points		= np.array([(5.0, 2.0), (637.0, 5.0),(5.0, 358.0), (637.0, 358.0)], dtype=np.float32)
+		# cv_points		= np.array([(0.0, 0.0), (640.0, 0.0),(640.0, 360.0),(0.0, 360.0)], dtype=np.float32)
+		# ros_points	= np.array([(4.65, 2.8), (4.65, -2.7), (0.51, -0.21),(0.51, 0.19)], dtype=np.float32)
+		# # Homograpy 行列の作成：俯角：0.3926991rad(22.5deg)---------------＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
+		cv_points		= np.array([(0.0, 0.0), (640.0, 0.0),(640.0, 360.0),(0.0, 360.0)], dtype=np.float32)
+		# cv_points		= np.array([(0.0, 0.0), (1280.0, 0.0),(1280.0, 720.0),(0.0, 720.0)], dtype=np.float32)
+		# ros_points	= np.array([(9.97, 6.2), (9.97, -6.2), (0.52, -0.21),(0.52, 0.18)], dtype=np.float32)
+		ros_points	= np.array([(10.5, 6.5), (10.5, -6.2), (0.52, -0.21),(0.52, 0.2)], dtype=np.float32)
 		self.H		= cv2.getPerspectiveTransform(cv_points, ros_points)
+		# ＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿￥
+		# 俯角：23deg
 		print("H= ", self.H)
 
 
 		# Subscriber -----------------------------------------------------------
 		#シミュレーションのカメラ
-		self.image_sub = rospy.Subscriber("/beego/my_robo/camera1/image_raw", Image, self.subFrontRGBImage, queue_size=1)
+		# self.image_sub = rospy.Subscriber("/beego/my_robo/camera1/image_raw", Image, self.subFrontRGBImage, queue_size=1)
+		self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.subFrontRGBImage, queue_size=1)
 
 
 		# Publisher ------------------------------------------------------------
@@ -123,7 +135,7 @@ class LineDetection:
 		# self.front_hsv_median_image_pub			= rospy.Publisher('/front_camera/hsv_median_image', Image, queue_size=1)		# Front HSV Median Image(after RGB median)
 		self.front_hsv_median_mask_image_pub	= rospy.Publisher('/front_camera/hsv_median_mask_image', Image, queue_size=1)	# Front HSV Median Mask Image(after RGB median)
 		self.line_points_pub					= rospy.Publisher('/front_camera/line_points_1', PointCloud2, queue_size=1)		# Line Points
-		self.line_points_downsampling_pub = rospy.Publisher('/front_camera/down_sample_line_points2',PointCloud2, queue_size=10)
+		self.line_points_downsampling_pub       = rospy.Publisher('/front_camera/down_sample_line_points2',PointCloud2, queue_size=10)
 		# self.line_points_downsampling_pub = rospy.Publisher('/front_camera/line_points2',PointCloud2, queue_size=10)
 
 		# ---------------------------------------------------------
@@ -173,7 +185,8 @@ class LineDetection:
 				# the_points.header.frame_id	= 'beego/odom'
 				header = Header()
 				header.stamp = rospy.Time.now()
-				header.frame_id = "beego/odom"
+				header.frame_id = "fixed_paritcle_posi"
+				# header.frame_id	= 'beego/odom'
 				fields = [
 					PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),
             		PointField(name="y", offset=4, datatype=PointField.FLOAT32, count=1),
@@ -187,7 +200,8 @@ class LineDetection:
 							x = (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							y = (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							z = 0.0
-							the_points_array.append([x,y,z])							# the_p		= Point32()
+							if x <= 2.0:
+								the_points_array.append([x,y,z])							# the_p		= Point32()
 							# the_p.x		= (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							# the_p.y		= (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							# the_p.z		= 0.0
@@ -207,6 +221,8 @@ class LineDetection:
 				for point in downsampled.points:
 					downsampled_points.append((point[0],point[1],point[2]))
 					# print(point[0],point[1])
+				# print("x:{0}, y{1}".format(downsampled_points[0],downsampled_points[0]))
+				# print(downsampled_points)
 				downsampled_msg = pc2.create_cloud_xyz32(header, downsampled_points)
 				downsampled_msg.fields = fields
 				# PointCloud2メッセージを作成

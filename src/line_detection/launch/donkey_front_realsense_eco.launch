@@ -70,7 +70,7 @@
 	<arg name="enable_gyro"			default="true"/>
 	<arg name="enable_accel"		default="true"/>
 
-	<arg name="enable_pointcloud"	default="false"/>
+	<arg name="enable_pointcloud"	default="true"/>
 	<arg name="enable_sync"			default="true"/>
 	<arg name="align_depth"			default="true"/>
 

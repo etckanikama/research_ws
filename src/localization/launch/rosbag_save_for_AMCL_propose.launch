@@ -1,0 +1,45 @@
+<launch>
+    <!-- 提案手法&amclのでーたを取るlaunchファイル -->
+    <!-- coodinator -->
+    <!-- bridgeの起動 -->
+    <node pkg="joy" type="joy_node" name="joy_node" output="screen"/>
+    <node name="joy_controller" pkg="joy_controller" type="joy_controller"/>
+    <!-- realsense を起動するlaunchを起動するノード -->
+    <include file="$(find line_detection)/launch/donkey_front_realsense_eco.launch"/>
+    <!-- lidarを起動するnode -->
+    <!-- static_TF -->
+    <node name="urg_node" pkg="urg_node" type="urg_node">
+        <param name="ip_address" value=""/>
+        <param name="serial_port" value="/dev/ttyACM0"/>
+        <param name="serial_baud" value="115200"/>
+        <param name="frame_id" value="laser"/>
+        <param name="calibrate_time" value="true"/>
+        <param name="publish_intensity" value="false"/>
+        <param name="publish_multiecho" value="false"/>
+        <param name="angle_min" value="-1.5707963"/>
+        <param name="angle_max" value="1.5707963"/>
+    </node>
+   
+    <!-- static_TH : base_linkとlasaer -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="laser_to_base_link_broadcaster" args="0.216 0 0 0 0 0 1 base_link laser"/>
+
+
+
+    <arg name="file_name"	default="doryaaaaaa.bag"/>
+	<arg name="dir_name"	default="/home/hirayama-d/research_ws/bag/"/>
+	<node pkg="rosbag" name="my_bag" type="record" output="screen" 
+			args="-o $(arg dir_name)
+                    /front_realsense/aligned_depth_to_color/camera_info
+                    /front_realsense/aligned_depth_to_color/image_raw 
+                    /front_realsense/color/camera_info 
+					/front_realsense/color/image_raw
+                    /cmd_vel
+                    /odom
+                    /scan
+                    /joy
+					/tf
+					/tf_static"/>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find localization)/rviz/rosbag_save_sb10.rviz" />
+
+</launch>
