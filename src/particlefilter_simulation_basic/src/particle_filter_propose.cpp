@@ -55,23 +55,12 @@ double robot_y = 0.0;
 std::random_device seed;
 std::mt19937 engine(seed());  
 
-// // パーティクルに付与するノイズ:kiiro_02, ao_02, ao_01
-// double sigma_v_v = 0.02;  // 直進1mで生じる距離の標準偏差
-// double sigma_omega_v = 0.01; // 回転1radで生じる距離の誤差
-// double sigma_v_omega = 0.05;  //直進1mで生じる回転の誤差
-// double sigma_omega_omega = 0.3;   //回転1radで生じる回転の誤差
-
-// パーティクルに付与するノイズ:kiiro_01.bag用
-// double sigma_v_v = 0.1;  // 直進1mで生じる距離の標準偏差
-// double sigma_omega_v = 0.05; // 回転1radで生じる距離の誤差
-// double sigma_v_omega = 0.055;  //直進1mで生じる回転の誤差
-// double sigma_omega_omega = 0.3;   //回転1radで生じる回転の誤差
 
 // パーティクルに付与するノイズ:元のやつ
 double sigma_v_v = 0.03;  // 直進1mで生じる距離の標準偏差0.03
-double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差
-double sigma_v_omega = 0.05;  //直進1mで生じる回転の誤差
-double sigma_omega_omega = 0.1;   //回転1radで生じる回転の誤差0.1
+double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差0.001
+double sigma_v_omega = 0.5;  //直進1mで生じる回転の誤差0.05
+double sigma_omega_omega = 0.5;   //回転1radで生じる回転の誤差0.1
 std::normal_distribution<> dist_v_v(0.0, sigma_v_v);
 std::normal_distribution<> dist_omega_v(0.0, sigma_omega_v);
 std::normal_distribution<> dist_v_omega(0.0, sigma_v_omega);
@@ -99,23 +88,6 @@ double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545},{9.05, 9.1
 
 int flg = 0;
 
-// particle_valeを別の配列にウツす関数
-// void convertAndPublish(const std::vector<double>& input_data, ros::Publisher& pub) {
-//     std_msgs::Float32MultiArray output_data;
-
-//     // Resize the output array to match the size of the input data
-//     output_data.data.resize(input_data.size());
-
-//     // Convert and copy the data
-//     for (size_t i = 0; i < input_data.size(); ++i) {
-        
-//         output_data.data[i] = static_cast<float>(input_data[i]);
-//         std::cout << "output_data " << output_data.data[i] << std::endl;
-//     }
-
-//     // Publish the data
-//     pub.publish(output_data);
-// }
 
 
 // roll, pitch, yawからクォータニオンにする関数
@@ -151,11 +123,7 @@ void velCallback(const nav_msgs::Odometry::ConstPtr &msg)
     robot_y = msg->pose.pose.position.y;
 }
 
-// // 白線点群を受け取る
-// void line_point_cb(const sensor_msgs::PointCloud::ConstPtr &msg)
-// {
-//     line_posi.points = msg->points;
-// }
+
 
 // ダウンサンプリングした後の点群を読み込む
 // ボクセルダウンサンプリングをしたあとの点群を読み込む
@@ -201,6 +169,7 @@ void likelihood_value_nomalization()
 void resampling(int cnt)
 {
 
+
     double rand_width = 1.0 / double(PARTICLE_NUM); // 乱数幅 : 1じゃなくて、806重みの和
     std::uniform_real_distribution<float> distr(0, rand_width); // 0~rand_widthの範囲で当確率で発生する
     double rand = distr(engine); // 積み上げ乱数
@@ -224,22 +193,6 @@ void resampling(int cnt)
     // 系統リサンプリングの処理開始
     while (n_after < PARTICLE_NUM)
     {
-        //デバッグ用 
-        // std::cout << "処理のまえ　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
-        // if (n_before > PARTICLE_NUM -5)
-        // {
-        //     std::cout << "超えそう" << n_before << "/" << PARTICLE_NUM <<  std::endl;
-        // }
-        // if (n_before > PARTICLE_NUM)
-        // {
-        //     std::cout << "n_beforeがパーティクル数を超えた" << n_before << "/" << PARTICLE_NUM <<  std::endl;
-        // }
-        // if (n_after > PARTICLE_NUM)
-        // {
-        //     std::cout << "n_afterがパーティクル数を超えた" << n_after <<  std::endl;
-        // }
-        // std::cout </< "n_before " << n_before << "n_after " << n_after << std::endl; 
-
 
         if (rand > w_sum) //乱数が重みより大きければ重みを積む
         {
@@ -258,7 +211,6 @@ void resampling(int cnt)
         // std::cout << "処理のあと　" << "積み上げ乱数 " << rand << " " << "w_sum " << w_sum << " " << "一つ一つの重み " << particle_value[n_before] << " " <<"n_after " << n_after << " " << "n_before " << n_before << std::endl;
 
     }
-
 
     // 元のパーティクルに代入
     for (int i=0; i < PARTICLE_NUM; i++)
@@ -285,17 +237,9 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     
-    // midori_01
-    // double init_x = 0.0, init_y = -1.1, init_yaw = 0.0;
-    
     //kiiro_01,kiiro_02, ao_01, ao_02
     double init_x = 0.0, init_y = 0.0, init_yaw = 0.0;// rosbagの初期値にしたがって変更
-    
-    //kiiro_re_01
-    // double init_x = 10.75, init_y = 3.03, init_yaw = -1.57;
 
-    //ao_re_01, ao_re_02
-    // double init_x = 12.0, init_y = 1.325, init_yaw = -3.0;
 
     // Publisher
     ros::Publisher self_localization_pub = nh.advertise<nav_msgs::Odometry>("self_position", 10); // robotにモータに指令値を送るpublisherの宣言。
@@ -347,12 +291,10 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         time_stamp += DT; // dtで時間を積算
-        for (int i = 0; i < PARTICLE_NUM; i++) //パーティクルにゴミを足し合わせる
+        for (int i = 0; i < PARTICLE_NUM; i++) 
         {
-            if (particle_value[i] == 0.0) std::cout << "これでもゼロになった！！" << std::endl;
+            if (particle_value[i] == 0.0) std::cout << "これでもゼロになった" << std::endl;
         }
-        // 尤度の色付き可視化用
-        // convertAndPublish(particle_value, weights_pub);
 
 
 
@@ -380,7 +322,6 @@ int main(int argc, char **argv)
         
         if (downsampled_cloud.points.size() > 0) 
         {
-            // global_white_lane_points.resize(downsampled_cloud.points.size());
             // 尤度計算
             double line_vertical_small = 0;
             double line_vertical_big   = 0;
@@ -428,30 +369,53 @@ int main(int argc, char **argv)
                         if (line_vertical_small < line_glx && line_glx < line_vertical_big && line_side_small < line_gly && line_gly < line_side_big)
                         {
                             match_count++;
+                            break;
                         }
+
                     }
+                }
+                // std::cout << "全点群数  : " << downsampled_cloud.points.size() << "  マッチカウント数  : " << match_count << std::endl;
+                if (match_count > downsampled_cloud.points.size())
+                {
+                    std::cout << "超えた！！！！！！！！！！！！！！！！！！！！！！！！！" << std::endl;
                 }
                 // 尤度の計算方法を確率
                 likelihood_value = (1 - likely_coeff) * (double(match_count) / double(downsampled_cloud.points.size())) + likely_coeff; //尤度に微小数を追加
                 particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+
+                
+                
 
 
                 if (match_count != 0)
                 {
                     macth_count_flg = 1;
                 }
-                if (match_count == 0)
-                {
-                    std::cout << "match_count数には何も含まれていない" << std::endl; 
-                }
 
-            }
-
-            
+            }          
         }
 
 
         // ----------------推定値の出力：正規化→推定値→リサンプリング---------------------
+
+        double max_value_p = particle_value[0];
+        int max_value_index_p = 0;
+        for (int i = 0; i < PARTICLE_NUM; i++)
+        {
+
+            if (max_value_p < particle_value[i])
+            {
+                max_value_p = particle_value[i];
+                max_value_index_p = i;
+            }
+
+            // estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
+            // estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
+            // estimate_theta  += particle_value[i] * yaw;
+        }
+        std::cout << "max 尤度 " << particle_value[max_value_index_p]*500 << std::endl;
+
+
         likelihood_value_nomalization(); //正規化
 
         // 推定結果の自己位置
@@ -489,6 +453,8 @@ int main(int argc, char **argv)
             // estimate_theta  += particle_value[i] * yaw;
         }
 
+
+
         double roll, pitch, yaw;
         geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[max_value_index].orientation); //yaw角に変換
         estimate_odom_x =   particle_cloud.poses[max_value_index].position.x;
@@ -498,6 +464,8 @@ int main(int argc, char **argv)
         estimate_posi.pose.pose.position.x = estimate_odom_x;
         estimate_posi.pose.pose.position.y = estimate_odom_y;
         estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
+
+        ROS_INFO("v: %f, omega:%f",v, omega);
 
 
         // ----------------リサンプリングの処理開始----------------------

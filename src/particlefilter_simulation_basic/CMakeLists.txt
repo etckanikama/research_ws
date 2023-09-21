@@ -38,6 +38,7 @@ add_executable(resample_test.cpp src/resample_test.cpp)
 add_executable(global_white_line_publisher.cpp src/global_white_line_publisher.cpp)
 add_executable(rectangle_marker_node src/white_lane_publisher_for_real.cpp)
 add_executable(visualize_likeliyfood.cpp src/visualize_likeliyfood.cpp)
+add_executable(particle_filter_propose_aisin_for_rsj.cpp src/particle_filter_propose_aisin_for_rsj.cpp)
 
 
 target_link_libraries(${PROJECT_NAME}
@@ -53,4 +54,5 @@ target_link_libraries(resample_test.cpp  ${catkin_LIBRARIES})
 target_link_libraries(global_white_line_publisher.cpp  ${catkin_LIBRARIES})
 target_link_libraries(rectangle_marker_node  ${catkin_LIBRARIES})
 target_link_libraries(visualize_likeliyfood.cpp  ${catkin_LIBRARIES})
+target_link_libraries(particle_filter_propose_aisin_for_rsj.cpp ${catkin_LIBRARIES})
 
