@@ -261,7 +261,8 @@ class LineDetection:
 				the_color_h		= self.front_hsv_median_mask_img.shape[0]
 				the_color_w		= self.front_hsv_median_mask_img.shape[1]
 				the_points		= PointCloud()
-				the_points.header.frame_id	= 'front_realsense_link'
+				# the_points.header.frame_id	= 'front_realsense_link'
+				the_points.header.frame_id	= 'dha_esti_pose'
 				for the_v in range(0, the_color_h, SKIP_H_NUM):
 					for the_u in range(0, the_color_w, SKIP_W_NUM):
 						if self.front_hsv_median_mask_img[the_v, the_u] > 250:

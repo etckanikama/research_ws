@@ -18,8 +18,8 @@
 #include <tf/transform_broadcaster.h>
 #include <random>
 #include <time.h>
-#include <chrono>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tf/transform_broadcaster.h>
 
 
 
@@ -52,10 +52,14 @@ std::random_device seed;
 std::mt19937 engine(seed());  
 
 // パーティクルに付与するノイズ
-double sigma_v_v = 0.03;  // 直進1mで生じる距離の標準偏差
-double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差
-double sigma_v_omega = 0.05;  //直進1mで生じる回転の誤差
-double sigma_omega_omega = 0.1;   //回転1radで生じる回転の誤差
+double sigma_v_v = 0.06;  // 直進1mで生じる距離の標準偏差
+double sigma_omega_v = 0.002; // 回転1radで生じる距離の誤差
+double sigma_v_omega = 0.1;  //直進1mで生じる回転の誤差
+double sigma_omega_omega = 0.2;   //回転1radで生じる回転の誤差
+// double sigma_v_v = 0.03;  // 直進1mで生じる距離の標準偏差
+// double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差
+// double sigma_v_omega = 0.05;  //直進1mで生じる回転の誤差
+// double sigma_omega_omega = 0.1;   //回転1radで生じる回転の誤差
 std::normal_distribution<> dist_v_v(0.0, sigma_v_v);
 std::normal_distribution<> dist_omega_v(0.0, sigma_omega_v);
 std::normal_distribution<> dist_v_omega(0.0, sigma_v_omega);
@@ -64,7 +68,7 @@ std::normal_distribution<> dist_omega_omega(0.0, sigma_omega_omega);
 
 
 const int PARTICLE_NUM  = 500; // パーティクル数
-double coeff = 0.01; //尤度係数
+double coeff = 0.1; //尤度係数
 
 std::vector<double> particle_value(PARTICLE_NUM); // particleの重み
 double theta_pt[PARTICLE_NUM]= {0.0};// パーティクルの姿勢
@@ -157,11 +161,8 @@ void resampling(int cnt)
     // 要素のコピー
     for (int i = 0; i < PARTICLE_NUM; i++)
     {
-        particle_new.poses[i].position.x = particle_cloud.poses[i].position.x;
-        particle_new.poses[i].position.y = particle_cloud.poses[i].position.y;
-        particle_new.poses[i].orientation = particle_cloud.poses[i].orientation;
+        particle_new.poses[i] = particle_cloud.poses[i];
         particle_value_new[i] = particle_value[i];
-
     }
 
     // 系統リサンプリングの処理開始
@@ -174,35 +175,20 @@ void resampling(int cnt)
         }
         else // 乱数が重み以下ならば、リサンプリングし、乱数を積む 
         {
-            particle_new.poses[n_after].position.x = particle_cloud.poses[n_before].position.x;
-            particle_new.poses[n_after].position.y = particle_cloud.poses[n_before].position.y;
-            particle_new.poses[n_after].position.z = particle_cloud.poses[n_before].position.z;
-            particle_new.poses[n_after].orientation = particle_cloud.poses[n_before].orientation;
-            particle_value_new[n_after] = particle_value[n_before];
 
+            particle_new.poses[n_after] = particle_cloud.poses[n_before];
+            particle_value_new[n_after] = particle_value[n_before];
             rand += rand_width; //乱数を積む
             n_after++;
         }
-
-        // //例外処理
-        // if (n_before == (PARTICLE_NUM - 1)) 
-        // {
-        //     n_before = 0;
-        // }
-  
 
     }
 
     // 元のパーティクルに代入
     for (int i=0; i < PARTICLE_NUM; i++)
     {
-        // リサンプリング後のパーティクルの更新
-        particle_cloud.poses[i].position.x = particle_new.poses[i].position.x;
-        particle_cloud.poses[i].position.y = particle_new.poses[i].position.y;
-        particle_cloud.poses[i].position.z = particle_new.poses[i].position.z;
-        particle_cloud.poses[i].orientation = particle_new.poses[i].orientation;
+        particle_cloud.poses[i] = particle_new.poses[i];
         particle_value[i] = 1.0 / double(PARTICLE_NUM); // 重みの初期化
-
     }
 
 }
@@ -230,10 +216,11 @@ int main(int argc, char **argv)
 
     
     nav_msgs::Odometry posi;
+    tf::TransformBroadcaster broadcaster;
     
 
     posi.header.frame_id = "map";
-    estimate_posi.header.frame_id = "map";
+    // estimate_posi.header.frame_id = "map";
     particle_cloud.header.frame_id = "map";
     particle_cloud.header.stamp = ros::Time::now();
     particle_cloud.poses.resize(PARTICLE_NUM);
@@ -340,7 +327,9 @@ int main(int argc, char **argv)
                     }
                 }
 
-                likelihood_value = (1-coeff)*(double(match_count) / double(line_posi.points.size()))+coeff;
+                // likelihood_value = (1 - coeff)*(double(match_count) / double(line_posi.points.size())) + coeff;
+                likelihood_value = 1 / (1 + PARTICLE_NUM * coeff) * (double(match_count) / double(line_posi.points.size())) + coeff;
+
                 particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
             }
         }
@@ -355,23 +344,48 @@ int main(int argc, char **argv)
         double estimate_odom_y = 0.0;
         double estimate_theta  = 0.0;
 
-        // 自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
+        // 重みづけ平均：自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
+        // for (int i = 0; i < PARTICLE_NUM; i++)
+        // {
+        //     double roll, pitch, yaw;
+        //     geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+        //     estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
+        //     estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
+        //     estimate_theta  += particle_value[i] * yaw;
+
+        // }
+        // ________________________________________________
+        double max_value = particle_value[0];
+        int max_value_index = 0;
         for (int i = 0; i < PARTICLE_NUM; i++)
         {
-            double roll, pitch, yaw;
-            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-            estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
-            estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
-            estimate_theta  += particle_value[i] * yaw;
 
+            if (max_value < particle_value[i])
+            {
+                max_value = particle_value[i];
+                max_value_index = i;
+            }
+
+            // estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
+            // estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
+            // estimate_theta  += particle_value[i] * yaw;
         }
+
+
+
+        double roll, pitch, yaw;
+        geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[max_value_index].orientation); //yaw角に変換
+        estimate_odom_x =   particle_cloud.poses[max_value_index].position.x;
+        estimate_odom_y = particle_cloud.poses[max_value_index].position.y;
+        estimate_theta  = yaw;
+        // ------------------------------------------------------------
 
         estimate_posi.pose.pose.position.x = estimate_odom_x;
         estimate_posi.pose.pose.position.y = estimate_odom_y;
         estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
 
 
-        //走行中だけリサンプリングを行う
+        // //走行中だけリサンプリングを行う
         if (v > 0.04 || std::fabs(omega) > 0.02)
         {
             printf("cnt: %d, リサンプリング中\n",cnt);
@@ -393,6 +407,21 @@ int main(int argc, char **argv)
 
         self_localization_pub.publish(posi);
         particle_cloud_pub.publish(particle_cloud);
+        // esitimate_position_pub.publish(estimate_posi);
+
+
+
+        tf::StampedTransform transform_esti_pose;
+        transform_esti_pose.setOrigin(tf::Vector3(estimate_posi.pose.pose.position.x, estimate_posi.pose.pose.position.y, estimate_posi.pose.pose.position.z));
+        transform_esti_pose.setRotation(tf::Quaternion(estimate_posi.pose.pose.orientation.x,estimate_posi.pose.pose.orientation.y,estimate_posi.pose.pose.orientation.z,estimate_posi.pose.pose.orientation.w));
+        // ROS_INFO_STREAM(estimate_posi.pose.pose.position.x);    
+        transform_esti_pose.stamp_ = ros::Time::now();
+        transform_esti_pose.frame_id_ = "map";
+        transform_esti_pose.child_frame_id_ = "dha_esti_pose";
+        broadcaster.sendTransform(transform_esti_pose);
+
+        geometry_msgs::PoseWithCovarianceStamped estimate_posi;
+        estimate_posi.header.frame_id = "dha_esti_pose";
         esitimate_position_pub.publish(estimate_posi);
 
             
