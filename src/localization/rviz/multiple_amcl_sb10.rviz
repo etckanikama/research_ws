@@ -108,7 +108,7 @@ Visualization Manager:
       Head Radius: 0.10000000149011612
       Name: PoseWithCovariance
       Queue Size: 10
-      Shaft Length: 1
+      Shaft Length: 0.699999988079071
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
       Topic: /amcl_pose
@@ -252,9 +252,9 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 4.152744293212891
-        Y: -0.12103424221277237
-        Z: 0.004152900073677301
+        X: 7.348302841186523
+        Y: -0.4851268529891968
+        Z: 0.007348929066210985
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
