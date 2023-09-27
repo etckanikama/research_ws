@@ -52,14 +52,15 @@ std::random_device seed;
 std::mt19937 engine(seed());  
 
 // パーティクルに付与するノイズ
-double sigma_v_v = 0.06;  // 直進1mで生じる距離の標準偏差
-double sigma_omega_v = 0.002; // 回転1radで生じる距離の誤差
-double sigma_v_omega = 0.1;  //直進1mで生じる回転の誤差
-double sigma_omega_omega = 0.2;   //回転1radで生じる回転の誤差
-// double sigma_v_v = 0.03;  // 直進1mで生じる距離の標準偏差
-// double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差
-// double sigma_v_omega = 0.05;  //直進1mで生じる回転の誤差
-// double sigma_omega_omega = 0.1;   //回転1radで生じる回転の誤差
+// double sigma_v_v = 0.06;  // 直進1mで生じる距離の標準偏差
+// double sigma_omega_v = 0.002; // 回転1radで生じる距離の誤差
+// double sigma_v_omega = 0.1;  //直進1mで生じる回転の誤差
+// double sigma_omega_omega = 0.2;   //回転1radで生じる回転の誤差
+
+double sigma_v_v = 0.03;  // 直進1mで生じる距離の標準偏差
+double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差
+double sigma_v_omega = 0.05;  //直進1mで生じる回転の誤差
+double sigma_omega_omega = 0.1;   //回転1radで生じる回転の誤差
 std::normal_distribution<> dist_v_v(0.0, sigma_v_v);
 std::normal_distribution<> dist_omega_v(0.0, sigma_omega_v);
 std::normal_distribution<> dist_v_omega(0.0, sigma_v_omega);
@@ -69,6 +70,10 @@ std::normal_distribution<> dist_omega_omega(0.0, sigma_omega_omega);
 
 const int PARTICLE_NUM  = 500; // パーティクル数
 double coeff = 0.1; //尤度係数
+double Mth = 300; //最低限含まれてほしい点群数のしきい値
+double sigma_px_th =0.15;  //x方向の標準偏差のしきい値:白線の幅(0.075)*2=0.15
+double sigma_py_th =0.15; //y方向の標準偏差のしきい値:白線の幅(0.075)*2=0.15
+
 
 std::vector<double> particle_value(PARTICLE_NUM); // particleの重み
 double theta_pt[PARTICLE_NUM]= {0.0};// パーティクルの姿勢
@@ -248,7 +253,9 @@ int main(int argc, char **argv)
 
     ros::Rate rate(10.0);
     int cnt = 0;
- 
+    double camera_range_Max_x = 2.0;
+    double camera_range_Min_x = 1.0;
+    
     while (ros::ok())
     {
         time_stamp += dt; // dtで時間を積算
@@ -272,67 +279,204 @@ int main(int argc, char **argv)
         
         }
 
-        if (line_posi.points.size() > 0)
+
+
+        if (line_posi.points.size() > Mth) //最低限Mth以上含まれている時だけ尤度計算を行う
         {
-            
-            // 尤度計算
-            double line_vertical_small = 0;
-            double line_vertical_big   = 0;
-            double line_side_small     = 0;
-            double line_side_big       = 0;
-            double likelihood_value    = 0;
-            
-            
-            for (int i = 0; i < PARTICLE_NUM; i++) //パーティクル一個一個について計算していく
+            // -------------標準偏差の計算----------------------
+            // sumの作成
+            double sum_px = 0.0, sum_py = 0.0;
+            for (int j = 0; j < line_posi.points.size(); j++)
             {
-                double roll, pitch, yaw;
-                geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-                int match_count = 0; //尤度のマッチ数
-                for (int j = 0; j < line_posi.points.size(); j++)//検出した白線の座標配列
+                sum_px += line_posi.points[j].x;
+                sum_py += line_posi.points[j].y;
+            }
+            // meanの作成
+            double mean_px = sum_px / line_posi.points.size();
+            double mean_py = sum_py / line_posi.points.size();
+            //偏差の二乗
+            double sumOfSquaredDeviation_x = 0.0;
+            double sumOfSquaredDeviation_y = 0.0;
+            for (int j = 0; j < line_posi.points.size(); j++)
+            {
+                double deviation_px = line_posi.points[j].x - mean_px;
+                double deviation_py = line_posi.points[j].y - mean_py;
+                sumOfSquaredDeviation_x += deviation_px * deviation_px;
+                sumOfSquaredDeviation_y += deviation_py * deviation_py;
+            }
+
+            //標準偏差を算出
+            double sigma_px = std::sqrt(sumOfSquaredDeviation_x / (line_posi.points.size() - 1));
+            double sigma_py = std::sqrt(sumOfSquaredDeviation_y / (line_posi.points.size() - 1));
+            // -----------------------------------------------------
+            std::cout << line_posi.points.size() << std::endl;
+            std::cout << "x方向の標準偏差 " << sigma_px << " " << "y方向の標準偏差" << sigma_py << std::endl;
+
+            if ((sigma_px > sigma_px_th) && (sigma_py > sigma_py_th)) //この条件を突破したら尤度計算が始まる
+            {
+                // 尤度計算用の変数
+                double line_vertical_small = 0;
+                double line_vertical_big   = 0;
+                double line_side_small     = 0;
+                double line_side_big       = 0;
+                double likelihood_value    = 0;
+                
+                for (int i = 0; i < PARTICLE_NUM; i++) //パーティクルのループ
                 {
-                    // particle一つ一つについて絶対座標に変換
-                     double line_glx = line_posi.points[j].x * cosf(yaw) - line_posi.points[j].y * sinf(yaw) +  particle_cloud.poses[i].position.x;
-                    double line_gly = line_posi.points[j].x * sinf(yaw) + line_posi.points[j].y * cosf(yaw) +  particle_cloud.poses[i].position.y;
+                    double roll, pitch, yaw;
+                    geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+                    int match_count = 0; //尤度のマッチ数
                     
-                    for (int k = 0; k < POLYGON_NUM; k++ ) 
+                    for (int j = 0; j < line_posi.points.size(); j++)//尤度計算の中のループ
                     {
-                        // 上下の小さい方か大きいほうかを決める
-                        if (WHITE_POLYGON_MAP[k][0] < WHITE_POLYGON_MAP[k][1])
+                        // particle一つ一つを使って白線点群を絶対座標に変換
+                        double line_glx = line_posi.points[j].x * cosf(yaw) - line_posi.points[j].y * sinf(yaw) +  particle_cloud.poses[i].position.x;
+                        double line_gly = line_posi.points[j].x * sinf(yaw) + line_posi.points[j].y * cosf(yaw) +  particle_cloud.poses[i].position.y;
+                        
+                        for (int k = 0; k < POLYGON_NUM; k++ ) 
                         {
-                            line_vertical_small = WHITE_POLYGON_MAP[k][0];
-                            line_vertical_big   = WHITE_POLYGON_MAP[k][1];
-                        } 
-                        else
-                        {
-                            line_vertical_small = WHITE_POLYGON_MAP[k][1];
-                            line_vertical_big   = WHITE_POLYGON_MAP[k][0];
-                        }
-                        // 左右の小さい方か大きい方か決める
-                        if (WHITE_POLYGON_MAP[k][2] < WHITE_POLYGON_MAP[k][3])
-                        {
-                            line_side_small = WHITE_POLYGON_MAP[k][2];
-                            line_side_big   = WHITE_POLYGON_MAP[k][3];
-                        } 
-                        else
-                        {
-                            line_side_small = WHITE_POLYGON_MAP[k][3];
-                            line_side_big   = WHITE_POLYGON_MAP[k][2];
-                        }
-                        // std::cout << line_vertical_small << " " << line_glx << " " << line_gly << std::endl;
-                        if (line_vertical_small < line_glx && line_glx < line_vertical_big && line_side_small < line_gly && line_gly < line_side_big)
-                        {
-                            match_count++;
-                            break;
+                            // 上下の小さい方か大きいほうかを決める
+                            if (WHITE_POLYGON_MAP[k][0] < WHITE_POLYGON_MAP[k][1])
+                            {
+                                line_vertical_small = WHITE_POLYGON_MAP[k][0];
+                                line_vertical_big   = WHITE_POLYGON_MAP[k][1];
+                            } 
+                            else
+                            {
+                                line_vertical_small = WHITE_POLYGON_MAP[k][1];
+                                line_vertical_big   = WHITE_POLYGON_MAP[k][0];
+                            }
+                            // 左右の小さい方か大きい方か決める
+                            if (WHITE_POLYGON_MAP[k][2] < WHITE_POLYGON_MAP[k][3])
+                            {
+                                line_side_small = WHITE_POLYGON_MAP[k][2];
+                                line_side_big   = WHITE_POLYGON_MAP[k][3];
+                            } 
+                            else
+                            {
+                                line_side_small = WHITE_POLYGON_MAP[k][3];
+                                line_side_big   = WHITE_POLYGON_MAP[k][2];
+                            }
+                            // std::cout << line_vertical_small << " " << line_glx << " " << line_gly << std::endl;
+                            if (line_vertical_small < line_glx && line_glx < line_vertical_big && line_side_small < line_gly && line_gly < line_side_big)
+                            {
+                                match_count++;
+                                break;
+                            }
                         }
                     }
+
+                    likelihood_value = (1 - coeff)*(double(match_count) / double(line_posi.points.size())) + coeff;
+                    // // likelihood_value = 1 / (1 + PARTICLE_NUM * coeff) * (double(match_count) / double(line_posi.points.size())) + coeff;
+                    particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+
+
                 }
-
-                // likelihood_value = (1 - coeff)*(double(match_count) / double(line_posi.points.size())) + coeff;
-                likelihood_value = 1 / (1 + PARTICLE_NUM * coeff) * (double(match_count) / double(line_posi.points.size())) + coeff;
-
-                particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+                std::cout << "尤度 " << likelihood_value << std::endl;
             }
+
+
+
         }
+
+
+        // if (line_posi.points.size() > 0)
+        // {
+        //     // -------------標準偏差の計算----------------------
+        //     // sumの作成
+        //     double sum_px = 0.0, sum_py = 0.0;
+        //     for (int p = 0; p < line_posi.points.size(); p++)
+        //     {
+        //         sum_px += line_posi.points[p].x;
+        //         sum_py += line_posi.points[p].y;
+        //     }
+        //     // meanの作成
+        //     double mean_px = sum_px / line_posi.points.size();
+        //     double mean_py = sum_py / line_posi.points.size();
+        //     //偏差の二乗
+        //     double sumOfSquaredDeviation_x = 0.0;
+        //     double sumOfSquaredDeviation_y = 0.0;
+        //     for (int p = 0; p < line_posi.points.size(); p++)
+        //     {
+        //         double deviation_px = line_posi.points[p].x - mean_px;
+        //         double deviation_py = line_posi.points[p].y - mean_py;
+        //         sumOfSquaredDeviation_x += deviation_px * deviation_px;
+        //         sumOfSquaredDeviation_y += deviation_py * deviation_py;
+        //     }
+
+        //     //標準偏差を算出
+        //     double sigma_px = std::sqrt(sumOfSquaredDeviation_x / (line_posi.points.size() - 1));
+        //     double sigma_py = std::sqrt(sumOfSquaredDeviation_y / (line_posi.points.size() - 1));
+        //     // -----------------------------------------------------
+
+        //     // 尤度計算
+        //     double line_vertical_small = 0;
+        //     double line_vertical_big   = 0;
+        //     double line_side_small     = 0;
+        //     double line_side_big       = 0;
+        //     double likelihood_value    = 0;
+
+
+            
+            
+            // for (int i = 0; i < PARTICLE_NUM; i++) //パーティクル一個一個について計算していく
+            // {
+            //     double roll, pitch, yaw;
+            //     geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            //     int match_count = 0; //尤度のマッチ数
+                
+
+
+            //     // if (sigma_px > sigma_px_th)
+            //     for (int j = 0; j < line_posi.points.size(); j++)//尤度計算の中のループ
+            //     {
+            //         std::cout << line_posi.points[j].x << " "<< line_posi.points[j].y << std::endl;
+                
+            //         // 標準偏差を求める
+            //         // // ロボット座標系の白線点群の中からpxのmaxとpxのmin,pyのmax,pyのminを決める
+            //         // // particle一つ一つについて絶対座標に変換
+            //         // double line_glx = line_posi.points[j].x * cosf(yaw) - line_posi.points[j].y * sinf(yaw) +  particle_cloud.poses[i].position.x;
+            //         // double line_gly = line_posi.points[j].x * sinf(yaw) + line_posi.points[j].y * cosf(yaw) +  particle_cloud.poses[i].position.y;
+                    
+            //         // for (int k = 0; k < POLYGON_NUM; k++ ) 
+            //         // {
+            //         //     // 上下の小さい方か大きいほうかを決める
+            //         //     if (WHITE_POLYGON_MAP[k][0] < WHITE_POLYGON_MAP[k][1])
+            //         //     {
+            //         //         line_vertical_small = WHITE_POLYGON_MAP[k][0];
+            //         //         line_vertical_big   = WHITE_POLYGON_MAP[k][1];
+            //         //     } 
+            //         //     else
+            //         //     {
+            //         //         line_vertical_small = WHITE_POLYGON_MAP[k][1];
+            //         //         line_vertical_big   = WHITE_POLYGON_MAP[k][0];
+            //         //     }
+            //         //     // 左右の小さい方か大きい方か決める
+            //         //     if (WHITE_POLYGON_MAP[k][2] < WHITE_POLYGON_MAP[k][3])
+            //         //     {
+            //         //         line_side_small = WHITE_POLYGON_MAP[k][2];
+            //         //         line_side_big   = WHITE_POLYGON_MAP[k][3];
+            //         //     } 
+            //         //     else
+            //         //     {
+            //         //         line_side_small = WHITE_POLYGON_MAP[k][3];
+            //         //         line_side_big   = WHITE_POLYGON_MAP[k][2];
+            //         //     }
+            //         //     // std::cout << line_vertical_small << " " << line_glx << " " << line_gly << std::endl;
+            //         //     if (line_vertical_small < line_glx && line_glx < line_vertical_big && line_side_small < line_gly && line_gly < line_side_big)
+            //         //     {
+            //         //         match_count++;
+            //         //         break;
+            //         //     }
+            //         // }
+            //     }
+
+            //     // // likelihood_value = (1 - coeff)*(double(match_count) / double(line_posi.points.size())) + coeff;
+            //     // // likelihood_value = 1 / (1 + PARTICLE_NUM * coeff) * (double(match_count) / double(line_posi.points.size())) + coeff;
+            //     // likelihood_value = (1 - coeff)*(double(match_count) / double(line_posi.points.size())) * (px_range / camera_range_x) *(py_range / camera_range_y) + coeff;
+            //     // particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+            // }
+        // }
 
 
             
@@ -345,39 +489,39 @@ int main(int argc, char **argv)
         double estimate_theta  = 0.0;
 
         // 重みづけ平均：自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]
-        // for (int i = 0; i < PARTICLE_NUM; i++)
-        // {
-        //     double roll, pitch, yaw;
-        //     geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-        //     estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
-        //     estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
-        //     estimate_theta  += particle_value[i] * yaw;
-
-        // }
-        // ________________________________________________
-        double max_value = particle_value[0];
-        int max_value_index = 0;
         for (int i = 0; i < PARTICLE_NUM; i++)
         {
+            double roll, pitch, yaw;
+            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
+            estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
+            estimate_theta  += particle_value[i] * yaw;
 
-            if (max_value < particle_value[i])
-            {
-                max_value = particle_value[i];
-                max_value_index = i;
-            }
-
-            // estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
-            // estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
-            // estimate_theta  += particle_value[i] * yaw;
         }
+        // ______________尤度の最大値を推定値とする__________________________________
+        // double max_value = particle_value[0];
+        // int max_value_index = 0;
+        // for (int i = 0; i < PARTICLE_NUM; i++)
+        // {
+
+        //     if (max_value < particle_value[i])
+        //     {
+        //         max_value = particle_value[i];
+        //         max_value_index = i;
+        //     }
+
+        //     // estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
+        //     // estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
+        //     // estimate_theta  += particle_value[i] * yaw;
+        // }
 
 
 
-        double roll, pitch, yaw;
-        geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[max_value_index].orientation); //yaw角に変換
-        estimate_odom_x =   particle_cloud.poses[max_value_index].position.x;
-        estimate_odom_y = particle_cloud.poses[max_value_index].position.y;
-        estimate_theta  = yaw;
+        // double roll, pitch, yaw;
+        // geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[max_value_index].orientation); //yaw角に変換
+        // estimate_odom_x =   particle_cloud.poses[max_value_index].position.x;
+        // estimate_odom_y = particle_cloud.poses[max_value_index].position.y;
+        // estimate_theta  = yaw;
         // ------------------------------------------------------------
 
         estimate_posi.pose.pose.position.x = estimate_odom_x;
@@ -393,16 +537,16 @@ int main(int argc, char **argv)
         }
         else 
         {
-            std::cout << "なにもしない" << std::endl;
+            std::cout << "NOTリサンプリング" << std::endl;
         }
 
 
 
 
-        // 推定した結果をcsvに出力
-        // ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x << ", " << estimate_odom_y << std::endl;
+        // // 推定した結果をcsvに出力
+        // // ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x << ", " << estimate_odom_y << std::endl;
 
-        cnt++;
+        // cnt++;
         
 
         self_localization_pub.publish(posi);
