@@ -11,9 +11,8 @@ Panels:
         - /PointCloud21
         - /PoseArray1
         - /PolygonArray1
-        - /PolygonArray2
       Splitter Ratio: 0.5
-    Tree Height: 163
+    Tree Height: 308
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -42,7 +41,7 @@ Visualization Manager:
     - Alpha: 0.10000000149011612
       Cell Size: 1
       Class: rviz/Grid
-      Color: 238; 238; 236
+      Color: 46; 52; 54
       Enabled: true
       Line Style:
         Line Width: 0.029999999329447746
@@ -78,7 +77,7 @@ Visualization Manager:
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
-      Color: 52; 101; 164
+      Color: 239; 41; 41
       Color Transformer: FlatColor
       Decay Time: 0
       Enabled: true
@@ -97,96 +96,8 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m1
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m10
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m3
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m4
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m5
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m3
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m2
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m7
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m6
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m8
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /m9
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
     - Class: rviz/Image
-      Enabled: false
+      Enabled: true
       Image Topic: /front_camera/hsv_median_mask_image
       Max Value: 1
       Median window: 5
@@ -196,7 +107,7 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: raw
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Arrow Length: 0.10000000149011612
       Axes Length: 0.30000001192092896
@@ -215,7 +126,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Class: rviz/Image
-      Enabled: true
+      Enabled: false
       Image Topic: /front_camera/hsv_median_mask_image
       Max Value: 1
       Median window: 5
@@ -225,24 +136,10 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: raw
       Unreliable: false
-      Value: true
-    - Alpha: 0.009999999776482582
-      Class: jsk_rviz_plugin/PolygonArray
-      Color: 255; 25; 0
-      Enabled: false
-      Name: PolygonArray
-      Queue Size: 10
-      Topic: /polygon_array
-      Unreliable: false
       Value: false
-      coloring: Flat color
-      enable lighting: true
-      normal length: 0.10000000149011612
-      only border: false
-      show normal: false
-    - Alpha: 0.20000000298023224
+    - Alpha: 0.5
       Class: jsk_rviz_plugin/PolygonArray
-      Color: 255; 25; 0
+      Color: 255; 255; 255
       Enabled: true
       Name: PolygonArray
       Queue Size: 10
@@ -259,12 +156,12 @@ Visualization Manager:
       Marker Topic: /visualization_marker
       Name: Marker
       Namespaces:
-        arrows: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 160; 160; 164
+    Background Color: 186; 189; 182
     Default Light: true
     Fixed Frame: beego/odom
     Frame Rate: 30
@@ -290,7 +187,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 12.296483039855957
+      Distance: 12.960603713989258
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -308,17 +205,17 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 3.145400285720825
+      Yaw: 3.140399694442749
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1136
+  Height: 1403
   Hide Left Dock: false
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000002cf000003d2fc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000000e0000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d0061006700650100000123000001660000001600fffffffb0000000a0049006d0061006700650000000342000000cd0000001600fffffffb0000000a0049006d006100670065010000028f000001800000001600ffffff000000010000010f000003d2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000003d2000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007380000003efc0100000002fb0000000800540069006d0065010000000000000738000003bc00fffffffb0000000800540069006d006501000000000000045000000000000000000000034e000003d200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002cf000004ddfc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000171000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006501000001b4000001a00000001600fffffffb0000000a0049006d0061006700650000000342000000cd0000001600fffffffb0000000a0049006d006100670065010000035a000001c00000001600ffffff000000010000010f000004ddfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000004dd000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000a000000003efc0100000002fb0000000800540069006d0065010000000000000a00000003bc00fffffffb0000000800540069006d0065010000000000000450000000000000000000000616000004dd00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -327,6 +224,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1848
-  X: 72
-  Y: 267
+  Width: 2560
+  X: 1920
+  Y: 0

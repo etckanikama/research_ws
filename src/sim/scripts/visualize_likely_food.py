@@ -56,7 +56,7 @@ def main():
     rospy.init_node('arrow_visualizer')
     pub = rospy.Publisher('visualization_marker', Marker, queue_size=10)
 
-    csv_path = "/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230905_boxel_nasi_2.0ikanomi_9.0_0.0_0.0.csv"  # Directly specifying the path here
+    csv_path = "/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230930_boxel_nasi_640x360_2.0ikanomi_rsj10.0_0.0_0.0.csv"  # Directly specifying the path here
     markers = csv_to_markers(csv_path)
 
     rate = rospy.Rate(10)  # 10Hz

@@ -23,7 +23,8 @@ except ValueError:
 # csv_file_path = f"/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_distance/particle_coodinate_distribution_time_stamp_gazebo_nashi_distance{param_value1}_{param_value2}_{param_value3}.csv"
 # csv_file_path = f"/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_distance/20230826_boxel_nasi_{param_value1}_{param_value2}_{param_value3}.csv"
 # csv_file_path = f"/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230826_boxel_nasi_2.5ikanomi_{param_value1}_{param_value2}_{param_value3}.csv"
-csv_file_path    = f"/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230905_boxel_nasi_2.0ikanomi_{param_value1}_{param_value2}_{param_value3}.csv"
+# csv_file_path    = f"/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230905_boxel_nasi_2.0ikanomi_{param_value1}_{param_value2}_{param_value3}.csv"
+csv_file_path  = f"/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230930_boxel_nasi_640x360_2.0ikanomi_rsj{param_value1}_{param_value2}_{param_value3}.csv"
 # CSVファイルを読み込んでリストに格納
 data = []
 with open(csv_file_path, "r") as f:

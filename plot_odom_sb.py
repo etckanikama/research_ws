@@ -7,6 +7,7 @@ import math
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
+ax.set_facecolor('#C0C0C0')
 
 # odom_csv = '/home/hirayama-d/research_ws/2023-03-29_v1.0w0.525_odom.csv'
 # estimate_csv = '/home/hirayama-d/research_ws/2023-03-29_v1.0w0.525_estimate.csv'
@@ -15,7 +16,10 @@ ax = fig.add_subplot(111)
 # font_path = '/usr/share/fonts/TakaoFonts_00303.01/TakaoGothic.ttf'
 # font_prop = FontProperties(fname=font_path)
 # plt.rcParams['font.family'] = font_prop.get_name()
-time_csv = '/home/hirayama-d/research_ws/メディアンなし&ボクセルなし2.5以下.csv'
+# time_csv = '/home/hirayama-d/research_ws/メディアンなし&ボクセルなし2.5以下.csv'
+
+# time_csv = '/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_ICMRE/2023-09-28_icmre_v1.csv'
+time_csv ='/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_ICMRE/2023-09-30_rsj_icmre_v4.csv'
 
 rows = []
 with open(time_csv) as f:   
@@ -33,37 +37,39 @@ amcl_pose_x = time_data[3]
 amcl_pose_y = time_data[4]
 estimate_odom_x = time_data[5]
 estimate_odom_y = time_data[6]
+kairyou_odom_x = time_data[7]
+kairyou_odom_y = time_data[8]
+
 
 # plt.title('v0.5 & w1.0472')
 plt.xticks(range(-5,4,1))
 plt.yticks(range(0,15,1))
 ax.set_aspect('equal')
 ax.invert_xaxis()
-plt.grid(linestyle='dotted')
+ax.grid(color='lightgray', linestyle='dotted')
 plt.xlabel("y [m]")
 plt.ylabel("x [m]")
 
 
-plt.scatter(robot_y,robot_x,label="odometry", s=0.5,c='blue')
-
-plt.scatter(amcl_pose_y,amcl_pose_x,label="AMCL", s=0.5,c='darkorange')
-
-plt.scatter(estimate_odom_y,estimate_odom_x,label="propose", s=0.5,c='green')
-
-
-plt.hlines(y=10.095, xmin=-0.47, xmax=-5.0, color='red', linestyles='solid')
-plt.hlines(y=9.125, xmin=0.47, xmax=1.935, color='red', linestyles='solid')
-plt.hlines(y=11.28, xmin=1.76, xmax=3.01, color='red', linestyles='solid')
-plt.hlines(y=10.205, xmin=1.935, xmax=3.01, color='red', linestyles='solid')
-plt.hlines(y=11.41, xmin=0.75, xmax=-5.0, color='red', linestyles='solid')
+plt.scatter(robot_y,robot_x,label="odometry", s=1,c='blue')
+plt.scatter(amcl_pose_y,amcl_pose_x,label="AMCL", s=1,c='cyan')
+plt.scatter(estimate_odom_y,estimate_odom_x,label="rsj", s=1,c='green')
+plt.scatter(kairyou_odom_y,kairyou_odom_x,label="kairyou", s=1,c='magenta')
 
 
+plt.hlines(y=10.095, xmin=-0.47, xmax=-5.0, color='white', linestyles='solid')
+plt.hlines(y=9.125, xmin=0.47, xmax=1.935, color='white', linestyles='solid')
+plt.hlines(y=11.28, xmin=1.76, xmax=3.01, color='white', linestyles='solid')
+plt.hlines(y=10.205, xmin=1.935, xmax=3.01, color='white', linestyles='solid')
+plt.hlines(y=11.41, xmin=0.75, xmax=-5.0, color='white', linestyles='solid')
 
-plt.vlines(x=0.47,ymin=0, ymax=9.125,colors='red',linestyles='solid')
-plt.vlines(x=-0.47,ymin=0, ymax=10.095,colors='red',linestyles='solid')
-plt.vlines(x=1.935,ymin=9.125, ymax=10.205,colors='red',linestyles='solid')
-plt.vlines(x=1.76,ymin=11.28, ymax=13.5,colors='red',linestyles='solid')
-plt.vlines(x=0.75,ymin=11.41, ymax=13.5,colors='red',linestyles='solid')
+
+
+plt.vlines(x=0.47,ymin=0, ymax=9.125,colors='white',linestyles='solid')
+plt.vlines(x=-0.47,ymin=0, ymax=10.095,colors='white',linestyles='solid')
+plt.vlines(x=1.935,ymin=9.125, ymax=10.205,colors='white',linestyles='solid')
+plt.vlines(x=1.76,ymin=11.28, ymax=13.5,colors='white',linestyles='solid')
+plt.vlines(x=0.75,ymin=11.41, ymax=13.5,colors='white',linestyles='solid')
 
 # plt.legend(bbox_to_anchor=(1, 1), loc='upper right', borderaxespad=0,fontsize=7)
 # plt.legend([p,s],['footprint','whilte_lane'])
