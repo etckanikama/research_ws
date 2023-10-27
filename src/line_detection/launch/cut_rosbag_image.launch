@@ -1,0 +1,9 @@
+<launch>
+  <!-- rosbag を再生するノード -->
+  <node pkg="rosbag" type="play" name="rosbag" args="-d 2 rosbagまでのフルパス(例: /opt/ros/bag/your.bag)"/>
+  <!-- カメラ映像から画像ファイルを生成するノード -->
+  <node name="extract" pkg="image_view" type="extract_images" respawn="false" output="screen">
+    <remap from="image" to="/front_realsense/color/image_raw"/>
+    <param name="filename_format" value="画像ファイルを保存するフォルダとファイル名のフォーマット (例: /home/ros/Pictures/frame%04d.jpg)" />
+  </node>
+</launch>

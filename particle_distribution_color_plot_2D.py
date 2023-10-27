@@ -14,7 +14,7 @@ try:
 except ValueError:
     print("引数は数値である必要があリマス")
     sys.exit(1)
-    
+
 
 # CSVファイルのパス
 # csv_file_path = f"/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_distance/particle_coodinate_distribution_time_stamp_gazebo_down_sample_distance{param_value}.csv"
@@ -34,6 +34,7 @@ data_np = np.array(data[:400],dtype=float)
 x = data_np[:,1]
 y = data_np[:,2]
 value = data_np[:,4]*400
+print(value)
 print(type(x[0]),type(y),type(value))
 
 # 3Dグラフの作成

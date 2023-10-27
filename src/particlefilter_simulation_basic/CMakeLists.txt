@@ -40,6 +40,7 @@ add_executable(rectangle_marker_node src/white_lane_publisher_for_real.cpp)
 add_executable(visualize_likeliyfood.cpp src/visualize_likeliyfood.cpp)
 add_executable(particle_filter_propose_aisin_for_rsj.cpp src/particle_filter_propose_aisin_for_rsj.cpp)
 add_executable(particle_filter_propose_for_icmre.cpp src/particle_filter_propose_for_icmre.cpp)
+add_executable(sub_amcl_tf_broadcaster.cpp src/sub_amcl_tf_broadcaster.cpp)
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -56,4 +57,4 @@ target_link_libraries(rectangle_marker_node  ${catkin_LIBRARIES})
 target_link_libraries(visualize_likeliyfood.cpp  ${catkin_LIBRARIES})
 target_link_libraries(particle_filter_propose_aisin_for_rsj.cpp ${catkin_LIBRARIES})
 target_link_libraries(particle_filter_propose_for_icmre.cpp ${catkin_LIBRARIES})
-
+target_link_libraries(sub_amcl_tf_broadcaster.cpp ${catkin_LIBRARIES})
