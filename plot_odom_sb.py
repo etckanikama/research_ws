@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import math
 
+plot_interval = 10  # プロットする間隔を設定
+plot_size = 15
+
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.set_facecolor('#C0C0C0')
@@ -30,16 +33,15 @@ time_data = np.float_(np.array(rows).T)
 
 
 # 各変数にデータを代入
-time_stamp = time_data[0]
-robot_x = time_data[1]
-robot_y = time_data[2]
-amcl_pose_x = time_data[3]
-amcl_pose_y = time_data[4]
-estimate_odom_x = time_data[5]
-estimate_odom_y = time_data[6]
-kairyou_odom_x = time_data[7]
-kairyou_odom_y = time_data[8]
-
+time_stamp = time_data[0][::plot_interval]
+robot_x = time_data[1][::plot_interval]
+robot_y = time_data[2][::plot_interval]
+amcl_pose_x = time_data[3][::plot_interval]
+amcl_pose_y = time_data[4][::plot_interval]
+estimate_odom_x = time_data[5][::plot_interval]
+estimate_odom_y = time_data[6][::plot_interval]
+kairyou_odom_x = time_data[7][::plot_interval]
+kairyou_odom_y = time_data[8][::plot_interval]
 
 # plt.title('v0.5 & w1.0472')
 plt.xticks(range(-5,4,1))
@@ -51,10 +53,10 @@ plt.xlabel("y [m]")
 plt.ylabel("x [m]")
 
 
-plt.scatter(robot_y,robot_x,label="odometry", s=1,c='blue')
-plt.scatter(amcl_pose_y,amcl_pose_x,label="AMCL", s=1,c='cyan')
-plt.scatter(estimate_odom_y,estimate_odom_x,label="rsj", s=1,c='green')
-plt.scatter(kairyou_odom_y,kairyou_odom_x,label="kairyou", s=1,c='magenta')
+plt.scatter(robot_y,robot_x,label="odometry", s=plot_size,c='blue')
+plt.scatter(amcl_pose_y,amcl_pose_x,label="AMCL", s=plot_size,c='cyan')
+plt.scatter(estimate_odom_y,estimate_odom_x,label="rsj", s=plot_size,c='green')
+plt.scatter(kairyou_odom_y,kairyou_odom_x,label="kairyou", s=plot_size,c='magenta')
 
 
 plt.hlines(y=10.095, xmin=-0.47, xmax=-5.0, color='white', linestyles='solid')
@@ -74,5 +76,5 @@ plt.vlines(x=0.75,ymin=11.41, ymax=13.5,colors='white',linestyles='solid')
 # plt.legend(bbox_to_anchor=(1, 1), loc='upper right', borderaxespad=0,fontsize=7)
 # plt.legend([p,s],['footprint','whilte_lane'])
 
-plt.savefig("not_median_idoukiseki.png")
+# plt.savefig("not_median_idoukiseki.png")
 plt.show()

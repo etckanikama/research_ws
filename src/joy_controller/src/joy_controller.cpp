@@ -2,7 +2,7 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
 
-double max_vel = 0.3;
+double max_vel = 1.0;
 ; //0.5 m/s 
 // // double max_omega = 0.2;
 // double max_omega = 0.525; //rad/s → 30 deg/s
