@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import math
 
-plot_interval = 10  # プロットする間隔を設定
-plot_size = 15
+plot_interval = 1  # プロットする間隔を設定
+plot_size = 0.00001
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -76,5 +76,5 @@ plt.vlines(x=0.75,ymin=11.41, ymax=13.5,colors='white',linestyles='solid')
 # plt.legend(bbox_to_anchor=(1, 1), loc='upper right', borderaxespad=0,fontsize=7)
 # plt.legend([p,s],['footprint','whilte_lane'])
 
-# plt.savefig("not_median_idoukiseki.png")
+plt.savefig("not_median_idoukiseki.eps")
 plt.show()

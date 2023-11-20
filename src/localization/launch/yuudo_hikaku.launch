@@ -3,11 +3,11 @@
 	// launch line_detection -----------------------------------------------------
     <node pkg="line_detection" type="line_detection_opencv5_homography_timer_aisin_for_rsj.py" name="line_detection"/>
     // launch white lane publisher 
-	<node pkg="particlefilter_simulation_basic" type="rectangle_marker_node" name="rectangle_marker_node"/>
+	<!-- <node pkg="particlefilter_simulation_basic" type="rectangle_marker_node" name="rectangle_marker_node"/> -->
 
 
 	// launch particle filter propose method --------------------------------------------------------
-    <!-- <node pkg="particlefilter_simulation_basic" type="particle_filter_propose_aisin_for_rsj.cpp" name="particle_node" output="screen"/> -->
+    <node pkg="particlefilter_simulation_basic" type="particle_filter_propose_aisin_for_rsj.cpp" name="particle_node" output="screen"/>
 
 
     <node pkg="particlefilter_simulation_basic" type="particle_filter_propose_for_icmre.cpp" name="particle_node_kairyou" output="screen"/>

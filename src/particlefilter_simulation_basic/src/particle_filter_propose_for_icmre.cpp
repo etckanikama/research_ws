@@ -29,7 +29,8 @@ geometry_msgs::Twist cmd_vel;
 geometry_msgs::PoseWithCovarianceStamped estimate_posi;
 
 // 軌跡の保存用csvファイル
-std::ofstream ofs("/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_ICMRE/2023-09-28_yuudokansuu_kairyou_v4.csv");
+// std::ofstream ofs("/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_ICMRE/2023-09-28_yuudokansuu_kairyou_v4.csv");
+std::ofstream ofs("/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_ICMRE/2023-11-01_yuudokansuu_kairyou_v1.csv");
 
 
 // 初期速度指令値
@@ -43,7 +44,8 @@ double amcl_pose_y = 0.0;
 double robot_x = 0.0;
 double robot_y = 0.0;
 
-
+// 尤度更新の状態→デフォルトしない(0),する(1)
+int likelihood_state = 0;
 
 
 
@@ -258,6 +260,8 @@ int main(int argc, char **argv)
     
     while (ros::ok())
     {
+
+        likelihood_state = 0; // 尤度更新はデフォルトはしない
         time_stamp += dt; // dtで時間を積算
 
         ros::spinOnce();
@@ -314,6 +318,9 @@ int main(int argc, char **argv)
 
             if ((sigma_px > sigma_px_th) && (sigma_py > sigma_py_th)) //この条件を突破したら尤度計算が始まる
             {
+                // 尤度更新を行う状態にセット
+                likelihood_state = 1;
+
                 // 尤度計算用の変数
                 double line_vertical_small = 0;
                 double line_vertical_big   = 0;
@@ -449,10 +456,19 @@ int main(int argc, char **argv)
 
         std::cout << "時間 "<< time_stamp << std::endl;
 
+        if (likelihood_state == 1)
+        {
+            std::cout << "尤度更新中" << std::endl;
+        }
+        else
+        {
+            std::cout << "尤度更新しない" << std::endl;
+        }
+
 
 
         // // 推定した結果をcsvに出力
-        ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x << ", " << estimate_odom_y << std::endl;
+        ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << amcl_pose_x << ", " << amcl_pose_y << ", " << estimate_odom_x << ", " << estimate_odom_y << ", " << likelihood_state << std::endl;
 
         // cnt++;
         

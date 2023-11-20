@@ -26,7 +26,8 @@ geometry_msgs::PoseArray particle_cloud;
 geometry_msgs::Twist cmd_vel;
 geometry_msgs::PoseWithCovarianceStamped estimate_posi;
 // 軌跡の保存用csvファイル
-std::ofstream ofs("/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_ICMRE/2023-09-28_rsj_v4.csv");
+// std::ofstream ofs("/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_ICMRE/2023-09-28_rsj_v4.csv");
+std::ofstream ofs("/home/hirayama-d/research_ws/src/particlefilter_simulation_basic/csv_ICMRE/2023-11-01_rsj_v1.csv");
 
 // 初期速度指令値
 double v = 0.0;
