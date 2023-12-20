@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < polygon_num; ++i)
 	{
 		geometry_msgs::PolygonStamped polygon;
-		polygon.header.frame_id = "map"; // Changed to "map" or beego/odom
+		polygon.header.frame_id = "beego/odom"; // Changed to "map" or beego/odom
 		polygon.header.stamp = ros::Time::now();
 		for (int j = 0; j < 4; ++j)
 		{ // There should be 5 points, not 4
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 	{
 		std::cout << "白線マーカー表示中" << std::endl;
 		ros::spinOnce();
-		polygons.header.frame_id = "map"; // Changed to "map" or beego/odom
+		polygons.header.frame_id = "beego/odom"; // Changed to "map" or beego/odom
 		polygons.header.stamp = ros::Time::now();
 
 

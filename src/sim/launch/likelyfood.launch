@@ -1,7 +1,8 @@
 <launch>
   <!-- Node: 白線地図 -->
   <node pkg="particlefilter_simulation_basic" type="rectangle_marker_node" name="rectangle_marker_node"/>
-  <node pkg="sim" type="visualize_likely_food.py" name="arrow_visualizer" output="screen"/>
+  <!-- 尤度の可視化をrviz上でおこなう -->
+  <!-- <node pkg="sim" type="visualize_likely_food.py" name="arrow_visualizer" output="screen"/> -->
   <!-- Node 尤度を表示 -->
   <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find sim)/rviz/likelyfood.rviz" /> -->
 </launch>

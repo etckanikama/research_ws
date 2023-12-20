@@ -7,7 +7,7 @@
 
 
 	// launch particle filter propose method --------------------------------------------------------
-    <node pkg="particlefilter_simulation_basic" type="particle_filter_propose_aisin_for_rsj.cpp" name="particle_node" output="screen"/>
+    <!-- <node pkg="particlefilter_simulation_basic" type="particle_filter_propose_aisin_for_rsj.cpp" name="particle_node" output="screen"/> -->
 
 
     <node pkg="particlefilter_simulation_basic" type="particle_filter_propose_for_icmre.cpp" name="particle_node_kairyou" output="screen"/>

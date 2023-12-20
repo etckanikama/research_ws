@@ -10,3 +10,4 @@ src/beego_gazebo/
 *.bag
 /realsense_gazebo_plugin/
 src/velodyne/
+src/LeGO-LOAM/

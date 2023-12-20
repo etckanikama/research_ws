@@ -201,7 +201,9 @@ class LineDetection:
 							y = (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							z = 0.0
 							if x <= 2.0:
-								the_points_array.append([x,y,z])							# the_p		= Point32()
+								the_points_array.append([x,y,z])
+								print(x,y)							
+							# the_p		= Point32()
 							# the_p.x		= (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							# the_p.y		= (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							# the_p.z		= 0.0

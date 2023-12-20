@@ -55,9 +55,9 @@ const int PARTICLE_NUM = 400;
 const double dt = 1.0 / 10.0;                 // 周期
 double time_stamp = 0.0;                      // 時刻
 
-double coeff = 0.1; //尤度係数
+double coeff = 0.0; //尤度係数
 double Mth = 300; //最低限含まれてほしい点群数のしきい値
-double sigma_px_th =0.15;  //x方向の標準偏差のしきい値:白線の幅(0.075)*2=0.15
+double sigma_px_th =0.15; //x方向の標準偏差のしきい値:白線の幅(0.075)*2=0.15
 double sigma_py_th =0.15; //y方向の標準偏差のしきい値:白線の幅(0.075)*2=0.15
 
 
@@ -167,47 +167,7 @@ vector<vector<pair<double, double>>> generateCoordinateArray(pair<double, double
     return coordinates;
 }
 
-// // 内積を求める関数ベクトルAとベクトルBの内積
-// double dot(double Ax, double Ay, double Bx, double By) {
-//     // cout << Ax << " " <<  Bx << " " << Ax*Bx << " " << Ay << " " << " " << By << " " <<
-//     return Ax*Bx + Ay*By;
-// }
 
-// // 外積を求める関数
-// double cross_product(double Ax, double Ay, double Bx, double By) {
-//     return Ax*By - Bx*Ay;
-// }
-
-// // 点A(x1,y1),点B(x2,y2)を端点とする線分と点p(x,y)との距離を計算するプログラム
-// double distance_between_points(double x1, double y1, double x2, double y2, double x, double y) {
-//     //ABの長さを求める
-//     double length_AB = std::sqrt(std::pow((x2 - x1), 2) + std::pow((y2 - y1), 2));
-//     // cout << std::pow((x2 - x1), 2) << endl;
-//     cout << "x1: " << x1 << " y1: " << y1 << " x2: " << x2 << " y2: " << y2 << " x: " << x << " y: " << y << endl; 
-//     cout << "length_AB " << length_AB << endl;
-    
-//     // ab・ap, ba・bp（内積）を求める
-//     double AB_dot_AP = dot(x2-x1, y2-y1, x-x1, y-y1); //AB・APの内積を求める
-//     cout << "AB_dot_AP " << AB_dot_AP << endl;
-//     double BA_dot_BP = dot(x1-x2, y1-y2, x-x2, y-y2); //BA・BPの内積を求める
-//     cout << "BA_dot_BP " << BA_dot_BP << endl;
-//     // Calculate the cross product of vectors AP and AB：外積の計算
-//     double AP_cross_product_AB = cross_product(x-x1, y-y1, x2-x1, y2-y1);       
-//     cout << "AP_cross_product_AB " << AP_cross_product_AB << endl;
-
-//     if (AB_dot_AP < 0.0){ // AB・APが負なら点Aの外側なので、点Aと点Pの距離を求める
-//         cout << "ab・apが負です" << endl;
-//         return std::sqrt(std::pow((x - x1), 2) + std::pow((y - y1), 2));
-//     }
-//     else if (BA_dot_BP < 0.0){
-//         cout << "bA・Bpが負です" << endl;
-//         return std::sqrt(std::pow((x - x2), 2) + std::pow((y - y2), 2));
-//     }
-//     else{
-//         return std::abs(AP_cross_product_AB)/ length_AB;
-//     }
-
-// }
 
 // ------------------------尤度関数------------------------------
 // 白線ポリゴンにおけるマッチングによる尤度計算を行う関数
@@ -286,7 +246,8 @@ void polygonMatchingLikelihood(const pcl::PointCloud<pcl::PointXYZ>& downsampled
 
         likelihood_value = (1-coeff) * double(match_count) / double(downsampled_cloud.points.size()) + coeff;
         // std::cout <<"マッチ数:" << match_count << " " <<  "白線の全部:"<< line_posi.points.size() <<" "<<  "尤度:" << std::fixed << std::setprecision(10) << likelihood_value << std::endl;
-        particle_value[i] *= likelihood_value; // 前回の重みｘ尤度＝今回の重み
+        // particle_value[i] *= likelihood_value; // 前回の重みｘ尤度＝今回の重み
+        particle_value[i] = likelihood_value; // 前回の重みｘ尤度＝今回の重み（重みを0で初期化した）
         // std::cout << "尤度" << likelihood_value << std::endl;
 
 
@@ -295,84 +256,6 @@ void polygonMatchingLikelihood(const pcl::PointCloud<pcl::PointXYZ>& downsampled
     }
 
 }
-
-// void polygonMatchingLikelihood_crossProduct(const pcl::PointCloud<pcl::PointXYZ>& downsampled_cloud,
-//                                const geometry_msgs::PoseArray& particle_cloud,
-//                                double global_initial_x,double global_initial_y, double global_initial_yaw,
-//                                double time_stamp,
-//                                std::ofstream& ofs) {
-                                
-    
-//                                }
-// // 白線の中心の線分と白線の観測点群との点と直線との距離から求める尤度関数
-// void pointCenterLineDistanceLikelihood(const pcl::PointCloud<pcl::PointXYZ>& downsampled_cloud,
-//                                         const geometry_msgs::PoseArray& particle_cloud,
-//                                         double time_stamp,
-//                                         std::ofstream& ofs){
-    
-//     double likelihood_value = 0.0;
-//     double minDist = 100000; // 大きい値を初期値にする
-    
-//     // 仮想的な白線点群で実験
-//     double white_line_px[3] = {1,   10,    11};
-//     double white_line_py[3] = {0.4, -0.55, 3.5};
-
-//     // 処理を実装する
-//     // for (int i = 0; i < PARTICLE_NUM; i++) // パーティクル一個一個について計算していく
-//     // {
-//     //     double roll, pitch, yaw;
-//     //     geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); // yaw角に変換
-
-//     //     double points_score = 0.0;
-
-        
-//         // for (int j = 0; j < downsampled_cloud.points.size(); j++) // 検出した白線の座標配列
-//     for (int j = 0; j < 3; j++)
-//     {
-//         // // particle一つ一つについて絶対座標に変換(lineがjでtheta,pointsがiに注意)
-//         // double white_point_glx = downsampled_cloud.points[j].x * cosf(yaw) - downsampled_cloud.points[j].y * sinf(yaw) + particle_cloud.poses[i].position.x;
-//         // double white_point_gly = downsampled_cloud.points[j].x * sinf(yaw) + downsampled_cloud.points[j].y * cosf(yaw) + particle_cloud.poses[i].position.y;
-
-//         // 仮想的な白線点群3つで実験
-//         double white_point_glx = white_line_px[j];
-//         double white_point_gly = white_line_py[j];
-        
-//         for (int k = 0; k < POLYGON_NUM; k++)
-//         {
-//             double x1 = WHITE_CENTERLINE_COODINATE[k][0];
-//             double y1 = WHITE_CENTERLINE_COODINATE[k][1];
-//             double x2 = WHITE_CENTERLINE_COODINATE[k][2];
-//             double y2 = WHITE_CENTERLINE_COODINATE[k][3];
-
-//             double distance = distance_between_points(x1, y1, x2, y2, white_point_glx, white_point_gly);
-            
-//             if (minDist > distance)
-//             {
-//                 minDist = distance; //一つの点群と一番近いポリゴンとの距離を決める
-//             }
-
-//         }
-
-//         //     points_score += minDist; // 全点群の最近線分の距離の和を算出
-
-//         // }
-
-//         // parti
-
-//         // likelihood_value = double(points_score) / double(downsampled_cloud.points.size());
-
-//         // likelihood_value = double(match_count) / double(downsampled_cloud.points.size());
-//         // std::cout <<"マッチ数:" << match_count << " " <<  "白線の全部:"<< line_posi.points.size() <<" "<<  "尤度:" << std::fixed << std::setprecision(10) << likelihood_value << std::endl;
-        
-//         // particle_value[i] *= likelihood_value; // 前回の重みｘ尤度＝今回の重み
-
-
-//         // ofs << time_stamp << ", " << particle_cloud.poses[i].position.x << ", " << particle_cloud.poses[i].position.y << ", " << yaw << ", " << particle_value[i] << endl;
-    
-//     }
-
-// }
-
 
 
 // メイン関数
@@ -415,7 +298,10 @@ int main(int argc, char **argv)
 
     // // // パーティクルの座標の保存用csvファイル------------------------------------------------------gazebo_downsampled_ or gazebo_nashi
     std::stringstream ss;
-    ss << "/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230930_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    // ss << "/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230930_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    // ss << "/home/hirayama-d/research_ws/src/sim/20231212_csv/20231220_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    ss << "/home/hirayama-d/research_ws/src/sim/20231220_result/csv/20231220_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+
     std::string file_name = ss.str();
     std::ofstream ofs(file_name); // 任意のファイル名を生成する
 
@@ -465,7 +351,9 @@ int main(int argc, char **argv)
             particle_cloud.poses[pn].position.x = coordinates[i][j].first;
             particle_cloud.poses[pn].position.y = coordinates[i][j].second;
             particle_cloud.poses[pn].orientation = rpy_to_geometry_quat(0, 0, global_initial_yaw); //(rall, pitch, yaw)= yawが0度
-            particle_value[pn] = 1.0 / double(PARTICLE_NUM);                                       // 最初の重み（均等にする）
+            // particle_value[pn] = 1.0 / double(PARTICLE_NUM);                                       // 最初の重み（均等にする）
+            particle_value[pn] = 0.0;                                   // 最初の重み（均等にする）
+
             pn++;
         }
     }
@@ -477,45 +365,6 @@ int main(int argc, char **argv)
         ros::spinOnce();
         time_stamp += dt; // dtで時間を積算
 
-        // if (downsampled_cloud.points.size() > Mth)
-        // {
-        //                 // -------------標準偏差の計算----------------------
-        //     // sumの作成
-        //     double sum_px = 0.0, sum_py = 0.0;
-        //     for (int j = 0; j < downsampled_cloud.points.size(); j++)
-        //     {
-        //         sum_px += downsampled_cloud.points[j].x;
-        //         sum_py += downsampled_cloud.points[j].y;
-        //     }
-        //     // meanの作成
-        //     double mean_px = sum_px / downsampled_cloud.points.size();
-        //     double mean_py = sum_py / downsampled_cloud.points.size();
-        //     //偏差の二乗
-        //     double sumOfSquaredDeviation_x = 0.0;
-        //     double sumOfSquaredDeviation_y = 0.0;
-        //     for (int j = 0; j < downsampled_cloud.points.size(); j++)
-        //     {
-        //         double deviation_px = downsampled_cloud.points[j].x - mean_px;
-        //         double deviation_py = downsampled_cloud.points[j].y - mean_py;
-        //         sumOfSquaredDeviation_x += deviation_px * deviation_px;
-        //         sumOfSquaredDeviation_y += deviation_py * deviation_py;
-        //     }
-
-        //     //標準偏差を算出
-        //     double sigma_px = std::sqrt(sumOfSquaredDeviation_x / (downsampled_cloud.points.size() - 1));
-        //     double sigma_py = std::sqrt(sumOfSquaredDeviation_y / (downsampled_cloud.points.size() - 1));
-        //     // -----------------------------------------------------
-        //     std::cout << downsampled_cloud.points.size() << std::endl;
-        //     std::cout << "x方向の標準偏差 " << sigma_px << " " << "y方向の標準偏差" << sigma_py << std::endl;
-
-        //     if ((sigma_px > sigma_px_th) && (sigma_py > sigma_py_th)) //この条件を突破したら尤度計算が始まる
-        //     {
-        //         // 白線ポリゴンにおけるマッチングによる尤度関数&csvに保存（downsampled_cloud→line_cloud　変更可能)
-        //         polygonMatchingLikelihood(downsampled_cloud, particle_cloud,global_initial_x, global_initial_y, global_initial_yaw, time_stamp, ofs);
-        //     }
-        //     // 白線の中心の線分と白線の観測点群との点と直線との距離から求める尤度関数＆csvに保存
-        //     // pointCenterLineDistanceLikelihood(downsampled_cloud, particle_cloud, time_stamp, ofs);
-        // }
         // RSJ
         if (downsampled_cloud.points.size() > 0)
         {

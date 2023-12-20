@@ -193,8 +193,11 @@ class LineDetection:
 		# the_src_pts		= np.array([(66.0, 17.0), (548.0, 9.0), (138.0, 304.0), (592.0, 303.0)], dtype=np.float32)
 		# the_dst_pts		= np.array([(1.5, 0.75), (1.5, -0.5), (0.5, 0.15), (0.5, -0.15)], dtype=np.float32)
 		# self.H		= cv2.getPerspectiveTransform(the_src_pts, the_dst_pts)
-		the_src_pts		= np.array([(122.0, 33.0), (555.0, 23.0), (98.0, 353.0), (572.0, 355.0)], dtype=np.float32)
-		the_dst_pts		= np.array([(2.5, 1.0), (2.5, -1.0), (0.5, 0.15), (0.5, -0.15)], dtype=np.float32)
+		# the_src_pts		= np.array([(122.0, 33.0), (555.0, 23.0), (98.0, 353.0), (572.0, 355.0)], dtype=np.float32)
+		# the_dst_pts		= np.array([(2.5, 1.0), (2.5, -1.0), (0.5, 0.15), (0.5, -0.15)], dtype=np.float32)
+		# さきがけh:0.91,l=0.41パラメータ
+		the_src_pts		= np.array([(5, 8), (632, 4), (5, 355.0), (636.0, 354.0)], dtype=np.float32)
+		the_dst_pts		= np.array([(3.3, 2.0), (3.3, -1.8), (1.01, 0.7), (1.01, -0.67)], dtype=np.float32)
 		self.H		= cv2.getPerspectiveTransform(the_src_pts, the_dst_pts)
 		print("H=", self.H)
 
@@ -261,10 +264,10 @@ class LineDetection:
 				the_color_h		= self.front_hsv_median_mask_img.shape[0]
 				the_color_w		= self.front_hsv_median_mask_img.shape[1]
 				the_points		= PointCloud()
-				the_points.header.frame_id	= 'front_realsense_link'
+				# the_points.header.frame_id	= 'front_realsense_link'
 				# the_points.header.frame_id	= 'dha_esti_pose'
 				# the_points.header.frame_id	= 'custom_amcl_pose'
-				# the_points.header.frame_id	= 'map' # 地図に貼り付けるときはmap座標系
+				the_points.header.frame_id	= 'map' # 地図に貼り付けるときはmap座標系
 				for the_v in range(0, the_color_h, SKIP_H_NUM):
 					for the_u in range(0, the_color_w, SKIP_W_NUM):
 						if self.front_hsv_median_mask_img[the_v, the_u] > 250:

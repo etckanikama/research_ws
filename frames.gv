@@ -1,2 +1,22 @@
 digraph G {
-"no tf data recieved"}
+"base_link" -> "laser"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"odom" -> "base_link"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 100.201 Hz\nMost recent transform: 1700510642.995 ( 2720.347 sec old)\nBuffer length: 4.970 sec\n"];
+"front_realsense_link" -> "front_realsense_depth_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"front_realsense_depth_frame" -> "front_realsense_depth_optical_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"front_realsense_link" -> "front_realsense_color_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"front_realsense_aligned_depth_to_color_frame" -> "front_realsense_color_optical_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"front_realsense_link" -> "front_realsense_aligned_depth_to_color_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"front_realsense_link" -> "front_realsense_gyro_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"front_realsense_gyro_frame" -> "front_realsense_gyro_optical_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"front_realsense_link" -> "front_realsense_accel_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"front_realsense_accel_frame" -> "front_realsense_accel_optical_frame"[label="Broadcaster: /play_1700513356378497445\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1700513363.342 sec old)\nBuffer length: 0.000 sec\n"];
+"map" -> "odom"[label="Broadcaster: /amcl\nAverage rate: 40.145 Hz\nMost recent transform: 1700510643.435 ( 2719.907 sec old)\nBuffer length: 4.957 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1700513363.342"[ shape=plaintext ] ;
+ }->"front_realsense_link";
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1700513363.342"[ shape=plaintext ] ;
+ }->"map";
+}

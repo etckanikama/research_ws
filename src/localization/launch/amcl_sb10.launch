@@ -10,10 +10,12 @@
 
 	// launch map server --------------------------------------------------------
 	<!-- provide map -->
-	<node name="map_server" pkg="map_server" type="map_server" args="$(find localization)/map/map_sb10.yaml" respawn="false" >
+	<!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find localization)/map/map_sb10.yaml" respawn="false" >
+		<param name="use_map_topic" 	value="true"/>
+	</node> -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(find localization)/map/sakigake_map.yaml" respawn="false" >
 		<param name="use_map_topic" 	value="true"/>
 	</node>
-
 
 	// launch amcl in pepper01/map -----------------------------------------------
 	<!-- AMCL -->
@@ -32,7 +34,13 @@
 		<param name="initial_pose_x" value= "$(arg initial_x)"/>
 		<param name="initial_pose_y" value= "$(arg initial_y)"/>
 		<param name="initial_pose_a" value= "$(arg initial_yaw)"/>
-		<param name="odom_alpha2" value= "0.3"/> <!--直進に対しての回転の誤差(default:0.2)-->
+		<param name="odom_alpha1" value= "0.03"/>
+		<param name="odom_alpha2" value= "0.03"/>
+		<param name="odom_alpha3" value= "0.3"/>
+		<param name ="odom_alpha4" value = "0.03"/>
+		<param name ="min_particles" value = "100"/>
+		 <!--直進に対しての回転の誤差(default:0.2)-->
+
 
 
 	</node>

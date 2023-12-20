@@ -97,7 +97,7 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Image
-      Enabled: true
+      Enabled: false
       Image Topic: /front_camera/hsv_median_mask_image
       Max Value: 1
       Median window: 5
@@ -107,7 +107,7 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: raw
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Arrow Length: 0.10000000149011612
       Axes Length: 0.30000001192092896
@@ -126,7 +126,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Class: rviz/Image
-      Enabled: false
+      Enabled: true
       Image Topic: /front_camera/hsv_median_mask_image
       Max Value: 1
       Median window: 5
@@ -136,7 +136,7 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: raw
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 0.5
       Class: jsk_rviz_plugin/PolygonArray
       Color: 255; 255; 255
@@ -187,7 +187,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 12.960603713989258
+      Distance: 25.58193016052246
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -195,9 +195,9 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 8.239951133728027
-        Y: -0.7290843725204468
-        Z: 0.34218356013298035
+        X: 5.992684364318848
+        Y: -0.998760461807251
+        Z: 0.3399367034435272
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

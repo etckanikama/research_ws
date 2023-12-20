@@ -10,7 +10,7 @@
     <!-- static_TF -->
     <node name="urg_node" pkg="urg_node" type="urg_node">
         <param name="ip_address" value=""/>
-        <param name="serial_port" value="/dev/ttyACM0"/>
+        <param name="serial_port" value="/dev/ttyACM1"/>
         <param name="serial_baud" value="115200"/>
         <param name="frame_id" value="laser"/>
         <param name="calibrate_time" value="true"/>
@@ -20,10 +20,12 @@
         <param name="angle_max" value="1.5707963"/>
     </node>
    
-    <!-- static_TH : base_linkとlasaer -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="laser_to_base_link_broadcaster" args="0.216 0 0 0 0 0 1 base_link laser"/>
+    <!-- static_TH : base_linkとlasaer :beego用-->
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="laser_to_base_link_broadcaster" args="0.216 0 0 0 0 0 1 base_link laser"/> -->
+    <!-- static_TH : base_linkとlasaer :さきがけ用-->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="laser_to_base_link_broadcaster" args="0.095 0 0 0 0 0 1 base_link laser"/>
 
-
+    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch"/>
 
     <arg name="file_name"	default="doryaaaaaa.bag"/>
 	<arg name="dir_name"	default="/home/hirayama-d/research_ws/bag/"/>
@@ -33,6 +35,7 @@
                     /front_realsense/aligned_depth_to_color/image_raw 
                     /front_realsense/color/camera_info 
 					/front_realsense/color/image_raw
+                    /velodyne_points
                     /cmd_vel
                     /odom
                     /scan

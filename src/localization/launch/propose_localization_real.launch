@@ -15,12 +15,12 @@
 
 
 	<!-- AMCL -->
-	<!-- <arg name="position" default="aka"/>
+	<arg name="position" default="aka"/>
 	<arg name="initial_x" 
 		default="$(eval 'ao' == arg.position ? 13.25 : ('midori' == arg.position ? 10.75 : 0.0))" />
 	<arg name="initial_y" 
-		default="$(eval 'ao' == arg.position ? 1.325 : ('midori' == arg.position ? 3.97 : 0.0))" /> -->
-	<!-- <arg name="position" default="aka"/>
+		default="$(eval 'ao' == arg.position ? 1.325 : ('midori' == arg.position ? 3.97 : 0.0))" /> 
+	<arg name="position" default="aka"/>
 	<arg name="initial_x" default="$(eval '13.25' if position == 'ao' else ('0.0' if position == 'aka' else ('10.75' if position == 'midori' else ('0.0' if position == 'mizuiro' else '0.0'))))" />
 	<arg name="initial_y" default="$(eval '1.325' if position == 'ao' else ('0.0' if position == 'aka' else ('-3.97' if position == 'midori' else ('-1.0' if position == 'mizuiro' else '0.0'))))" />
 	<arg name="initial_yaw" default="$(eval '-3.14' if position == 'ao' else ('0.0' if position == 'aka' else ('1.57' if position == 'midori' else ('0.0' if position == 'mizuiro' else '0.0'))))" />
@@ -33,7 +33,7 @@
 		<param name="odom_alpha2" value= "0.3"/> 
 
 
-	</node> -->
+	</node>
 
 
 	// display with rviz ---------------------------------------------------------
