@@ -49,10 +49,9 @@ include_directories(
 
 add_executable(candinate_F.cpp src/candinate_F.cpp)
 add_executable(create_Ad.cpp src/create_Ad.cpp)
+add_executable(update_coodinate_d.cpp src/update_coodinate_d.cpp)
 
 target_link_libraries(candinate_F.cpp ${catkin_LIBRARIES})
 target_link_libraries(create_Ad.cpp ${catkin_LIBRARIES})
-# target_link_libraries(create_Ad.cpp
-#   # 他のリンク対象
-#   tf2_ros
-# )
+target_link_libraries(update_coodinate_d.cpp ${catkin_LIBRARIES})
+

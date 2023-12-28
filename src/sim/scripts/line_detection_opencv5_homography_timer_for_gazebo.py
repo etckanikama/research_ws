@@ -51,7 +51,7 @@ LINE_DETECTION_TIME		= 0.1				# 白線検出処理周期[s]
 IMAGE_SUB_TIME_THRE		= 0.1				# Subscribe時間遅れ許容範囲[s] LINE_DETECTION_TIME以下の値
 
 # ボクセルダウンサンプリングのパラメータ
-VOXEL_SIZE = 0.0001  # ボクセルサイズを設定:何センチ？？？
+VOXEL_SIZE = 0.02  # ボクセルサイズを設定:2cm間隔でダウンサンプリングをした
 
 
 #################################################################################
@@ -115,7 +115,7 @@ class LineDetection:
 		cv_points		= np.array([(0.0, 0.0), (640.0, 0.0),(640.0, 360.0),(0.0, 360.0)], dtype=np.float32)
 		# cv_points		= np.array([(0.0, 0.0), (1280.0, 0.0),(1280.0, 720.0),(0.0, 720.0)], dtype=np.float32)
 		# ros_points	= np.array([(9.97, 6.2), (9.97, -6.2), (0.52, -0.21),(0.52, 0.18)], dtype=np.float32)
-		ros_points	= np.array([(10.5, 6.5), (10.5, -6.2), (0.52, -0.21),(0.52, 0.2)], dtype=np.float32)
+		ros_points	= np.array([(10.3, 6.5), (10.3, -6.5), (0.52, -0.21),(0.52, 0.2)], dtype=np.float32)
 		self.H		= cv2.getPerspectiveTransform(cv_points, ros_points)
 		# ＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿￥
 		# 俯角：23deg
@@ -200,7 +200,7 @@ class LineDetection:
 							x = (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							y = (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							z = 0.0
-							if x <= 2.0:
+							if x <= 2.5:
 								the_points_array.append([x,y,z])
 								print(x,y)							
 							# the_p		= Point32()

@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
@@ -19,9 +20,21 @@ except ValueError:
     print("引数は数値である必要があリマス")
     sys.exit(1)
 
-# CSVファイルのパス
-file_path = f"/home/hirayama-d/research_ws/src/sim/20231220_result/csv/20231220_boxel_nasi_640x360_2.0ikanomi_kairyou{param_value1}_{param_value2}_{param_value3}.csv"
 
+
+# CSVファイルのパス(input)
+
+file_path = f"/home/hirayama-d/research_ws/src/sim/20231227_re_route1/csv/re_route1{param_value1}_{param_value2}_{param_value3}.csv"
+
+# file_path = f"/home/hirayama-d/research_ws/src/sim/20231226_hige/add_hige_x200length50_csv/add_hige_x200length_kyokutan{param_value1}_{param_value2}_{param_value3}.csv"
+
+# file_path = f"/home/hirayama-d/research_ws/src/sim/20231221_route2/csv/20231221_boxel_nasi_640x360_2.0ikanomi_kairyou{param_value1}_{param_value2}_{param_value3}.csv"
+# 計算結果確認用csv
+output_csv_path = f"/home/hirayama-d/research_ws/src/sim/20231227_re_route1/csv/output_eigen_re_route1.csv"
+
+# output_csv_path = f"/home/hirayama-d/research_ws/src/sim/20231221_route2/csv/output_eigen.csv"
+# file_path = f"/home/hirayama-d/research_ws/src/sim/20231220_result/csv/20231220_boxel_nasi_640x360_2.0ikanomi_kairyou{param_value1}_{param_value2}_{param_value3}.csv"
+# output_csv_path = f"/home/hirayama-d/research_ws/src/sim/20231221_route2/csv/output_eigen_route2.csv"
 # file_path = f"/home/hirayama-d/research_ws/src/sim/20231212_csv/20231212_boxel_nasi_640x360_2.0ikanomi_kairyou{param_value1}_{param_value2}_{param_value3}.csv"
 # file_path = f"/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230826_boxel_nasi_2.5ikanomi_{param_value1}_{param_value2}_{param_value3}.csv"
 # file_path = f"/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230930_boxel_nasi_640x360_2.0ikanomi_kairyou{param_value1}_{param_value2}_{param_value3}.csv"
@@ -34,11 +47,11 @@ data = pd.read_csv(file_path, header=None, names=['t', 'x', 'y', 'theta', 'w'])
 
 # 最初の400行を選択し、x, y, v のカラムを抽出
 data_subset = data.iloc[:400][['x', 'y', 'w']]
-print(data_subset)
+# print(data_subset)
 # 行列Uのデータを取得
 U = data_subset.values
 
-print("元の行列",U)
+# print("元の行列",U)
 # print(type(U))
 
 
@@ -94,12 +107,35 @@ print("固有値",eigenvalues)
 print("固有ベクトル",eigenvectors)
 print("localizability（e=sqrt(λ1*λ2）",eigenvalues[0]*eigenvalues[1])
 
+# 固有値とその他の必要なデータを変数に保存
+eigenvalue1 = eigenvalues[0]
+eigenvalue2 = eigenvalues[1]
+
+# 新しいデータ行を作成
+# new_row = pd.DataFrame({'x': [param_value1], 'y': [param_value2], 'yaw': [param_value3], 'eigenvalue1': [eigenvalue1], 'eigenvalue2': [eigenvalue2]})
+new_row = pd.DataFrame({'x': [param_value1], 'y': [param_value2], 'yaw': [param_value3], 'variance_x':[variance_x],'variance_y': [variance_y] ,'eigenvalue1': [eigenvalue1], 'eigenvalue2': [eigenvalue2]})
+
+# CSVファイルが存在するかどうかをチェック
+if os.path.exists(output_csv_path):
+    # 既存のデータを読み込む
+    existing_data = pd.read_csv(output_csv_path)
+    # 新しいデータ行を追加
+    updated_data = pd.concat([existing_data, new_row], ignore_index=True)
+else:
+    # 新しいデータフレームを作成
+    updated_data = new_row
+
+# データフレームをCSVファイルに保存
+updated_data.to_csv(output_csv_path, index=False)
+
 # Plot the eigenvectors for the new data
 fig, ax = plt.subplots(figsize=(11, 11))
 eigenvector_scale = 0.1
 for i in range(len(eigenvalues)):
     vec_new = eigenvectors[:, i] * eigenvalues[i] * eigenvector_scale
     plt.quiver(x_mean, y_mean, vec_new[0], vec_new[1], angles='xy', scale_units='xy', scale=1, label=f'Eigenvector {i+1}')
+
+
 
 plt.legend()
 plt.ylim(-0.01+param_value2, 0.01+param_value2)
@@ -109,5 +145,8 @@ ax.set_xlabel('X')
 ax.set_ylabel('Y')
 plt.title(f'Coodinate_x:{param_value1}y:{param_value2}theta{param_value3}\n variance_x: {variance_x} variance_y: {variance_y} \n Eigenvalues: {eigenvalues}\nEigenvectors: {eigenvectors}\nlocalizability(e=sqrt(λ1*λ2)):{eigenvalues[0]*eigenvalues[1]}')
 plt.grid(True)
-plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231220_result/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
+# plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231220_result/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
+# plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231221_route2/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
+plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231227_re_route1/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
+
 # plt.show()

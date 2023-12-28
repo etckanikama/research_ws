@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "rectangle_marker");
+	ros::init(argc, argv, "rectangle_marker_node");
 	ros::NodeHandle n;
 	ros::Publisher poly_pub = n.advertise<geometry_msgs::PolygonStamped>("polygon", 10);
 	ros::Publisher poly_array_pub = n.advertise<jsk_recognition_msgs::PolygonArray>("polygon_array", 10);
@@ -35,38 +35,39 @@ int main(int argc, char **argv)
 			{{3.26,-1.465},{3.26,-1.540},{2.325,-1.540},{2.325,-1.465}},
 			{{2.325, -1.465},{2.325, -3.60},{2.25,-3.60},{2.25,-1.465}},
 			{{1.420,-1.465},{1.420,-3.61},{1.345,-3.61},{1.345,-1.465}},
-			{{1.345,-1.465},{1.345,-1.540},{0.95,-1.540},{0.95,-1.465}},
-			{{0.95,-1.465},{0.95, -3.60},{0.875,-3.60},{0.875,-1.465}}
+			{{1.345,-1.465},{1.345,-1.540},{0.545,-1.540},{0.545,-1.465}},
+			{{0.545,-1.465},{0.545, -3.60},{0.47,-3.60},{0.47,-1.465}}
 			};
-
 	jsk_recognition_msgs::PolygonArray polygons;
+	for (int i = 0; i < polygon_num; ++i)
+	{
+		geometry_msgs::PolygonStamped polygon;
+		polygon.header.frame_id = "beego/odom"; // Changed to "map" or beego/odom
+		polygon.header.stamp = ros::Time::now();
+		for (int j = 0; j < 4; ++j)
+		{ // There should be 5 points, not 4
+			geometry_msgs::Point32 p;
+			p.x = rectangles[i][j][0];
+			p.y = rectangles[i][j][1];
+			p.z = 0;
+			polygon.polygon.points.push_back(p);
+		}
+
+		polygons.polygons.push_back(polygon);
+		
+	}
 	ros::Rate rate(10.0);
 	while (ros::ok())
 	{
-		std::cout << 1+1 << std::endl;
+		std::cout << "gazebo用の白線地図" << std::endl;
 		ros::spinOnce();
-		polygons.header.frame_id = "beego/odom"; // Changed to "map"
+		polygons.header.frame_id = "beego/odom"; // Changed to "map" or beego/odom
 		polygons.header.stamp = ros::Time::now();
 
-		for (int i = 0; i < polygon_num; ++i)
-		{
-			geometry_msgs::PolygonStamped polygon;
-			polygon.header.frame_id = "beego/odom"; // Changed to "map"
-			polygon.header.stamp = ros::Time::now();
-			for (int j = 0; j < 4; ++j)
-			{ // There should be 5 points, not 4
-				geometry_msgs::Point32 p;
-				p.x = rectangles[i][j][0];
-				p.y = rectangles[i][j][1];
-				p.z = 0;
-				polygon.polygon.points.push_back(p);
-			}
 
-			polygons.polygons.push_back(polygon);
-			poly_pub.publish(polygon);
-			ros::Duration(1.0).sleep(); // Optional delay
-		}
+		
 
+		// ros::Duration(1.0).sleep(); // Optional delay
 		// Publish the PolygonArray after all polygons have been individually published
 		poly_array_pub.publish(polygons);
 	}

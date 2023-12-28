@@ -150,7 +150,7 @@ Visualization Manager:
       enable lighting: false
       normal length: 0.10000000149011612
       only border: false
-      show normal: true
+      show normal: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /visualization_marker
@@ -187,7 +187,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 25.58193016052246
+      Distance: 16.893314361572266
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -195,9 +195,9 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 5.992684364318848
-        Y: -0.998760461807251
-        Z: 0.3399367034435272
+        X: 7.01273250579834
+        Y: -0.9943282604217529
+        Z: 0.34095707535743713
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

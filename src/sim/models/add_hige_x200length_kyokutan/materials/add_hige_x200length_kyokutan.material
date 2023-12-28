@@ -1,0 +1,10 @@
+material add_hige_x200length_kyokutan {
+  technique {
+    pass {
+      texture_unit {
+        texture add_hige_x200length_kyokutan.png
+        scale 1 1
+      }
+    }
+  }
+}

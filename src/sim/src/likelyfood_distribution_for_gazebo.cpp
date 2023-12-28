@@ -61,12 +61,17 @@ double sigma_px_th =0.15; //x方向の標準偏差のしきい値:白線の幅(0
 double sigma_py_th =0.15; //y方向の標準偏差のしきい値:白線の幅(0.075)*2=0.15
 
 
-const int POLYGON_NUM = 10; // ポリゴンの数l棟は8,sbは10
-double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.125, 0.545, 1.935}, {9.125, 10.205, 1.86, 1.935}, {10.13, 10.205, 1.935, 3.01}, {11.28, 11.355, 1.76, 3.01}, {11.355, 13.5, 1.76, 1.835}, {11.41, 13.5, 0.75, 0.825}, {11.41, 11.485, 0.75, -3.6}, {10.02, 10.095, -0.545, -3.6}, {0, 10.095, -0.47, -0.545}};
-// const int POLYGON_NUM = 25; // sbのポリゴンの数は駐車場加えて24(x_min,x_max,y_min,y_max)
-// double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.125, 0.545, 1.935}, {9.125, 10.205, 1.86, 1.935}, {10.13, 10.205, 1.935, 3.01}, {11.28, 11.355, 1.76, 3.01}, {11.355, 12.6, 1.76, 1.835}, {11.41, 12.6, 0.75, 0.825}, {11.41, 11.485, 0.75, -3.6}, {10.02, 10.095, -0.545, -3.6}, {0, 10.095, -0.47, -0.545},
-//                                             {0.92, 0.95, -1.465, -3.61},{0.95, 1.345,-1.465, -1.540},{1.345, 1.420, -1.465, -3.61},{2.25, 2.325, -1.465, -3.61},{2.325, 3.26,-1.465, -1.540},{3.26, 3.335, -1.465, -3.61},{4.15, 4.225, -1.465, -3.61},{4.225, 5.175,-1.465, -1.540},{5.175, 5.250, -1.465, -3.61},{6.050, 6.125, -1.465, -3.61},
-//                                             {6.125, 7.085,-1.465, -1.540},{7.08, 7.16, -1.465, -3.61},{7.96, 8.035, -1.465, -3.61},{8.055, 9.305,-1.465, -1.540},{9.30, 9.38, -1.465, -3.61}};
+// const int POLYGON_NUM = 10; // ポリゴンの数l棟は8,sbは10
+// double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.125, 0.545, 1.935}, {9.125, 10.205, 1.86, 1.935}, {10.13, 10.205, 1.935, 3.01}, {11.28, 11.355, 1.76, 3.01}, {11.355, 13.5, 1.76, 1.835}, {11.41, 13.5, 0.75, 0.825}, {11.41, 11.485, 0.75, -3.6}, {10.02, 10.095, -0.545, -3.6}, {0, 10.095, -0.47, -0.545}};
+const int POLYGON_NUM = 25; // sbのポリゴンの数は駐車場加えて24(x_min,x_max,y_min,y_max)
+double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.125, 0.545, 1.935}, {9.125, 10.205, 1.86, 1.935}, {10.13, 10.205, 1.935, 3.01}, {11.28, 11.355, 1.76, 3.01}, {11.355, 12.6, 1.76, 1.835}, {11.41, 12.6, 0.75, 0.825}, {11.41, 11.485, 0.75, -3.61}, {10.02, 10.095, -0.545, -3.61}, {0, 10.095, -0.47, -0.545},
+                                            {0.47, 0.545, -1.465, -3.61},{0.545, 1.345,-1.465, -1.540},{1.345, 1.420, -1.465, -3.61},{2.25, 2.325, -1.465, -3.61},{2.325, 3.26,-1.465, -1.540},{3.26, 3.335, -1.465, -3.61},{4.15, 4.225, -1.465, -3.61},{4.225, 5.175,-1.465, -1.540},{5.175, 5.250, -1.465, -3.61},{6.050, 6.125, -1.465, -3.61},
+                                            {6.125, 7.085,-1.465, -1.540},{7.08, 7.16, -1.465, -3.61},{7.96, 8.035, -1.465, -3.61},{8.055, 9.305,-1.465, -1.540},{9.30, 9.38, -1.465, -3.61},
+                                            // {1.925, 2.0,0.295,0.795} //50cmひげの追加分
+                                            // {1.925, 2.0,0.295,1.295} //100cmひげの追加分
+                                            // {1.925, 2.0,-1.295,1.295} //kyokutan_cmひげの追加分
+
+                                            }; 
 // const int POLYGON_NUM = 3; 
 // double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{11.41, 11.485, 0.75, -5.0}, {10.02, 10.095, -0.545, -5.0},{0, 10.095, -0.47, -0.545}};
 
@@ -261,7 +266,6 @@ void polygonMatchingLikelihood(const pcl::PointCloud<pcl::PointXYZ>& downsampled
 // メイン関数
 int main(int argc, char **argv)
 {
-    std::cout << "aaaaaaa" << std::endl;
  
     ros::init(argc, argv, "likelifood_distribution");
     ros::NodeHandle nh;
@@ -300,7 +304,11 @@ int main(int argc, char **argv)
     std::stringstream ss;
     // ss << "/home/hirayama-d/research_ws/src/sim/ICMRE2024_csv/20230930_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
     // ss << "/home/hirayama-d/research_ws/src/sim/20231212_csv/20231220_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
-    ss << "/home/hirayama-d/research_ws/src/sim/20231220_result/csv/20231220_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    // ss << "/home/hirayama-d/research_ws/src/sim/20231220_result/csv/20231220_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    // ss << "/home/hirayama-d/research_ws/src/sim/20231226_hige/add_hige_x200length50_csv/add_hige_x200length_kyokutan" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    // ss << "/home/hirayama-d/research_ws/src/sim/20231221_route1/csv/20231221_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    ss << "/home/hirayama-d/research_ws/src/sim/20231227_re_route1/csv/route1_reverse" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+
 
     std::string file_name = ss.str();
     std::ofstream ofs(file_name); // 任意のファイル名を生成する

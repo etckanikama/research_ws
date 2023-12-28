@@ -1,0 +1,22 @@
+<?xml version='1.0'?>
+<sdf version="1.6">
+<model name="add_hige_x200length_kyokutan">
+  <pose>0 0 0 0 0 0</pose>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>12.63 6.62 0.01</size>
+          </box>
+        </geometry>
+	<material>
+          <script>
+            <uri>model://add_hige_x200length_kyokutan/materials/add_hige_x200length_kyokutan.material</uri>
+            <name>add_hige_x200length_kyokutan</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <static>1</static>
+  </model>
+</sdf>
