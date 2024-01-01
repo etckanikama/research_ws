@@ -119,11 +119,23 @@ with open(Fy_file_path, "r") as file:
     Fy = ast.literal_eval(data[data.find('{'):])
 
 
-###################座標の出力################
-for index in origin_F_key:
-    key = str(index)
+###################ひげの座標の出力################
+hige_candidate = []
+
+for key in origin_F_key:
+    x = origin_F[key][0]
+    y = origin_F[key][1]
+    state = ''
+
+    if key in origin_Fx_key:
+        state = 'fx'
+    elif key in origin_Fy_key:
+        state = 'fy'
+
+    hige_candidate.append((x, y, state))
     # keyがorigin_fxに入ってたらfx, origin_fyに入ってたらfyをstatatusに加えて白線ひげ地点として出力する
-    print(origin_F[key][0], origin_F[key][1])
+    # print(origin_F[key][0], origin_F[key][1])
+print(hige_candidate)
 
 #################描画############################
 # 全ての Fx と Fy の点をプロット
@@ -133,12 +145,12 @@ for key, value in Fx.items():
 for key, value in Fy.items():
     plt.plot(value[0], value[1], 'mo')  # 'ro' means red color, circle marker
 
-# Plot all d points
-for key, value in dx.items():
-    plt.plot(value[0], value[1], 'bo')  # 'gx' means green color, x marker
-# Plot all d points
-for key, value in dy.items():
-    plt.plot(value[0], value[1], 'ro')  # 'gx' means green color, x marker
+# # Plot all d points
+# for key, value in dx.items():
+#     plt.plot(value[0], value[1], 'bo')  # 'gx' means green color, x marker
+# # Plot all d points
+# for key, value in dy.items():
+#     plt.plot(value[0], value[1], 'ro')  # 'gx' means green color, x marker
 
 # # Plot the selected F points
 for index in origin_F_key:

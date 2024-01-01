@@ -33,7 +33,7 @@ except ValueError:
 # csv_file_path = f"/home/hirayama-d/research_ws/src/sim/20231221_route2/csv/20231221_boxel_nasi_640x360_2.0ikanomi_kairyou{param_value1}_{param_value2}_{param_value3}.csv"
 
 # csv_file_path = f"/home/hirayama-d/research_ws/src/sim/20231226_hige/add_hige_x200length50_csv/add_hige_x200length_kyokutan{param_value1}_{param_value2}_{param_value3}.csv"
-csv_file_path = f"/home/hirayama-d/research_ws/src/sim/20231227_re_route1/csv/re_route1{param_value1}_{param_value2}_{param_value3}.csv"
+csv_file_path = f"/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1/csv/path_route1_{param_value1}_{param_value2}_{param_value3}.csv"
 
 
 # CSVファイルを読み込んでリストに格納
@@ -73,7 +73,7 @@ ax.set_title(f'x:{param_value1}, y:{param_value2}, yaw{param_value3}')
 # plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231212_csv/output/likelyhood/likelyhood-Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
 # plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231220_result/output/likelyhood/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
 # plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231221_route2/output/likelyhood/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
-plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231227_re_route1/output/likelyhood/likelyhood_Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
+plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1/output/likelyhood/likelyhood_Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
 
 
 # グラフの表示

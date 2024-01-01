@@ -1,0 +1,10 @@
+material after_set_covering_route1 {
+  technique {
+    pass {
+      texture_unit {
+        texture after_set_covering_route1.png
+        scale 1 1
+      }
+    }
+  }
+}

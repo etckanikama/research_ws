@@ -1,0 +1,22 @@
+<?xml version='1.0'?>
+<sdf version="1.6">
+<model name="after_set_covering_route1_tougou">
+  <pose>0 0 0 0 0 0</pose>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>12.63 6.62 0.01</size>
+          </box>
+        </geometry>
+	<material>
+          <script>
+            <uri>model://after_set_covering_route1_tougou/materials/after_set_covering_route1_tougou.material</uri>
+            <name>after_set_covering_route1_tougou</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <static>1</static>
+  </model>
+</sdf>

@@ -87,25 +87,25 @@ for i, edge in enumerate(interval_based_interpolated_edges):
         key_counter += 1
 print("候補地 F:\n", interpolated_points_dict)
 
-# ロボットの位置と経路
-initial_position = (0, 0)
-relay_point = (10.7, 0)
-goal_position = (10.7, -4.0)
+# # ロボットの位置と経路
+# initial_position = (0, 0)
+# relay_point = (10.7, 0)
+# goal_position = (10.7, -4.0)
 
-# ロボットの経路の内分点の計算
-d = []
-interval_d = 1
-d.extend(interpolate_points_inclusive(initial_position, relay_point, interval_d))
-d.extend(interpolate_points_inclusive(relay_point, goal_position, interval_d)[1:])  # 重複を避ける
+# # ロボットの経路の内分点の計算
+# d = []
+# interval_d = 1
+# d.extend(interpolate_points_inclusive(initial_position, relay_point, interval_d))
+# d.extend(interpolate_points_inclusive(relay_point, goal_position, interval_d)[1:])  # 重複を避ける
 
-# ロボットの経路の各内分点にキーを割り当て、辞書を作成
-d_points_dict = {}
-key_counter = 0
-for point in d:
-    key = f"d{key_counter}"
-    d_points_dict[key] = point
-    key_counter += 1
-print("ロボットの自己位置 d:\n", d_points_dict)
+# # ロボットの経路の各内分点にキーを割り当て、辞書を作成
+# d_points_dict = {}
+# key_counter = 0
+# for point in d:
+#     key = f"d{key_counter}"
+#     d_points_dict[key] = point
+#     key_counter += 1
+# print("ロボットの自己位置 d:\n", d_points_dict)
 
 # [先程のコードの続き]
 
@@ -125,10 +125,10 @@ for i, edge in enumerate(interval_based_interpolated_edges):
     y_coords = [point[1] for point in edge]
     plt.scatter(x_coords, y_coords, color=color, s=15)
 
-# ロボットの経路 'd' のプロット
-robot_x_coords = [point[0] for point in d]
-robot_y_coords = [point[1] for point in d]
-plt.plot(robot_x_coords, robot_y_coords, '-o', alpha=0.8, color='green', label='Robot Path')
+# # ロボットの経路 'd' のプロット
+# robot_x_coords = [point[0] for point in d]
+# robot_y_coords = [point[1] for point in d]
+# plt.plot(robot_x_coords, robot_y_coords, '-o', alpha=0.8, color='green', label='Robot Path')
 
 plt.xlabel("X")
 plt.ylabel("Y")

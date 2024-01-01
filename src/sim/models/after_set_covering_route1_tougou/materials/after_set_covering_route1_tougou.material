@@ -1,0 +1,10 @@
+material after_set_covering_route1_tougou {
+  technique {
+    pass {
+      texture_unit {
+        texture after_set_covering_route1_tougou.png
+        scale 1 1
+      }
+    }
+  }
+}

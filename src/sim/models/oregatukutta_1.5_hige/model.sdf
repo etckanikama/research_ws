@@ -1,0 +1,22 @@
+<?xml version='1.0'?>
+<sdf version="1.6">
+<model name="oregatukutta_1.5_hige">
+  <pose>0 0 0 0 0 0</pose>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>12.63 6.62 0.01</size>
+          </box>
+        </geometry>
+	<material>
+          <script>
+            <uri>model://oregatukutta_1.5_hige/materials/oregatukutta_1.5_hige.material</uri>
+            <name>oregatukutta_1.5_hige</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <static>1</static>
+  </model>
+</sdf>

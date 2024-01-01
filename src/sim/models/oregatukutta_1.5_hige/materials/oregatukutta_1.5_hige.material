@@ -1,0 +1,10 @@
+material oregatukutta_1.5_hige {
+  technique {
+    pass {
+      texture_unit {
+        texture oregatukutta_1.5_hige.png
+        scale 1 1
+      }
+    }
+  }
+}

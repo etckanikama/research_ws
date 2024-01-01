@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <ros/ros.h>
 #include <vector>
@@ -63,13 +64,24 @@ double sigma_py_th =0.15; //y方向の標準偏差のしきい値:白線の幅(0
 
 // const int POLYGON_NUM = 10; // ポリゴンの数l棟は8,sbは10
 // double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.125, 0.545, 1.935}, {9.125, 10.205, 1.86, 1.935}, {10.13, 10.205, 1.935, 3.01}, {11.28, 11.355, 1.76, 3.01}, {11.355, 13.5, 1.76, 1.835}, {11.41, 13.5, 0.75, 0.825}, {11.41, 11.485, 0.75, -3.6}, {10.02, 10.095, -0.545, -3.6}, {0, 10.095, -0.47, -0.545}};
-const int POLYGON_NUM = 25; // sbのポリゴンの数は駐車場加えて24(x_min,x_max,y_min,y_max)
+const int POLYGON_NUM = 37; // sbのポリゴンの数は駐車場加えて24(x_min,x_max,y_min,y_max)
 double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.125, 0.545, 1.935}, {9.125, 10.205, 1.86, 1.935}, {10.13, 10.205, 1.935, 3.01}, {11.28, 11.355, 1.76, 3.01}, {11.355, 12.6, 1.76, 1.835}, {11.41, 12.6, 0.75, 0.825}, {11.41, 11.485, 0.75, -3.61}, {10.02, 10.095, -0.545, -3.61}, {0, 10.095, -0.47, -0.545},
                                             {0.47, 0.545, -1.465, -3.61},{0.545, 1.345,-1.465, -1.540},{1.345, 1.420, -1.465, -3.61},{2.25, 2.325, -1.465, -3.61},{2.325, 3.26,-1.465, -1.540},{3.26, 3.335, -1.465, -3.61},{4.15, 4.225, -1.465, -3.61},{4.225, 5.175,-1.465, -1.540},{5.175, 5.250, -1.465, -3.61},{6.050, 6.125, -1.465, -3.61},
                                             {6.125, 7.085,-1.465, -1.540},{7.08, 7.16, -1.465, -3.61},{7.96, 8.035, -1.465, -3.61},{8.055, 9.305,-1.465, -1.540},{9.30, 9.38, -1.465, -3.61},
                                             // {1.925, 2.0,0.295,0.795} //50cmひげの追加分
                                             // {1.925, 2.0,0.295,1.295} //100cmひげの追加分
                                             // {1.925, 2.0,-1.295,1.295} //kyokutan_cmひげの追加分
+                                            // {8.686401098901099, 8.761401098901098, 0.20750000000000007, 0.8075000000000001}, 
+                                            // {7.182280219780221, 7.2572802197802195, 0.20750000000000007, 0.8075000000000001}, 
+                                            // {3.171291208791209, 3.2462912087912086, 0.20750000000000007, 0.8075000000000001}, 
+                                            // {5.7166500000000005, 5.79165, -0.8075000000000001, -0.20750000000000007}, 
+                                            // {4.30335, 4.378349999999999, -0.8075000000000001, -0.20750000000000007}, 
+                                            // {2.2843500000000003, 2.3593500000000005, -0.8075000000000001, -0.20750000000000007}, 
+                                            // {11.1475, 11.7475, 0.10552325581395358, 0.1805232558139536}, 
+                                            // {9.7575, 10.357500000000002, -2.5173333333333336, -2.4423333333333335}, 
+                                            // {9.7575, 10.357500000000002, -3.6375, -3.5625}
+                                            // 統合ひげ追加
+                                            {4.174038461538462, 4.249038461538461, 0.20750000000000007, 0.8075000000000001}, {1.2660714285714287, 1.341071428571429, 0.20750000000000007, 0.8075000000000001}, {-0.0375, 0.0375, 0.20750000000000007, 0.8075000000000001}, {9.4115, 9.4865, 1.5975, 2.1975}, {8.54325, 8.61825, -0.8075000000000001, -0.20750000000000007}, {7.2309, 7.305899999999999, -0.8075000000000001, -0.20750000000000007}, {5.7166500000000005, 5.79165, -0.8075000000000001, -0.20750000000000007}, {2.68815, 2.76315, -0.8075000000000001, -0.20750000000000007}, {11.1475, 11.7475, -0.1979651162790698, -0.12296511627906978}, {11.1475, 11.7475, -2.72703488372093, -2.6520348837209298}, {9.7575, 10.357500000000002, -1.499, -1.4240000000000002}, {9.7575, 10.357500000000002, -3.6375, -3.5625}
 
                                             }; 
 // const int POLYGON_NUM = 3; 
@@ -307,7 +319,8 @@ int main(int argc, char **argv)
     // ss << "/home/hirayama-d/research_ws/src/sim/20231220_result/csv/20231220_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
     // ss << "/home/hirayama-d/research_ws/src/sim/20231226_hige/add_hige_x200length50_csv/add_hige_x200length_kyokutan" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
     // ss << "/home/hirayama-d/research_ws/src/sim/20231221_route1/csv/20231221_boxel_nasi_640x360_2.0ikanomi_kairyou" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
-    ss << "/home/hirayama-d/research_ws/src/sim/20231227_re_route1/csv/route1_reverse" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    // ss << "/home/hirayama-d/research_ws/src/sim/20231227_re_route1/csv/route1_reverse" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
+    ss << "/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/csv/path_route1_reverse" << std::fixed << std::setprecision(1) << param_global_init_x << "_"<< std::fixed << std::setprecision(1) << param_global_init_y << "_" << std::fixed << std::setprecision(2) << param_global_init_yaw <<".csv";
 
 
     std::string file_name = ss.str();
