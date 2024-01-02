@@ -23,15 +23,16 @@ except ValueError:
 
 
 # CSVファイルのパス(input)
+file_path = f"/home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/csv/path_route1_{param_value1}_{param_value2}_{param_value3}.csv"
 
-file_path = f"/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1/csv/path_route1_{param_value1}_{param_value2}_{param_value3}.csv"
+# file_path = f"/home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/csv/path_route1{param_value1}_{param_value2}_{param_value3}.csv"
 # file_path = f"/home/hirayama-d/research_ws/src/sim/20231227_re_route1/csv/re_route1{param_value1}_{param_value2}_{param_value3}.csv"
 
 # file_path = f"/home/hirayama-d/research_ws/src/sim/20231226_hige/add_hige_x200length50_csv/add_hige_x200length_kyokutan{param_value1}_{param_value2}_{param_value3}.csv"
 
 # file_path = f"/home/hirayama-d/research_ws/src/sim/20231221_route2/csv/20231221_boxel_nasi_640x360_2.0ikanomi_kairyou{param_value1}_{param_value2}_{param_value3}.csv"
 # 計算結果確認用csv
-output_csv_path = f"/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1/csv/output_eigen_set_covering_route1.csv"
+output_csv_path = f"/home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/csv/output_eigen_path_route1.csv"
 
 # output_csv_path = f"/home/hirayama-d/research_ws/src/sim/20231227_re_route1/csv/output_eigen_re_route1.csv"
 
@@ -151,6 +152,6 @@ plt.grid(True)
 # plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231220_result/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
 # plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231221_route2/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
 # plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20231227_re_route1/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
-plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
+plt.savefig(f"/home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/output/eigenvalue/Coodinate_x{param_value1}y{param_value2}theta{param_value3}.png")
 
 # plt.show()

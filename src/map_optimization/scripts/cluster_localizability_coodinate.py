@@ -21,7 +21,8 @@ def write_dict_to_file(dictionary, file_path):
 # CSVファイルの読み込み
 # file_path = '/home/hirayama-d/research_ws/src/sim/20231221_route/csv/output_eigen_route2.csv'  # CSVファイルのパスを指定してください
 # file_path = '/home/hirayama-d/research_ws/src/sim/20231221_route1/csv/output_eigen_route1.csv'  # CSVファイルのパスを指定してください
-file_path = '/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/csv/output_eigen_set_covering_route1_reverse.csv'
+# file_path = '/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/csv/output_eigen_set_covering_route1_reverse.csv'
+file_path = '/home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/csv/output_eigen_path_route1.csv'
 # file_path = '/home/hirayama-d/research_ws/src/sim/20231229_after_set_covering_route1/csv/output_eigen_set_covering_route1.csv'  # CSVファイルのパスを指定してください
 
 data = pd.read_csv(file_path)
@@ -93,7 +94,8 @@ for color in choices:
 
 
 # 新しいCSVファイルの作成
-output_file_path = '/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/csv/output_cluster_path1_reverse.csv'  # 出力CSVファイルのパスを指定
+# output_file_path = '/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/csv/output_cluster_path1_reverse.csv'  # 出力CSVファイルのパスを指定
+output_file_path = '/home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/csv/origin_output_cluster_path1.csv' 
 output_data = data[['x', 'y', 'yaw', 'sqrt_variance_x', 'sqrt_variance_y', 'color']].rename(
     columns={'sqrt_variance_x': 'std_dev_x', 'sqrt_variance_y': 'std_dev_y', 'color': 'label'}
 )

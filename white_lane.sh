@@ -13,7 +13,7 @@ do
     pid_launch=$!
     sleep 2
 
-    # # gazebo用の地図publisher
+    # gazebo用の地図publisher
     rosrun sim sample_marker_publisher.cpp &
     pid_rosrun_map=$!
     sleep 1
@@ -30,7 +30,7 @@ do
 
     # # # 数秒待つ（例：15秒）
     sleep 10
-    scrot "matching-${initial_x}-0.0-0.0.png" -u -e 'mv $f /home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/output/matching'
+    scrot "matching-${initial_x}-0.0-0.0.png" -u -e 'mv $f /home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/output/matching'
 
     # プロセスを終了
     kill $pid_launch
@@ -66,7 +66,7 @@ do
 
     # 数秒待つ（例：15秒）
     sleep 10
-    scrot "matching-10.7-${initial_y}--1.57.png" -u -e 'mv $f /home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/output/matching'
+    scrot "matching-10.7-${initial_y}--1.57.png" -u -e 'mv $f /home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/output/matching'
 
 
     # プロセスを終了

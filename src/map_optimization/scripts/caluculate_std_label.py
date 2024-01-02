@@ -1,7 +1,12 @@
 import pandas as pd
 
 # CSVファイルの読み込み
-output_cluster_file = '/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/csv/output_cluster_path1_reverse.csv'  # CSVファイルのパスを指定
+# output_cluster_file = '/home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/csv/output_cluster_path1_reverse.csv'
+# output_cluster_file = '/home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/csv/1.5_hige_output_cluster_path1.csv'
+
+output_cluster_file = '/home/hirayama-d/research_ws/src/sim/20240101_oregatukutta_1.5_hige/path_route1/csv/origin_output_cluster_path1.csv' 
+
+# CSVファイルのパスを指定
 data = pd.read_csv(output_cluster_file)
 
 # ① labelがblueのstd_dev_xの平均とその他の情報

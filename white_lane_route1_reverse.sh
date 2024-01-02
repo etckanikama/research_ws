@@ -22,7 +22,7 @@ do
 
     # 数秒待つ（例：15秒）
     sleep 10
-    scrot "matching-10.7-${initial_y}-1.57.png" -u -e 'mv $f /home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/output/matching'
+    scrot "matching-10.7-${initial_y}-1.57.png" -u -e 'mv $f /home/hirayama-d/research_ws/src/sim/20240101_original_route1/path_route1_reverse/output/matching'
 
 
     # プロセスを終了
@@ -55,7 +55,7 @@ do
 
     # 数秒待つ（例：15秒）
     sleep 10
-    scrot "matching-${initial_x}-0.0--3.14.png" -u -e 'mv $f /home/hirayama-d/research_ws/src/sim/20240101_after_set_covering_route1_tougou/path_route1_reverse/output/matching'
+    scrot "matching-${initial_x}-0.0--3.14.png" -u -e 'mv $f /home/hirayama-d/research_ws/src/sim/20240101_original_route1/path_route1_reverse/output/matching'
 
     # プロセスを終了
     kill $pid_launch
