@@ -11,10 +11,6 @@
   <xacro:property name="WHEEL_MASS" value="0.1"/>
   <xacro:property name="WHEEL_RAD" value="0.041"/>
   <xacro:property name="WHEEL_THICK" value="0.015"/>
-    
-  <xacro:arg name="use_nominal_extrinsics" default="false" />
-  <xacro:include filename="$(find sim)/urdf/_d435.urdf.xacro"/>
-
 
   <material name="gray">
     <color rgba="0.75 0.75 0.75 1"/>
@@ -26,7 +22,7 @@
     <visual name="visual">
       <origin xyz="0 0 0" rpy="0 0 ${M_PI/2}"/>
       <geometry>
-        <mesh filename="package://sim/meshes/base_link.STL" />
+        <mesh filename="package://yamasemi_sim/meshes/base_link.STL" />
       </geometry>
       <material name="gray"/>
     </visual>
@@ -53,7 +49,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://sim/meshes/right_wheel_link.STL"/>
+        <mesh filename="package://yamasemi_sim/meshes/right_wheel_link.STL"/>
       </geometry>
       <material name="gray"/>
     </visual>
@@ -89,7 +85,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://sim/meshes/left_wheel_link.STL" />
+        <mesh filename="package://yamasemi_sim/meshes/left_wheel_link.STL" />
       </geometry>
       <material name="gray"/>
     </visual>
@@ -148,9 +144,9 @@
 
   <link name="hokuyo_link">
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="1 1 1" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/>
+        <mesh filename="package://yamasemi_sim/meshes/hokuyo.dae"/>
       </geometry>
     </visual>
     <collision>
@@ -176,45 +172,35 @@
   </joint>
 
 <!-- Camera -->
-  <!-- <link name="camera_link">
-     <visual>
-      <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
-      <geometry>
-        <mesh filename="file://$(find realsense2_description)/meshes/d435.dae" />
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="file://$(find realsense2_description)/meshes/d435.dae" />
-      </geometry>
-    </collision>
-  </link> -->
-	<!-- <link name="camera_link">
+	<link name="camera_link">
 		<collision>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="0 0 0" rpy="0 0.4 0"/>
 			<geometry>
-				<box size="0.01 0.01 0.01"/>
+				<box size="0.1 0.1 0.1"/>
 			</geometry>
 		</collision>
 		<visual>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="1 0 0" rpy="0 0.4 0"/>
 			<geometry>
-				<box size="0.01 0.01 0.01"/>
+				<box size="0.1 0.1 0.1"/>
 			</geometry>
+			<material name="red"/>
 		</visual>
+		<!-- defalut remove
 		<inertial>
 			<mass value="1e-5" />
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
 		</inertial>
-	</link> -->
-  <!-- <link name="camera_link" /> -->
-	<!-- <joint name="camera_joint" type="fixed">
+		-->
+	</link>
+
+	<joint name="camera_joint" type="fixed">
 		<parent link="base_link"/>
 		<child link="camera_link"/>
-    <origin rpy="0 0.418879 0" xyz="0.3 0.0 0.21"/> 
-		<axis xyz="0 1 0"/>
-	</joint> -->
+		<origin rpy="0 0.4 0" xyz="0 0.1 0"/>
+		<axis xyz="0 1 0" />
+	</joint>
 	
 
   <!-- ===============  Transmission =============== -->
@@ -288,21 +274,14 @@
     </plugin>
   </gazebo>
 
-  <!-- mu:摩擦係数を０にすることで全く動かなくなる⇛分布とる時 -->
-  <!-- そのためpfのときは与える -->
-
   <gazebo reference="base_link">
     <selfCollide>true</selfCollide>
-    <!-- <mu1 value="0.0"/>
-    <mu2 value="0.0"/> -->
     <mu1 value="0.05"/>
     <mu2 value="0.05"/>
   </gazebo>
 
   <gazebo reference="left_wheel_link">
     <selfCollide>true</selfCollide>
-    <!-- <mu1 value="0.0"/>
-    <mu2 value="0.0"/> -->
     <mu1 value="1.0"/>
     <mu2 value="1.0"/>
     <!--<kp value="10000000.0"/>
@@ -311,8 +290,6 @@
 
   <gazebo reference="right_wheel_link">
     <selfCollide>true</selfCollide>
-    <!-- <mu1 value="0.0"/>
-    <mu2 value="0.0"/> -->
     <mu1 value="1.0"/>
     <mu2 value="1.0"/>
     <!--<kp value="10000000.0"/>
@@ -321,33 +298,19 @@
 
   <gazebo reference="caster_link">
     <selfCollide>true</selfCollide>
-    <!-- <mu1 value="0.0"/>
-    <mu2 value="0.0"/> -->
-    <mu1 value="1.0"/>
-    <mu2 value="1.0"/>
+    <!-- defalut 0.1 -->
+    <mu1 value="0.1"/>
+    <mu2 value="0.1"/>
   </gazebo>
 
-  <!-- <xacro:arg name="use_nominal_extrinsics" default="false" />
-  <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
-
-  <xacro:sensor_d435i parent="camera_link" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </xacro:sensor_d435i> -->
-  <!-- 24deg / 0.418879rad:  -->
-  <!-- 23deg / 0.401426rad -->
-  <!-- 22.5deg /0.3926991 -->
-  <xacro:sensor_d435 parent="base_footprint">
-    <origin rpy="0 0.3926991 0" xyz="0.3 -${0.0175 + 0.015} 0.21"/>
-  </xacro:sensor_d435>
-
-<!-- <gazebo reference="camera_link">
+<gazebo reference="camera_link">
 		<sensor type="camera" name="camera1">
 			<update_rate>30.0</update_rate>
 			<camera name="head">
-        <horizontal_fov>1.211259</horizontal_fov>
+				<horizontal_fov>1.22173022222</horizontal_fov>
 				<image>
-					<width>640</width>
-					<height>360</height>
+					<width>100</width>
+					<height>100</height>
 					<format>R8G8B8</format>
 				</image>
 				<clip>
@@ -356,6 +319,11 @@
 				</clip>
 				<noise>
 					<type>gaussian</type>
+					<!-- Noise is sampled independently per pixel on each frame.
+					That pixel's noise value is added to each of its color
+					channels, which at that point lie in the range [0,1]. -->
+					<mean>0.0</mean>
+					<stddev>0.007</stddev>
 				</noise>
 			</camera>
 			<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
@@ -373,7 +341,6 @@
 				<distortionT2>0.0</distortionT2>
 			</plugin>
 		</sensor>
-	</gazebo> -->
-
+	</gazebo>
   
 </robot>

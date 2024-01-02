@@ -92,7 +92,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>12.63 6.62 0.001</size>
+              <size>12.63 6.62 0.01</size>
             </box>
           </geometry>
           <material>
@@ -108,262 +108,226 @@
       </link>
       <static>1</static>
     </model>
+
     <model name='pole_1'>
       <static>1</static>
-      <link name='link_2'>
-        <pose>0.5 -0.15 0 0 -0 0</pose>
-        <inertial>
-          <mass>1</mass>
-          <inertia>
-            <ixx>0.145833</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.145833</iyy>
-            <iyz>0</iyz>
-            <izz>0.125</izz>
-          </inertia>
-          <pose>0 0 0 0 -0 0</pose>
-        </inertial>
-        <gravity>1</gravity>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <visual name='visual'>
-          <pose>0 0 0 0 -0 0</pose>
-          <geometry>
-            <cylinder>
-              <radius>0.01</radius>
-              <length>0.03</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <lighting>1</lighting>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
-            <ambient>0 1 1 1</ambient>
-            <diffuse>0.7 0.7 1 1</diffuse>
-            <specular>0.01 0.01 1 1</specular>
-            <emissive>0 0 0 1</emissive>
-            <shader type='vertex'>
-              <normal_map>__default__</normal_map>
-            </shader>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <enable_wind>0</enable_wind>
-      </link>
-      <allow_auto_disable>1</allow_auto_disable>
-      <pose>0 0 0 0 0 -0.000841</pose>
-    </model>
-    <model name='pole_2'>
-      <static>1</static>
-      <link name='link_3'>
-        <pose>0.5 0.22 0 0 -0 0</pose>
-        <inertial>
-          <mass>1</mass>
-          <inertia>
-            <ixx>0.145833</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.145833</iyy>
-            <iyz>0</iyz>
-            <izz>0.125</izz>
-          </inertia>
-          <pose>0 0 0 0 -0 0</pose>
-        </inertial>
-        <gravity>1</gravity>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <visual name='visual'>
-          <pose>0 0 0 0 -0 0</pose>
-          <geometry>
-            <cylinder>
-              <radius>0.01</radius>
-              <length>0.03</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <lighting>1</lighting>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
-            <ambient>0 1 1 1</ambient>
-            <diffuse>0.7 0.7 1 1</diffuse>
-            <specular>0.01 0.01 1 1</specular>
-            <emissive>0 0 0 1</emissive>
-            <shader type='vertex'>
-              <normal_map>__default__</normal_map>
-            </shader>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <enable_wind>0</enable_wind>
-      </link>
-      <allow_auto_disable>1</allow_auto_disable>
-      <pose>0 0 0 0 0 -0.000841</pose>
-    </model>
-    <model name='pole_3'>
-      <static>1</static>
-      <link name='link_4'>
-        <pose>1.9 1.1 0 0 -0 0</pose>
-        <inertial>
-          <mass>1</mass>
-          <inertia>
-            <ixx>0.145833</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.145833</iyy>
-            <iyz>0</iyz>
-            <izz>0.125</izz>
-          </inertia>
-          <pose>0 0 0 0 -0 0</pose>
-        </inertial>
-        <gravity>1</gravity>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <visual name='visual'>
-          <pose>0 0 0 0 -0 0</pose>
-          <geometry>
-            <cylinder>
-              <radius>0.05</radius>
-              <length>0.1</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <lighting>1</lighting>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
-            <ambient>0 1 1 1</ambient>
-            <diffuse>0.7 0.7 1 1</diffuse>
-            <specular>0.01 0.01 1 1</specular>
-            <emissive>0 0 0 1</emissive>
-            <shader type='vertex'>
-              <normal_map>__default__</normal_map>
-            </shader>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <enable_wind>0</enable_wind>
-      </link>
-      <allow_auto_disable>1</allow_auto_disable>
-      <pose>0 0 0 0 0 -0.000841</pose>
-    </model>
-    <model name='pole_4'>
-      <static>1</static>
-      <link name='link_5'>
-        <pose>1.9 -1.1 0 0 -0 0</pose>
-        <inertial>
-          <mass>1</mass>
-          <inertia>
-            <ixx>0.145833</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.145833</iyy>
-            <iyz>0</iyz>
-            <izz>0.125</izz>
-          </inertia>
-          <pose>0 0 0 0 -0 0</pose>
-        </inertial>
-        <gravity>1</gravity>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <visual name='visual'>
-          <pose>0 0 0 0 -0 0</pose>
-          <geometry>
-            <cylinder>
-              <radius>0.05</radius>
-              <length>0.1</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <lighting>1</lighting>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
-            <ambient>0 1 1 1</ambient>
-            <diffuse>0.7 0.7 1 1</diffuse>
-            <specular>0.01 0.01 1 1</specular>
-            <emissive>0 0 0 1</emissive>
-            <shader type='vertex'>
-              <normal_map>__default__</normal_map>
-            </shader>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <enable_wind>0</enable_wind>
-      </link>
-      <allow_auto_disable>1</allow_auto_disable>
-      <pose>0 0 0 0 0 -0.000841</pose>
-    </model>
-    <state world_name='default'>
-      <sim_time>139 784000000</sim_time>
-      <real_time>78 744283385</real_time>
-      <wall_time>1687445780 778530731</wall_time>
-      <iterations>78594</iterations>
-      <model name='ground_plane'>
-        <pose>0 0 0 0 -0 0</pose>
-        <scale>1 1 1</scale>
-        <link name='link'>
-          <pose>0 0 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='pole_1'>
-        <pose>0 0 0 0 0 -0.000841</pose>
-        <scale>1 1 1</scale>
         <link name='link_2'>
-          <pose>0.52 -0.21 0 0 0 -0.000841</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='pole_2'>
-        <pose>0 0 0 0 0 -0.000841</pose>
-        <scale>1 1 1</scale>
-        <link name='link_3'>
-          <pose>0.52 0.18 0 0 0 -0.000841</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='pole_3'>
-        <pose>0 0 0 0 0 -0.000841</pose>
-        <scale>1 1 1</scale>
-        <link name='link_4'>
-          <pose>9.97 6.2 0 0 0 -0.000841</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='pole_4'>
-        <pose>0 0 0 0 0 -0.000841</pose>
-        <scale>1 1 1</scale>
-        <link name='link_5'>
-          <pose>9.97 -6.2 0 0 0 -0.000841</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
+          <pose frame=''>0.58 -0.24 0 0 0 0</pose>
+          <inertial>
+            <mass>1</mass>
+            <inertia>
+              <ixx>0.145833</ixx>
+              <ixy>0</ixy>
+              <ixz>0</ixz>
+              <iyy>0.145833</iyy>
+              <iyz>0</iyz>
+              <izz>0.125</izz>
+            </inertia>
+            <pose frame=''>0 0 0 0 -0 0</pose>
+          </inertial>
+          <gravity>1</gravity>
+          <self_collide>0</self_collide>
+          <kinematic>0</kinematic>
+          <visual name='visual'>
+            <pose frame=''>0.0 0.0 0 0 -0 0</pose>
+            <geometry>
+              <cylinder>
+                <radius>0.01</radius>
+                <length>0.03</length>
+              </cylinder>
+            </geometry>
+            <material>
+              <lighting>1</lighting>
+              <script>
+                <uri>file://media/materials/scripts/gazebo.material</uri>
+                <name>Gazebo/Grey</name>
+              </script>
+              <ambient>0 1 1 1</ambient>
+              <diffuse>0.7 0.7 1 1</diffuse>
+              <specular>0.01 0.01 1 1</specular>
+              <emissive>0 0 0 1</emissive>
+              <shader type='vertex'>
+                <normal_map>__default__</normal_map>
+              </shader>
+            </material>
+            <cast_shadows>0</cast_shadows>
+            <transparency>0</transparency>
+          </visual>
+          <enable_wind>0</enable_wind>
+          </link>
+          <allow_auto_disable>1</allow_auto_disable>
+          <pose frame=''>0 0 0 0 0 -0.000841</pose>
+        </model>
+
+        <model name='pole_2'>
+          <static>1</static>
+            <link name='link_3'>
+              <pose frame=''>0.58 0.25 0 0 0 0</pose>
+              <inertial>
+                <mass>1</mass>
+                <inertia>
+                  <ixx>0.145833</ixx>
+                  <ixy>0</ixy>
+                  <ixz>0</ixz>
+                  <iyy>0.145833</iyy>
+                  <iyz>0</iyz>
+                  <izz>0.125</izz>
+                </inertia>
+                <pose frame=''>0 0 0 0 -0 0</pose>
+              </inertial>
+              <gravity>1</gravity>
+              <self_collide>0</self_collide>
+              <kinematic>0</kinematic>
+              <visual name='visual'>
+                <pose frame=''>0.0 0.0 0 0 -0 0</pose>
+                <geometry>
+                  <cylinder>
+                    <radius>0.01</radius>
+                    <length>0.03</length>
+                  </cylinder>
+                </geometry>
+                <material>
+                  <lighting>1</lighting>
+                  <script>
+                    <uri>file://media/materials/scripts/gazebo.material</uri>
+                    <name>Gazebo/Grey</name>
+                  </script>
+                  <ambient>0 1 1 1</ambient>
+                  <diffuse>0.7 0.7 1 1</diffuse>
+                  <specular>0.01 0.01 1 1</specular>
+                  <emissive>0 0 0 1</emissive>
+                  <shader type='vertex'>
+                    <normal_map>__default__</normal_map>
+                  </shader>
+                </material>
+                <cast_shadows>0</cast_shadows>
+                <transparency>0</transparency>
+              </visual>
+              <enable_wind>0</enable_wind>
+              </link>
+              <allow_auto_disable>1</allow_auto_disable>
+              <pose frame=''>0 0 0 0 0 -0.000841</pose>
+        </model>
+
+        <model name='pole_3'>
+          <static>1</static>
+            <link name='link_4'>
+              <pose frame=''>4.3 2.3 0 0 0 0</pose>
+              <inertial>
+                <mass>1</mass>
+                <inertia>
+                  <ixx>0.145833</ixx>
+                  <ixy>0</ixy>
+                  <ixz>0</ixz>
+                  <iyy>0.145833</iyy>
+                  <iyz>0</iyz>
+                  <izz>0.125</izz>
+                </inertia>
+                <pose frame=''>0 0 0 0 -0 0</pose>
+              </inertial>
+              <gravity>1</gravity>
+              <self_collide>0</self_collide>
+              <kinematic>0</kinematic>
+              <visual name='visual'>
+                <pose frame=''>0.0 0.0 0 0 -0 0</pose>
+                <geometry>
+                  <cylinder>
+                    <radius>0.05</radius>
+                    <length>0.1</length>
+                  </cylinder>
+                </geometry>
+                <material>
+                  <lighting>1</lighting>
+                  <script>
+                    <uri>file://media/materials/scripts/gazebo.material</uri>
+                    <name>Gazebo/Grey</name>
+                  </script>
+                  <ambient>0 1 1 1</ambient>
+                  <diffuse>0.7 0.7 1 1</diffuse>
+                  <specular>0.01 0.01 1 1</specular>
+                  <emissive>0 0 0 1</emissive>
+                  <shader type='vertex'>
+                    <normal_map>__default__</normal_map>
+                  </shader>
+                </material>
+                <cast_shadows>0</cast_shadows>
+                <transparency>0</transparency>
+              </visual>
+              <enable_wind>0</enable_wind>
+              </link>
+              <allow_auto_disable>1</allow_auto_disable>
+              <pose frame=''>0 0 0 0 0 -0.000841</pose>
+        </model>
+        <model name='pole_4'>
+          <static>1</static>
+            <link name='link_5'>
+              <pose frame=''>4.3 -2.3 0 0 0 0</pose>
+              <inertial>
+                <mass>1</mass>
+                <inertia>
+                  <ixx>0.145833</ixx>
+                  <ixy>0</ixy>
+                  <ixz>0</ixz>
+                  <iyy>0.145833</iyy>
+                  <iyz>0</iyz>
+                  <izz>0.125</izz>
+                </inertia>
+                <pose frame=''>0 0 0 0 -0 0</pose>
+              </inertial>
+              <gravity>1</gravity>
+              <self_collide>0</self_collide>
+              <kinematic>0</kinematic>
+              <visual name='visual'>
+                <pose frame=''>0.0 0.0 0 0 -0 0</pose>
+                <geometry>
+                  <cylinder>
+                    <radius>0.05</radius>
+                    <length>0.1</length>
+                  </cylinder>
+                </geometry>
+                <material>
+                  <lighting>1</lighting>
+                  <script>
+                    <uri>file://media/materials/scripts/gazebo.material</uri>
+                    <name>Gazebo/Grey</name>
+                  </script>
+                  <ambient>0 1 1 1</ambient>
+                  <diffuse>0.7 0.7 1 1</diffuse>
+                  <specular>0.01 0.01 1 1</specular>
+                  <emissive>0 0 0 1</emissive>
+                  <shader type='vertex'>
+                    <normal_map>__default__</normal_map>
+                  </shader>
+                </material>
+                <cast_shadows>0</cast_shadows>
+                <transparency>0</transparency>
+              </visual>
+              <enable_wind>0</enable_wind>
+              </link>
+              <allow_auto_disable>1</allow_auto_disable>
+              <pose frame=''>0 0 0 0 0 -0.000841</pose>
+        </model>
+
+        <state world_name='default'>
+          <sim_time>61 190000000</sim_time>
+          <real_time>61 334036858</real_time>
+          <wall_time>1682060596 662856463</wall_time>
+          <iterations>61190</iterations>
+          <model name='ground_plane'>
+            <pose>0 0 0 0 -0 0</pose>
+            <scale>1 1 1</scale>
+            <link name='link'>
+              <pose>0 0 0 0 -0 0</pose>
+              <velocity>0 0 0 0 -0 0</velocity>
+              <acceleration>0 0 0 0 -0 0</acceleration>
+              <wrench>0 0 0 0 -0 0</wrench>
+            </link>
       </model>
       <model name='sb_map'>
         <pose>6.315 -0.31 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>6.315 -0.32 0 0 -0 0</pose>
+          <pose>6.315 -0.31 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -375,7 +339,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>5.51596 -1.96134 23.6887 0 1.51964 0.000197</pose>
+        <pose>-8.76508 -2.85609 8.66542 0 0.611643 0.036194</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>

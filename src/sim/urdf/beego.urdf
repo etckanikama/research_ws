@@ -71,7 +71,7 @@
     </inertial>
   </link>
 
-  <joint name="right_wheel_joint" type="fixed">
+  <joint name="right_wheel_joint" type="continuous">
     <origin xyz="0.02225 -0.1308 -0.01" rpy="${-M_PI/2} 0 0"/>
     <parent link="base_link"/>
     <child link="right_wheel_link"/>
@@ -107,7 +107,7 @@
     </inertial>
   </link>
 
-  <joint name="left_wheel_joint" type="fixed">
+  <joint name="left_wheel_joint" type="continuous">
     <origin xyz="0.02225 0.1308 -0.01" rpy="${M_PI/2} 0 0"/>
     <parent link="base_link"/>
     <child link="left_wheel_link"/>
@@ -172,30 +172,17 @@
   </joint>
 
 <!-- Camera -->
-  <!-- <link name="camera_link">
-     <visual>
-      <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
-      <geometry>
-        <mesh filename="file://$(find realsense2_description)/meshes/d435.dae" />
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="file://$(find realsense2_description)/meshes/d435.dae" />
-      </geometry>
-    </collision>
-  </link> -->
 	<link name="camera_link">
 		<collision>
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<geometry>
-				<box size="0.01 0.01 0.01"/>
+				<box size="0.1 0.1 0.1"/>
 			</geometry>
 		</collision>
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<geometry>
-				<box size="0.01 0.01 0.01"/>
+				<box size="0.1 0.1 0.1"/>
 			</geometry>
 		</visual>
 		<inertial>
@@ -208,7 +195,7 @@
 	<joint name="camera_joint" type="fixed">
 		<parent link="base_link"/>
 		<child link="camera_link"/>
-    <origin rpy="0 0.418879 0" xyz="0.3 0.0 0.21"/> 
+		<origin rpy="0 0.3944444 0" xyz="0.3 0.0 0.21"/>
 		<axis xyz="0 1 0"/>
 	</joint>
 	
@@ -286,37 +273,42 @@
 
   <gazebo reference="base_link">
     <selfCollide>true</selfCollide>
-    <mu1 value="0.0"/>
-    <mu2 value="0.0"/>
+    <mu1 value="0.05"/>
+    <mu2 value="0.05"/>
   </gazebo>
 
   <gazebo reference="left_wheel_link">
     <selfCollide>true</selfCollide>
-    <mu1 value="0.0"/>
-    <mu2 value="0.0"/>
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
     <!--<kp value="10000000.0"/>
     <kd value="1.0"/>-->
   </gazebo>
 
   <gazebo reference="right_wheel_link">
     <selfCollide>true</selfCollide>
-    <mu1 value="0.0"/>
-    <mu2 value="0.0"/>
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
     <!--<kp value="10000000.0"/>
     <kd value="1.0"/>-->
   </gazebo>
 
   <gazebo reference="caster_link">
     <selfCollide>true</selfCollide>
-    <mu1 value="0.0"/>
-    <mu2 value="0.0"/>
+    <mu1 value="0.1"/>
+    <mu2 value="0.1"/>
   </gazebo>
 
 <gazebo reference="camera_link">
 		<sensor type="camera" name="camera1">
 			<update_rate>30.0</update_rate>
 			<camera name="head">
+      <!-- verticalもあるのでは -->
+      <!-- リアルセンスのスペックに合わせる -->
+				<!-- <horizontal_fov>1.51844</horizontal_fov>
+        <vertical_fov>0.872665</vertical_fov> -->
         <horizontal_fov>1.211259</horizontal_fov>
+        <vertical_fov>0.7417649</vertical_fov>
 				<image>
 					<width>640</width>
 					<height>360</height>
@@ -328,6 +320,11 @@
 				</clip>
 				<noise>
 					<type>gaussian</type>
+					<!-- Noise is sampled independently per pixel on each frame.
+					That pixel's noise value is added to each of its color
+					channels, which at that point lie in the range [0,1]. -->
+					<mean>0.0</mean>
+					<stddev>0.007</stddev>
 				</noise>
 			</camera>
 			<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
@@ -345,7 +342,6 @@
 				<distortionT2>0.0</distortionT2>
 			</plugin>
 		</sensor>
-	</gazebo> -->
-
+	</gazebo>
   
 </robot>

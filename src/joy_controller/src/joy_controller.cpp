@@ -33,7 +33,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "joy_controller");
     ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
-    ros::Publisher cmd_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
+    // ros::Publisher cmd_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
+    ros::Publisher cmd_pub = nh.advertise<geometry_msgs::Twist>("/beego/diff_drive_controller/cmd_vel", 10);
     ros::Subscriber joy_sub = nh.subscribe("joy", 10, joy_callback);
 
 

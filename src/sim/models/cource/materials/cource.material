@@ -1,0 +1,10 @@
+material cource {
+  technique {
+    pass {
+      texture_unit {
+        texture cource.png
+        scale 1 1
+      }
+    }
+  }
+}

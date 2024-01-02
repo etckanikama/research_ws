@@ -1,0 +1,344 @@
+<?xml version="1.0"?>
+<robot name="beego" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="M_PI" value="3.1415926"/>
+  <xacro:property name="PC_MASS" value="1.12"/>
+  <xacro:property name="BAT_MASS" value="0.8"/>
+  <xacro:property name="BASE_MASS" value="${3.0+PC_MASS+BAT_MASS}"/>
+  <xacro:property name="BASE_X" value="0.3"/>
+  <xacro:property name="BASE_Y" value="0.26"/>
+  <xacro:property name="BASE_Z" value="0.26"/>
+  <xacro:property name="WHEEL_MASS" value="0.1"/>
+  <xacro:property name="WHEEL_RAD" value="0.041"/>
+  <xacro:property name="WHEEL_THICK" value="0.015"/>
+
+  <material name="gray">
+    <color rgba="0.75 0.75 0.75 1"/>
+  </material>
+
+  
+  <!-- ===============  Body =============== -->
+  <link name="base_link">
+    <visual name="visual">
+      <origin xyz="0 0 0" rpy="0 0 ${M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://beego_gazebo/meshes/base_link.STL" />
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <collision name="collision">
+      <origin xyz="-0.05275 0 0.227" rpy="0 0 0"/>
+      <geometry>
+	<box size="0.25 0.3 0.004"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.05 0 0.1" rpy="0 0 0"/>
+      <mass value="${BASE_MASS}"/>
+      <inertia ixx="${(1/12)*BASE_MASS*(BASE_Y*BASE_Y+BASE_Z*BASE_Z)}"
+	       ixy="0"
+	       ixz="0"
+	       iyy="${(1/12)*BASE_MASS*(BASE_Z*BASE_Z+BASE_X*BASE_X)}"
+	       iyz="0"
+	       izz="${(1/12)*BASE_MASS*(BASE_X*BASE_X+BASE_Y*BASE_Y)}"/>
+    </inertial>
+  </link>
+
+
+  <link name="right_wheel_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://beego_gazebo/meshes/right_wheel_link.STL"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.0083" rpy="0 0 0" />
+      <geometry>
+	<cylinder length="${WHEEL_THICK}" radius="${WHEEL_RAD}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 -0.0083" rpy="0 0 0"/>
+      <mass value="${WHEEL_MASS}"/>
+      <inertia ixx="${WHEEL_MASS*WHEEL_RAD*WHEEL_RAD/4+WHEEL_MASS*WHEEL_THICK*WHEEL_THICK/12}"
+	       ixy="0"
+	       ixz="0"
+	       iyy="${WHEEL_MASS*WHEEL_RAD*WHEEL_RAD/4+WHEEL_MASS*WHEEL_THICK*WHEEL_THICK/12}"
+	       iyz="0"
+	       izz="${WHEEL_MASS*WHEEL_RAD*WHEEL_RAD/2}"/>
+    </inertial>
+  </link>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <origin xyz="0.02225 -0.1308 -0.01" rpy="${-M_PI/2} 0 0"/>
+    <parent link="base_link"/>
+    <child link="right_wheel_link"/>
+    <axis xyz="0 0 1"/>
+    <!--<limit effort="1.07" velocity="3.14"/>
+    <dynamics damping="0.1"/>-->
+  </joint>
+
+
+  <link name="left_wheel_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://beego_gazebo/meshes/left_wheel_link.STL" />
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.0083" rpy="0 0 0" />
+      <geometry>
+	<cylinder length="${WHEEL_THICK}" radius="${WHEEL_RAD}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 -0.0083" rpy="0 0 0"/>
+      <mass value="${WHEEL_MASS}"/>
+      <inertia ixx="${WHEEL_MASS*WHEEL_RAD*WHEEL_RAD/4+WHEEL_MASS*WHEEL_THICK*WHEEL_THICK/12}"
+	       ixy="0"
+	       ixz="0"
+	       iyy="${WHEEL_MASS*WHEEL_RAD*WHEEL_RAD/4+WHEEL_MASS*WHEEL_THICK*WHEEL_THICK/12}"
+	       iyz="0"
+	       izz="${WHEEL_MASS*WHEEL_RAD*WHEEL_RAD/2}"/>
+    </inertial>
+  </link>
+
+  <joint name="left_wheel_joint" type="continuous">
+    <origin xyz="0.02225 0.1308 -0.01" rpy="${M_PI/2} 0 0"/>
+    <parent link="base_link"/>
+    <child link="left_wheel_link"/>
+    <axis xyz="0 0 -1"/>
+    <!--<limit effort="1.07" velocity="3.14"/>
+    <dynamics damping="0.1"/>-->
+  </joint>
+
+
+  <link name="caster_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+	<sphere radius="${WHEEL_RAD}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="caster_joint" type="fixed">
+    <origin xyz="-0.203 0 -0.01" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="caster_link"/>
+  </joint>
+
+
+  <link name="base_footprint"/>
+  
+  <joint name="base_footprint_joint" type="fixed">
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+  </joint>
+
+
+  <link name="hokuyo_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <!-- <box size="0.05 0.05 0.07"/> -->
+        <box size="1.0 1.0 1.0"/>
+      </geometry>
+    </collision> 
+    <!--<inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.16"/>
+      <inertia ixx="${(1/12) * 0.16 * (0.05*0.05 + 0.07*0.07)}" ixy="0" ixz="0"
+               iyy="${(1/12) * 0.16 * (0.05*0.05 + 0.07*0.07)}" iyz="0"
+               izz="${(1/12) * 0.16 * (0.05*0.05 + 0.05*0.05)}"/>
+    </inertial>-->
+  </link>
+
+  <joint name="hokuyo_joint" type="fixed">
+    <origin xyz="0.012 0 0.185" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="hokuyo_link"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+<!-- Camera -->
+	<link name="camera_link">
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size="0.1 0.1 0.1"/>
+			</geometry>
+		</collision>
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size="0.1 0.1 0.1"/>
+			</geometry>
+			<material name="red"/>
+		</visual>
+		<inertial>
+			<mass value="1e-5" />
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+		</inertial>
+	</link>
+
+	<joint name="camera_joint" type="fixed">
+		<parent link="base_link"/>
+		<child link="camera_link"/>
+		<origin rpy="0 0 0" xyz="0 0 1.0"/>
+		<axis xyz="0 1 0" />
+	</joint>
+	
+
+  <!-- ===============  Transmission =============== -->
+  <transmission name="left_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_wheel_motor">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>30</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="right_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_wheel_motor">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>30</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  
+  <!-- ===============  Sensor =============== -->
+  <gazebo reference="hokuyo_link">
+    <sensor type="ray" name="head_hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>726</samples>
+            <resolution>1</resolution>
+            <min_angle>-2.094395</min_angle>
+            <max_angle>2.094395</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.1</min>
+          <max>5.6</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>hokuyo_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+  <!-- =============== Gazebo =============== -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <!--<robotNamespace>beego</robotNamespace>-->
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="base_link">
+    <selfCollide>true</selfCollide>
+    <mu1 value="0.05"/>
+    <mu2 value="0.05"/>
+  </gazebo>
+
+  <gazebo reference="left_wheel_link">
+    <selfCollide>true</selfCollide>
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
+    <!--<kp value="10000000.0"/>
+    <kd value="1.0"/>-->
+  </gazebo>
+
+  <gazebo reference="right_wheel_link">
+    <selfCollide>true</selfCollide>
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
+    <!--<kp value="10000000.0"/>
+    <kd value="1.0"/>-->
+  </gazebo>
+
+  <gazebo reference="caster_link">
+    <selfCollide>true</selfCollide>
+    <mu1 value="0.1"/>
+    <mu2 value="0.1"/>
+  </gazebo>
+
+<gazebo reference="camera_link">
+		<sensor type="camera" name="camera1">
+			<update_rate>30.0</update_rate>
+			<camera name="head">
+				<horizontal_fov>1.3962634016</horizontal_fov>
+				<image>
+					<width>1600</width>
+					<height>900</height>
+					<format>R8G8B8</format>
+				</image>
+				<clip>
+					<near>0.02</near>
+					<far>300</far>
+				</clip>
+				<noise>
+					<type>gaussian</type>
+					<!-- Noise is sampled independently per pixel on each frame.
+					That pixel's noise value is added to each of its color
+					channels, which at that point lie in the range [0,1]. -->
+					<mean>0.0</mean>
+					<stddev>0.007</stddev>
+				</noise>
+			</camera>
+			<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+				<alwaysOn>true</alwaysOn>
+				<updateRate>0.0</updateRate>
+				<cameraName>my_robo/camera1</cameraName>
+				<imageTopicName>image_raw</imageTopicName>
+				<cameraInfoTopicName>camera_info</cameraInfoTopicName>
+				<frameName>camera_link</frameName>
+				<hackBaseline>0.07</hackBaseline>
+				<distortionK1>0.0</distortionK1>
+				<distortionK2>0.0</distortionK2>
+				<distortionK3>0.0</distortionK3>
+				<distortionT1>0.0</distortionT1>
+				<distortionT2>0.0</distortionT2>
+			</plugin>
+		</sensor>
+	</gazebo>
+  
+</robot>

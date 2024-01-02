@@ -19,6 +19,7 @@
   </include>
 
   <group if="$(arg rviz)">
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim)/rviz/beego.rviz"/> -->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim)/rviz/realsense_beego.rviz"/>
   </group>
 
