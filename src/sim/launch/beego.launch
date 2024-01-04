@@ -19,8 +19,9 @@
   </include>
 
   <group if="$(arg rviz)">
-    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim)/rviz/beego.rviz"/> -->
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim)/rviz/realsense_beego.rviz"/>
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find sim)/rviz/three_stacked_white_lane.rviz" />
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim)/rviz/realsense_beego.rviz"/> -->
   </group>
+
 
 </launch>

@@ -1,22 +1,11 @@
 <?xml version="1.0"?>
 
-<!--
-License: Apache 2.0. See LICENSE file in root directory.
-Copyright(c) 2017 Intel Corporation. All Rights Reserved
-
-This is the URDF model for the Intel RealSense 430 camera, in it's
-aluminum peripherial evaluation case.
--->
-
-
-<!-- 別 -->
-
-<robot name="sensor_d435" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="sensor_d435_chinpo" xmlns:xacro="http://ros.org/wiki/xacro">
   <!--File includes-->
   <xacro:include filename="$(find sim)/urdf/_d435.gazebo.xacro"/>
 
-  <xacro:macro name="sensor_d435" params="name:=camera 
-    topics_ns:=camera 
+  <xacro:macro name="sensor_d435_chinpo" params="name:=camera 
+    topics_ns:=camera_chinpo 
     parent *origin publish_pointcloud:=true">
     <xacro:property name="M_PI" value="3.1415926535897931" />
   

@@ -185,7 +185,8 @@ class LineDetection:
 				# the_points.header.frame_id	= 'beego/odom'
 				header = Header()
 				header.stamp = rospy.Time.now()
-				header.frame_id = "fixed_paritcle_posi"
+				# header.frame_id = "fixed_paritcle_posi" #尤度分布用
+				header.frame_id = "dha_esti_pose"
 				# header.frame_id	= 'beego/odom'
 				fields = [
 					PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),

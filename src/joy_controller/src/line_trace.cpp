@@ -110,13 +110,11 @@ void line_GL(double x, double y, double th)
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "intro_node");
+	ros::init(argc, argv, "line_trace_node");
 
 	ros::NodeHandle nh;
-	ros::Subscriber odom_sub = nh.subscribe("odom", 1, odom_callback);
-	ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
-	// ros::Subscriber odom_sub = nh.subscribe("/beego/diff_drive_controller/odom", 1, odom_callback);
-	// ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("/beego/diff_drive_controller/cmd_vel", 1);
+	ros::Subscriber odom_sub = nh.subscribe("/beego/diff_drive_controller/odom", 1, odom_callback);
+	ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("/beego/diff_drive_controller/cmd_vel", 1);
 
 	pos.pose.pose.position.x = 0.0;
 	pos.pose.pose.position.y = 0.0;

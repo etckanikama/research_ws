@@ -6,8 +6,8 @@
   <!-- 事前に保存済みの画像を貼り付けたworldを開く（sb_map.world) -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
   <!-- <arg name="world_name" value="$(find sim)/worlds/after_set_covering_route1_tougou.world"/> -->
-  <arg name="world_name" value="$(find sim)/worlds/oregatukutta_1.5_hige.world"/>
-
+  <!-- <arg name="world_name" value="$(find sim)/worlds/oregatukutta_1.5_hige.world"/> -->
+  <arg name="world_name" value="$(find sim)/worlds/three_stacked_white_lane_map.world"/>
 
     <!-- <arg name="world_name" value="$(find sim)/worlds/after_set_covering_route1.world"/> -->
     <!-- <arg name="world_name" value="$(find sim)/worlds/sb_map.world"/> -->
@@ -31,7 +31,7 @@
   <include file="$(find sim)/launch/beego.launch">
     <arg name="x" default= "$(arg initial_x)" />
     <arg name="y" default= "$(arg initial_y)"/>
-    <arg name="z" value="0.0"/>
+    <arg name="z" value="2.0"/>
     <arg name="R" value="0.0"/>
     <arg name="P" value="0.0"/>
     <arg name="Y" default= "$(arg initial_yaw)"/>

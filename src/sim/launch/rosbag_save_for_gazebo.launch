@@ -1,0 +1,43 @@
+<launch>
+    <!-- white_lane.launch(gazebo)の起動 -->
+    <include file="$(find sim)/launch/white_lane.launch"/>
+
+
+    <!-- joyを起動 -->
+    <node pkg="joy" type="joy_node" name="joy_node" output="screen"/>
+    <node name="joy_controller" pkg="joy_controller" type="joy_controller"/>
+
+    <!-- gazebo用のpolygonをpublish -->
+    <node pkg="sim" type="sample_marker_publisher.cpp" name="rectangle_marker_node" output="screen"/>
+    
+
+    <arg name="file_name"	default="doryaaaaaa.bag"/>
+	<arg name="dir_name"	default="/home/hirayama-d/research_ws/bag/"/>
+	<node pkg="rosbag" name="my_bag" type="record" output="screen" 
+			args="-o $(arg dir_name)
+                    /beego/diff_drive_controller/cmd_vel
+                    /beego/diff_drive_controller/odom
+                    /camera1/color/camera_info
+                    /camera1/color/image_raw
+                    /camera2/color/camera_info
+                    /camera2/color/image_raw
+                    /camera3/color/camera_info
+                    /camera3/color/image_raw
+                    /gazebo/model_states
+                    /polygon_array
+                    /clock
+                    /joy
+					/tf
+					/tf_static"/>
+
+    
+</launch>
+
+<!-- gazebo起動時に出てはいるtopic名
+/gazebo/link_states
+/gazebo/model_states
+/gazebo/parameter_descriptions
+/gazebo/parameter_updates
+/gazebo/performance_metrics
+/gazebo/set_link_state
+/gazebo/set_model_state -->
