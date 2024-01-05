@@ -1,0 +1,18 @@
+<launch>
+
+    <node name="line_detection" pkg="sim" type="line_detection_opencv5_homography_timer_for_gazebo.py" />
+    <!-- white_lane.launch(gazebo)の起動 -->
+    <!-- <include file="$(find sim)/launch/white_lane.launch"/> -->
+    <node name="rectangle_marker_node" pkg="sim" type="sample_marker_publisher.cpp" output="screen"/>
+
+    <node name="beego_odom_publisher" pkg="sim" type="beego_odom_publisher.cpp" output="screen" />
+    
+    <!-- beego/odomをmapフレームにしてpublishするノード -->
+    <node name="static_tf_pub_map_to_odom" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 map beego/odom 10" />
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find sim)/rviz/gazebo_pf.rviz" />
+
+
+
+    
+</launch>

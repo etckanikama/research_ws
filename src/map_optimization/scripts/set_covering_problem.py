@@ -78,6 +78,7 @@ def load_fd_matrix(file_path):
             Fd_Mat.append(row)
     return Fd_Mat
 
+########################################################################################################################################
 # 関数を使用して問題を解く例
 Fx_file_path = "/home/hirayama-d/research_ws/src/map_optimization/scripts/Fx.text"
 Fxdx_Mat_file_path = "/home/hirayama-d/research_ws/src/map_optimization/scripts/output_Fx_dx_mat.text"
@@ -101,6 +102,7 @@ with open("/home/hirayama-d/research_ws/src/map_optimization/scripts/dx.text", "
 with open("/home/hirayama-d/research_ws/src/map_optimization/scripts/dy.text", "r") as file:
     data = file.read()
     dy = ast.literal_eval(data[data.find('{'):])  # 辞書部分を抽出して変換
+
 # with open("/home/hirayama-d/research_ws/src/map_optimization/scripts/dxy.text", "r") as file:
 #     data = file.read()
 #     dxy = ast.literal_eval(data[data.find('{'):])  # 辞書部分を抽出して変換

@@ -52,10 +52,15 @@ geometry_msgs::Twist cmd_vel;
 // std::ofstream ofs("ccc.csv");
 double beego_x, beego_y, beego_z;
 double beego_orientation_x, beego_orientation_y, beego_orientation_z, beego_orientation_w;
+double beego_linear_x, beego_angular_z;
 bool beego_pose_available = false;
+
+
 // 初期速度指令値
 double v = 0.0;//joyconから得られるliniear.xなどによって更新はされる
-double omega = 0;
+double omega = 0.0;
+
+
 const double DT = 1.0 / 10.0;
 
 double time_stamp = 0.0;
@@ -72,11 +77,17 @@ int flg=0;
 std::random_device seed;
 std::mt19937 engine(seed());  
 
-// // パーティクルに付与するノイズ
-double sigma_v_v = 0.03;  // 直進1mで生じる距離の標準偏差
-double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差
-double sigma_v_omega = 0.05;  //直進1mで生じる回転の誤差
-double sigma_omega_omega = 0.1;   //回転1radで生じる回転の誤差
+// // 実機のパーティクルに付与するノイズ
+// double sigma_v_v = 0.03;  // 直進1mで生じる距離の標準偏差
+// double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差
+// double sigma_v_omega = 0.05;  //直進1mで生じる回転の誤差
+// double sigma_omega_omega = 0.1;   //回転1radで生じる回転の誤差
+
+double sigma_v_v = 0.1;  // 直進1mで生じる距離の標準偏差
+double sigma_omega_v = 0.005; // 回転1radで生じる距離の誤差
+double sigma_v_omega = 0.5;  //直進1mで生じる回転の誤差
+double sigma_omega_omega = 3.0;   //回転1radで生じる回転の誤差
+
 std::normal_distribution<> dist_v_v(0.0, sigma_v_v);
 std::normal_distribution<> dist_omega_v(0.0, sigma_omega_v);
 std::normal_distribution<> dist_v_omega(0.0, sigma_v_omega);
@@ -86,7 +97,7 @@ std::normal_distribution<> dist_omega_omega(0.0, sigma_omega_omega);
 // // パーティクル数
 const int PARTICLE_NUM  = 500; 
 double coeff = 0.1; //尤度係数
-double Mth = 300; //最低限含まれてほしい点群数のしきい値
+double Mth = 300; //最低限含まれてほしい点群数のしきい値    
 double sigma_px_th =0.15;  //x方向の標準偏差のしきい値:白線の幅(0.075)*2=0.15
 double sigma_py_th =0.15; //y方向の標準偏差のしきい値:白線の幅(0.075)*2=0.15
 // double avg = 0.0, sig = 0.01; //平均0,標準偏差0.3(初期の散らばり具合)
@@ -96,7 +107,7 @@ double theta_pt[PARTICLE_NUM]= {0.0};// // パーティクルの姿勢
 
 
 // // 白線のポリゴン情報マップ(x_bottom, x_top, y_right, y_left)
-const int POLYGON_NUM = 25; // sbのポリゴンの数は駐車場加えて24(x_min,x_max,y_min,y_max)
+const int POLYGON_NUM = 40; // 通常マップ：25, 1.5ひげマップ:40
 double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.125, 0.545, 1.935}, {9.125, 10.205, 1.86, 1.935}, {10.13, 10.205, 1.935, 3.01}, {11.28, 11.355, 1.76, 3.01}, {11.355, 12.6, 1.76, 1.835}, {11.41, 12.6, 0.75, 0.825}, {11.41, 11.485, 0.75, -3.61}, {10.02, 10.095, -0.545, -3.61}, {0, 10.095, -0.47, -0.545},
                                             {0.47, 0.545, -1.465, -3.61},{0.545, 1.345,-1.465, -1.540},{1.345, 1.420, -1.465, -3.61},{2.25, 2.325, -1.465, -3.61},{2.325, 3.26,-1.465, -1.540},{3.26, 3.335, -1.465, -3.61},{4.15, 4.225, -1.465, -3.61},{4.225, 5.175,-1.465, -1.540},{5.175, 5.250, -1.465, -3.61},{6.050, 6.125, -1.465, -3.61},
                                             {6.125, 7.085,-1.465, -1.540},{7.08, 7.16, -1.465, -3.61},{7.96, 8.035, -1.465, -3.61},{8.055, 9.305,-1.465, -1.540},{9.30, 9.38, -1.465, -3.61},
@@ -115,10 +126,9 @@ double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.
                                             // 統合ひげ追加
                                             // {4.174038461538462, 4.249038461538461, 0.20750000000000007, 0.8075000000000001}, {1.2660714285714287, 1.341071428571429, 0.20750000000000007, 0.8075000000000001}, {-0.0375, 0.0375, 0.20750000000000007, 0.8075000000000001}, {9.4115, 9.4865, 1.5975, 2.1975}, {8.54325, 8.61825, -0.8075000000000001, -0.20750000000000007}, {7.2309, 7.305899999999999, -0.8075000000000001, -0.20750000000000007}, {5.7166500000000005, 5.79165, -0.8075000000000001, -0.20750000000000007}, {2.68815, 2.76315, -0.8075000000000001, -0.20750000000000007}, {11.1475, 11.7475, -0.1979651162790698, -0.12296511627906978}, {11.1475, 11.7475, -2.72703488372093, -2.6520348837209298}, {9.7575, 10.357500000000002, -1.499, -1.4240000000000002}, {9.7575, 10.357500000000002, -3.6375, -3.5625}
                                             // 俺が作った1.5のひげ
-                                            // {9.757499999999999, 10.3575, -3.5825, -3.5075}, {2.9625, 3.0375, 0.20749999999999996, 0.8074999999999999}, {5.9625, 6.0375, -0.8074999999999999, -0.20749999999999996}, {2.9625, 3.0375, -0.8074999999999999, -0.20749999999999996}, {7.4625, 7.5375, -0.8074999999999999, -0.20749999999999996}, {1.4625, 1.5375, 0.20749999999999996, 0.8074999999999999}, {1.4625, 1.5375, -0.8074999999999999, -0.20749999999999996}, {11.175, 11.775, -0.7875, -0.7125}, {11.175, 11.775, -2.2875, -2.2125}, {9.757499999999999, 10.3575, -2.0825, -2.0075}, {8.9625, 9.0375, -0.8074999999999999, -0.20749999999999996}, {5.9625, 6.0375, 0.20749999999999996, 0.8074999999999999}, {7.4625, 7.5375, 0.20749999999999996, 0.8074999999999999}, {4.4625, 4.5375, 0.20749999999999996, 0.8074999999999999}, {4.4625, 4.5375, -0.8074999999999999, -0.20749999999999996}
+                                            {9.757499999999999, 10.3575, -3.5825, -3.5075}, {2.9625, 3.0375, 0.20749999999999996, 0.8074999999999999}, {5.9625, 6.0375, -0.8074999999999999, -0.20749999999999996}, {2.9625, 3.0375, -0.8074999999999999, -0.20749999999999996}, {7.4625, 7.5375, -0.8074999999999999, -0.20749999999999996}, {1.4625, 1.5375, 0.20749999999999996, 0.8074999999999999}, {1.4625, 1.5375, -0.8074999999999999, -0.20749999999999996}, {11.175, 11.775, -0.7875, -0.7125}, {11.175, 11.775, -2.2875, -2.2125}, {9.757499999999999, 10.3575, -2.0825, -2.0075}, {8.9625, 9.0375, -0.8074999999999999, -0.20749999999999996}, {5.9625, 6.0375, 0.20749999999999996, 0.8074999999999999}, {7.4625, 7.5375, 0.20749999999999996, 0.8074999999999999}, {4.4625, 4.5375, 0.20749999999999996, 0.8074999999999999}, {4.4625, 4.5375, -0.8074999999999999, -0.20749999999999996}
 
                                             }; 
-
 
 
 // roll, pitch, yawからクォータニオンにする関数
@@ -184,6 +194,11 @@ void modelStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
         beego_orientation_y = msg->pose[beego_index].orientation.y;
         beego_orientation_z = msg->pose[beego_index].orientation.z;
         beego_orientation_w = msg->pose[beego_index].orientation.w;
+
+        // linear.x と angular.z の値を取得
+        beego_linear_x = msg->twist[beego_index].linear.x;
+        beego_angular_z = msg->twist[beego_index].angular.z;
+
         beego_pose_available = true;
     }
 }
@@ -273,7 +288,7 @@ int main(int argc, char **argv)
     ros::Publisher self_localization_pub = nh.advertise<nav_msgs::Odometry>("self_position", 10); // robotにモータに指令値を送るpublisherの宣言。
     ros::Publisher particle_cloud_pub = nh.advertise<geometry_msgs::PoseArray>("particle_cloud", 5); // リサンプリング後のパーティクル
     ros::Publisher esitimate_position_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("estimate_position",5);// posewithcoverianceで推定値をpublish
-    ros::Publisher pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("beego_pose_cov", 10);
+    ros::Publisher pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("beego_pose_cov", 10); //これはgazeboのmodel_stateです
 
     // Subscriber
     ros::Subscriber odom_sub = nh.subscribe("/beego/diff_drive_controller/odom",10, velCallback);//gazeboを挟んだオドメトリ/beego/diff_drive_controller/odom をサブスクライブ
@@ -342,8 +357,10 @@ int main(int argc, char **argv)
             double v_noise,omega_noise;
             double roll, pitch, yaw;
             geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            // v_noise = beego_linear_x + dist_v_v(engine) * sqrt(abs(beego_linear_x)/DT) + dist_v_omega(engine) * sqrt(abs(beego_angular_z)/DT); //gazebo_model_sateのv,ω
             v_noise = v + dist_v_v(engine) * sqrt(abs(v)/DT) + dist_v_omega(engine) * sqrt(abs(omega)/DT);
             omega_noise = omega + dist_omega_v(engine) * sqrt(abs(v)/DT) + dist_omega_omega(engine) * sqrt(abs(omega)/DT);
+            // omega_noise = beego_angular_z + dist_omega_v(engine) * sqrt(abs(beego_linear_x)/DT) + dist_omega_omega(engine) * sqrt(abs(beego_angular_z)/DT);//gazebo_model_sateのv,ω
 
             particle_cloud.poses[i].position.x = particle_cloud.poses[i].position.x + v_noise * cos(yaw)*DT;
             particle_cloud.poses[i].position.y = particle_cloud.poses[i].position.y + v_noise * sin(yaw)*DT;
@@ -381,9 +398,9 @@ int main(int argc, char **argv)
             //標準偏差を算出
             double sigma_px = std::sqrt(sumOfSquaredDeviation_x / (downsampled_cloud.points.size() - 1));
             double sigma_py = std::sqrt(sumOfSquaredDeviation_y / (downsampled_cloud.points.size() - 1));
-            // -----------------------------------------------------
-            std::cout << downsampled_cloud.points.size() << std::endl;
-            std::cout << "x方向の標準偏差 " << sigma_px << " " << "y方向の標準偏差" << sigma_py << std::endl;
+            // // -----------------------------------------------------
+            // std::cout << downsampled_cloud.points.size() << std::endl;
+            // std::cout << "x方向の標準偏差 " << sigma_px << " " << "y方向の標準偏差" << sigma_py << std::endl;
             if ((sigma_px > sigma_px_th) && (sigma_py > sigma_py_th)) //この条件を突破したら尤度計算が始まる
             {
                 // 尤度更新を行う状態にセット
@@ -474,15 +491,18 @@ int main(int argc, char **argv)
 
         }
 
-        std::cout << "推定値 x " << estimate_odom_x << " "<< "オドメトリ x " << robot_x <<std::endl;
-
+        std::cout << "推定値 x " << estimate_odom_x << " "<< "推定値 y " << estimate_odom_y << std::endl;
+        std::cout << "オドメトリ x " << robot_x << " "<< "オドメトリ y " << robot_y << std::endl;
+        std::cout << "beego x " << beego_x << " " << "beego y " << beego_y << std::endl; 
+        std::cout << "beego_linear_x  " << beego_linear_x << " " << "beego_angular_z " << beego_angular_z << std::endl;
+        
         estimate_posi.pose.pose.position.x = estimate_odom_x;
         estimate_posi.pose.pose.position.y = estimate_odom_y;
         estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
 
 
         // //走行中だけリサンプリングを行う
-        if (v > 0.04 || std::fabs(omega) > 0.02)
+        if (beego_linear_x > 0.04 || std::fabs(beego_angular_z) > 0.02)
         {
             printf("cnt: %d, リサンプリング中\n",cnt);
             resampling(cnt);
@@ -526,7 +546,8 @@ int main(int argc, char **argv)
             pose_msg.header.frame_id = "map";
             pose_msg.pose.pose.position.x = beego_x;
             pose_msg.pose.pose.position.y = beego_y;
-            pose_msg.pose.pose.position.z = beego_z;
+            // pose_msg.pose.pose.position.z = beego_z;
+            pose_msg.pose.pose.position.z = 0.0; //camera3なので、一番した 
             pose_msg.pose.pose.orientation.x = beego_orientation_x;
             pose_msg.pose.pose.orientation.y = beego_orientation_y;
             pose_msg.pose.pose.orientation.z = beego_orientation_z;

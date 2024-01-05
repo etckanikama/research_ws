@@ -125,7 +125,7 @@ class LineDetection:
 		# Subscriber -----------------------------------------------------------
 		#シミュレーションのカメラ
 		# self.image_sub = rospy.Subscriber("/beego/my_robo/camera1/image_raw", Image, self.subFrontRGBImage, queue_size=1)
-		self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.subFrontRGBImage, queue_size=1)
+		self.image_sub = rospy.Subscriber("/camera2/color/image_raw", Image, self.subFrontRGBImage, queue_size=1)
 
 
 		# Publisher ------------------------------------------------------------
@@ -203,7 +203,7 @@ class LineDetection:
 							z = 0.0
 							if x <= 2.5:
 								the_points_array.append([x,y,z])
-								print(x,y)							
+								# print(x,y)							
 							# the_p		= Point32()
 							# the_p.x		= (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
 							# the_p.y		= (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
