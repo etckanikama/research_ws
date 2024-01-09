@@ -1,7 +1,7 @@
 import pulp
 import matplotlib.pyplot as plt
 import ast 
-
+import numpy as np
 def solve_set_cover_problem(F_file_path, Fd_Mat_file_path):
     # Fx を読み込む
     with open(F_file_path, "r") as file:
@@ -138,14 +138,17 @@ for key in origin_F_key:
     # keyがorigin_fxに入ってたらfx, origin_fyに入ってたらfyをstatatusに加えて白線ひげ地点として出力する
     # print(origin_F[key][0], origin_F[key][1])
 print(hige_candidate)
-
+fig = plt.figure()
+ax = fig.add_subplot(111)
 #################描画############################
 # 全ての Fx と Fy の点をプロット
 for key, value in Fx.items():
-    plt.plot(value[0], value[1], 'yo')  # 'bo' means blue color, circle marker
+    # plt.plot(value[0], value[1], 'yo')  # 'bo' means blue color, circle marker
+    plt.plot(value[1], value[0], 'yo')
 
 for key, value in Fy.items():
-    plt.plot(value[0], value[1], 'mo')  # 'ro' means red color, circle marker
+    # plt.plot(value[0], value[1], 'mo') 
+    plt.plot(value[1], value[0], 'mo')  # 'ro' means red color, circle marker
 
 # # Plot all d points
 # for key, value in dx.items():
@@ -154,13 +157,21 @@ for key, value in Fy.items():
 # for key, value in dy.items():
 #     plt.plot(value[0], value[1], 'ro')  # 'gx' means green color, x marker
 
-# # Plot the selected F points
+# # Plot the selected F points:配置場所のプロット
 for index in origin_F_key:
     key = str(index)
-    plt.plot(origin_F[key][0], origin_F[key][1], 'cx', markersize=10)  # 'ro' means red color, circle marker
+    # plt.plot(origin_F[key][0], origin_F[key][1], 'cx', markersize=10)  # 'ro' means red color, circle marker
+    # plt.plot(origin_F[key][1],origin_F[key][0], 'cx', markersize=10)
 
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Plot of F and d points')
-plt.grid(True)
+
+# plt.xticks(range(-4,4,1))
+plt.yticks(range(0,15,1))
+# plt.yticks(np.arange(-1,12,1))
+plt.xticks(range(-4,4,1))
+ax.set_aspect('equal')
+ax.invert_xaxis()
+plt.xlabel("y [m]")
+plt.ylabel("x [m]")
+# plt.title('')
+plt.grid(linestyle='dotted')
 plt.show()

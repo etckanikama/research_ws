@@ -447,13 +447,7 @@ int main(int argc, char **argv)
                 max_value = particle_value[i];
                 max_value_index = i;
             }
-
-            // estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
-            // estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
-            // estimate_theta  += particle_value[i] * yaw;
         }
-
-
 
         double roll, pitch, yaw;
         geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[max_value_index].orientation); //yaw角に変換

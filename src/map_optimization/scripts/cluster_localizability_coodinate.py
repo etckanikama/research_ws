@@ -65,15 +65,24 @@ for key, value in d.items():
 
 
 ################# プロット###################################################
-plt.figure(figsize=(10, 6))
+fig = plt.figure(figsize=(10, 6))
+ax = fig.add_subplot(111)
 for color in choices:
     subset = data[data['color'] == color]
-    plt.plot(subset['x'], subset['y'], 'o', color=color, label=f'{color} points')
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.title('Colored Plot of X and Y Coordinates Based on Variance-Route1')
+    # plt.plot(subset['x'], subset['y'], 'o', color=color, label=f'{color} points')
+    plt.plot(subset['y'], subset['x'], 'o', color=color)
+
+
+plt.yticks(range(0,15,1))
+# plt.yticks(np.arange(-1,12,1))
+plt.xticks(range(-4,4,1))
+ax.set_aspect('equal')
+ax.invert_xaxis()
+plt.xlabel("y [m]")
+plt.ylabel("x [m]")
+# plt.title('Colored Plot of X and Y Coordinates Based on Variance-Route1')
 plt.grid(True)
-plt.legend()
+# plt.legend()
 plt.show()
 
 
@@ -100,3 +109,5 @@ output_data = data[['x', 'y', 'yaw', 'sqrt_variance_x', 'sqrt_variance_y', 'colo
     columns={'sqrt_variance_x': 'std_dev_x', 'sqrt_variance_y': 'std_dev_y', 'color': 'label'}
 )
 output_data.to_csv(output_file_path, index=False)
+
+print(output_file_path)

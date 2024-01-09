@@ -81,7 +81,7 @@ class LineDetection:
 		# openCV ----------------------------
 		self.bridge				= CvBridge()
 		self.front_rgb_sub_flg	= False			# 画像のsubscribe有無
-		self.front_rgb_sub_time	= rospy.get_time()
+		self.front_rgb_sub_time	= rospy.Time.now()
 
 
 		# HSV range -------------------------
@@ -125,7 +125,7 @@ class LineDetection:
 		# Subscriber -----------------------------------------------------------
 		#シミュレーションのカメラ
 		# self.image_sub = rospy.Subscriber("/beego/my_robo/camera1/image_raw", Image, self.subFrontRGBImage, queue_size=1)
-		self.image_sub = rospy.Subscriber("/camera2/color/image_raw", Image, self.subFrontRGBImage, queue_size=1)
+		self.image_sub = rospy.Subscriber("/camera1/color/image_raw", Image, self.subFrontRGBImage, queue_size=1)
 
 
 		# Publisher ------------------------------------------------------------
@@ -157,8 +157,9 @@ class LineDetection:
 			#the_now		= rospy.Time.now()
 			#print "time:", the_now.to_sec() - self.front_rgb_sub_time.to_sec()
 			#if (the_now.to_sec() - self.front_rgb_sub_time.to_sec()) < IMAGE_SUB_TIME_THRE:
-			the_now 	= rospy.get_time()
-			if (the_now - self.front_rgb_sub_time) < IMAGE_SUB_TIME_THRE:
+			# the_now 	= rospy.get_time()
+			the_now     = rospy.Time.now()
+			if (the_now.to_sec() - self.front_rgb_sub_time.to_sec()) < IMAGE_SUB_TIME_THRE:
 
 				#---------------------------------------------------------------
 				#		Color filtering & masking
@@ -184,10 +185,11 @@ class LineDetection:
 				# the_points		= PointCloud()
 				# the_points.header.frame_id	= 'beego/odom'
 				header = Header()
-				header.stamp = rospy.Time.now()
+				header.stamp = self.front_rgb_sub_time #画像のタイムスタンプ
 				# header.frame_id = "fixed_paritcle_posi" #尤度分布用
-				header.frame_id = "dha_esti_pose"
+				header.frame_id = "dha_esti_pose" #gazeboでpf位置推定用
 				# header.frame_id	= 'beego/odom'
+				# header.frame_id  = "beego_frame" # gazeboの真値用
 				fields = [
 					PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),
             		PointField(name="y", offset=4, datatype=PointField.FLOAT32, count=1),
@@ -256,8 +258,9 @@ class LineDetection:
 		# Store current front rgb image ----------------------------------------
 		self.front_rgb_sub_flg	= True
 		#self.front_rgb_sub_time	= in_rgb.header.stamp	# time stamp use_sim_time true: required for rosbag play
-		self.front_rgb_sub_time	= rospy.get_time()
+		self.front_rgb_sub_time	= in_rgb.header.stamp
 		self.front_rgb_img		= self.bridge.imgmsg_to_cv2(in_rgb, 'passthrough')
+		# print(self.front_rgb_img)
 
 
 
