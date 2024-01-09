@@ -24,6 +24,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <gazebo_msgs/ModelStates.h>
+#include <limits>
 
 // シミュレータ環境におけるパーティクルフィルタを用いた位置推定の検証
 /*
@@ -40,7 +41,7 @@
 using namespace std;
 
 
-std::ofstream ofs("/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/output.csv");
+std::ofstream ofs("/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/result.csv");
 
 ros::Time point_timestamp; //初期化
 
@@ -70,7 +71,7 @@ double DelayThreshold = 0.2; //点群の遅延を許容する計算性能
 
 
 
-// double time_stamp = 0.0;
+
 double robot_x = 0.0; //オドメトリによるx座標
 double robot_y = 0.0; //オドメトリによるy座標
 
@@ -78,6 +79,8 @@ double robot_y = 0.0; //オドメトリによるy座標
 // 尤度更新の状態→デフォルトしない(0),する(1)
 int likelihood_state = 0;
 int flg=0;
+
+
 
 
 // // 乱数生成エンジン
@@ -113,7 +116,7 @@ std::normal_distribution<> dist_omega_omega(0.0, sigma_omega_omega);
 
 
 // // パーティクル数
-const int PARTICLE_NUM  = 500; 
+const int PARTICLE_NUM  = 1000; 
 double coeff = 0.01; //尤度係数：実機0.1,⇛gazebo:0.01
 double beta = 2.0; // 改良の尤度計算の係数
 double Mth = 300; //最低限含まれてほしい点群数のしきい値    
@@ -244,7 +247,7 @@ void likelihood_value_nomalization()
 
 
 // リサンプリングの処理
-void resampling(int cnt)
+void resampling()
 {
 
     double rand_width = 1.0 / double(PARTICLE_NUM); // 乱数幅
@@ -329,11 +332,6 @@ int main(int argc, char **argv)
 
     
 
-    // posi.header.frame_id = "beego/odom";
-    // estimate_posi.header.frame_id = "beego/odom";
-    // particle_cloud.header.frame_id = "beego/odom";
-    // particle_cloud.header.stamp = ros::Time::now();
-    // particle_cloud.poses.resize(PARTICLE_NUM);
 
     posi.header.frame_id = "map";
     estimate_posi.header.frame_id = "map";
@@ -364,8 +362,9 @@ int main(int argc, char **argv)
 
     ros::Rate rate(10.0);
     int cnt = 0;
-    
+    double time_stamping = 0.0;
     ros::Time start= ros::Time::now();
+    std::cout << "Start time: " << start.toSec() << std::endl;
 
     while (ros::ok())
     {
@@ -374,13 +373,20 @@ int main(int argc, char **argv)
         ros::Time current = ros::Time::now();
         ros::Duration elapsed = current - start;
         double DT = elapsed.toSec();
-        if (DT==0) DT =  1.0 / 10.0; //最初だけ0を防ぐ
+        if (DT==0 || DT > 130) DT =  1.0 / 10.0; //最初だけ0と意味わからん数値が入るやつを防ぐ
+
         
-        
+        // 最大尤度
+        double max_likelyhood = 0;
+
         // double DT = 1 / s;  
-        // time_stamp += DT; // dtで時間を積算
+        time_stamping += DT; // dtで時間を積算
+        cout << "時間 " << time_stamping << endl;
 
         ros::spinOnce();
+
+
+        double likelyhood_array[PARTICLE_NUM]; //
 
         // パーティクルの位置に状態遷移モデルの適用
         for (int i = 0; i < PARTICLE_NUM; i++)
@@ -402,11 +408,10 @@ int main(int argc, char **argv)
         }
         // 現在時刻の取得と表示
         ros::Time now = ros::Time::now();
-        ROS_INFO_STREAM("Current time: " << now);
+        // ROS_INFO_STREAM("Current time: " << now);
             // 時間の比較
         ros::Duration diff = now - point_timestamp;
-        ROS_INFO_STREAM("Time difference: " << diff.toSec() << " seconds");
-
+        ROS_INFO_STREAM("点群の遅延許容誤差: " << diff.toSec() << " seconds");
         if (diff.toSec() < DelayThreshold) //遅延許容誤差：0.15以上の遅延では尤度計算を行わない
         {
             // 尤度計算
@@ -451,6 +456,7 @@ int main(int argc, char **argv)
                     double line_side_small     = 0;
                     double line_side_big       = 0;
                     double likelihood_value    = 0;
+
 
                     for (int i = 0; i < PARTICLE_NUM; i++) //パーティクルのループ
                     {
@@ -501,15 +507,53 @@ int main(int argc, char **argv)
                         // likelihood_value = (1 - coeff)*(double(match_count) / (beta*(double(downsampled_cloud.points.size()) - double(match_count)) + double(match_count))) + coeff;   // m
                         // // likelihood_value = 1 / (1 + PARTICLE_NUM * coeff) * (double(match_count) / double(downsampled_cloud.points.size())) + coeff;
                         particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
+                        likelyhood_array[i] = likelihood_value;
 
-                        std::cout << "尤度ああああ " << likelihood_value << std::endl;
+                        // std::cout << likelihood_value << std::endl;
                     }
-                    std::cout << "尤度 " << likelihood_value << std::endl;
+
+                    double maxValue = std::numeric_limits<double>::lowest();
+                    int maxIndex = 0;
+                    for (int i = 0; i < PARTICLE_NUM; i++)
+                    {
+                        if(likelyhood_array[i] > maxValue){
+                            maxValue = likelyhood_array[i];
+                            maxIndex = i;
+                        }
+
+                    }
+                    
+                    max_likelyhood = maxValue;
+                    likelyhood_array[maxIndex] = 0.0;
+                    cout << "最大の尤度 " << max_likelyhood << endl;
+                    // 一回のループにおける尤度が出る
+                    // 膨張リセットの判定:最大尤度が0.5以下なら膨張リセット
+                    if (max_likelyhood < 0.5)
+                    {
+                        cout << "------膨張リセット-----" << endl;
+                        for (int i = 0; i < PARTICLE_NUM; i++)
+                        {
+                            double roll, pitch, yaw;
+                            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+                            //ガウス分布（平均、標準偏差）
+                            std::normal_distribution<> initial_x_distribution(particle_cloud.poses[i].position.x, 0.1); //sigmaをいじれば初期のパーティクルのばらつきが決まる
+                            std::normal_distribution<> initial_y_distribution(particle_cloud.poses[i].position.y, 0.1);
+                            std::normal_distribution<> initial_theta_distribution(yaw, 0.1); //姿勢の散らばり
+
+                            particle_cloud.poses[i].position.x = initial_x_distribution(engine);
+                            particle_cloud.poses[i].position.y = initial_y_distribution(engine);
+                            particle_cloud.poses[i].position.z = 0.0;
+                            particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
+                            particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
+
+                        }
+                    }
                 }
             }
         }
         
-
+        // SAIDAIYUUDO
+        // cout << "max yuudo "  << max_likelyhood << endl;
             
 
         // 重みの正規化 : particle_valueの値を正規化
@@ -565,13 +609,13 @@ int main(int argc, char **argv)
         max_estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, max_estimate_theta);
         // ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
         
-        ROS_INFO_STREAM("PointCloud timestamp: " << point_timestamp);
+        // ROS_INFO_STREAM("PointCloud timestamp: " << point_timestamp);
         std::cout << "真値 x " << beego_x << " " << "真値 y " << beego_y << std::endl; 
         std::cout << "重み付け推定値 x " << estimate_odom_x << " "<< "重み付け推定値 y " << estimate_odom_y << std::endl;
         std::cout << "max推定値 x " << max_estimate_odom_x << " "<< "max推定値 y " << max_estimate_odom_y << std::endl;
         std::cout << "オドメトリ x " << robot_x << " "<< "オドメトリ y " << robot_y << std::endl;
         std::cout << "v  " << v << " " << "omega " << omega << std::endl;
-        std::cout << "尤度の最大値 " << particle_value[max_value_index] << std::endl;
+        std::cout << "最大の重み " << particle_value[max_value_index] << std::endl;
         
 
 
@@ -580,7 +624,7 @@ int main(int argc, char **argv)
         if (v > 0.04 || std::fabs(omega) > 0.002)
         {
             printf("cnt: %d, リサンプリング中\n",cnt);
-            resampling(cnt);
+            resampling();
         }
         else 
         // std::cout << "時間 "<< time_stamp << std::endl;
@@ -598,8 +642,8 @@ int main(int argc, char **argv)
             std::cout << "尤度更新しない" << std::endl;
         }
 
-        // ofs << time_stamp << ", " << robot_x << ", " << robot_y << ", " << beego_x << ", " << beego_y << ", " << estimate_odom_x << ", " << estimate_odom_y << ", " << likelihood_state << std::endl;
-
+        ofs << time_stamping << ", " << robot_x << ", " << robot_y << ", " << beego_x << ", " << beego_y << ", " << estimate_odom_x << ", " << estimate_odom_y << ", " << likelihood_state << ", "<<max_likelyhood << std::endl;
+        cout << "----------------------------------------------------------------------------"<<endl;
 
         self_localization_pub.publish(posi);
         particle_cloud_pub.publish(particle_cloud);
@@ -642,6 +686,7 @@ int main(int argc, char **argv)
 
         start = current; // 次のループのために現在時刻を更新
         rate.sleep();
+        cnt++;
         
         
     }
