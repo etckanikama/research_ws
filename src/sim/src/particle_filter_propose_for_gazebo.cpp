@@ -388,7 +388,7 @@ int main(int argc, char **argv)
         ros::spinOnce();
 
 
-        double likelyhood_array[PARTICLE_NUM]; //
+        double likelyhood_array[PARTICLE_NUM]; //尤度を格納する配列
 
         // パーティクルの位置に状態遷移モデルの適用
         for (int i = 0; i < PARTICLE_NUM; i++)
@@ -518,40 +518,79 @@ int main(int argc, char **argv)
                     int maxIndex = 0;
                     for (int i = 0; i < PARTICLE_NUM; i++)
                     {
+                        // 最大の尤度を見つける
                         if(likelyhood_array[i] > maxValue)
                         {
                             maxValue = likelyhood_array[i];
                             maxIndex = i;
                         }
+                        sum_likelyhood += likelyhood_array[i]; //純粋に尤度を位置から格納している：尤度の和
                     }
 
                     max_likelyhood = maxValue;
-                    likelyhood_array[maxIndex] = 0.0;
+                    likelyhood_array[maxIndex] = 0.0; //尤度の格納配列を0で初期化
                     cout << "最大の尤度 " << max_likelyhood << endl;
+                    cout << "尤度の和 " << sum_likelyhood << endl;
 
 
                     // 一回のループにおける尤度が出る
                     // 膨張リセットの判定:最大尤度が0.5以下なら膨張リセット
-                    if (max_likelyhood < 0.5)
+                    // 膨張リセットの判定：尤度の合計が380以下なら膨張リセット
+                    double th = 380; // デフォルトの閾値
+                    static int rest_counter = 0;
+                    if (cnt > 60)
                     {
-                        cout << "------膨張リセット-----" << endl;
-                        for (int i = 0; i < PARTICLE_NUM; i++)
+                        if (sum_likelyhood < th) 
                         {
-                            double roll, pitch, yaw;
-                            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-                            //ガウス分布（平均、標準偏差）
-                            std::normal_distribution<> initial_x_distribution(particle_cloud.poses[i].position.x, 0.2); //sigmaをいじれば初期のパーティクルのばらつきが決まる
-                            std::normal_distribution<> initial_y_distribution(particle_cloud.poses[i].position.y, 0.2);
-                            std::normal_distribution<> initial_theta_distribution(yaw, 0.2); //姿勢の散らばり
+                            rest_counter++; 
+                        }
+                        else
+                        {
+                            rest_counter = 0;
+                        }
 
-                            particle_cloud.poses[i].position.x = initial_x_distribution(engine);
-                            particle_cloud.poses[i].position.y = initial_y_distribution(engine);
-                            particle_cloud.poses[i].position.z = 0.0;
-                            particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
-                            particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
+                        if (rest_counter >= 5)
+                        {
+                            cout << "------膨張リセット-----" << endl;
+                            for (int i = 0; i < PARTICLE_NUM; i++)
+                            {
+                                double roll, pitch, yaw;
+                                geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+                                //ガウス分布（平均、標準偏差）
+                                std::normal_distribution<> initial_x_distribution(particle_cloud.poses[i].position.x, 0.01); //sigmaをいじれば初期のパーティクルのばらつきが決まる
+                                std::normal_distribution<> initial_y_distribution(particle_cloud.poses[i].position.y, 0.01);
+                                std::normal_distribution<> initial_theta_distribution(yaw, 0.01); //姿勢の散らばり
 
+                                particle_cloud.poses[i].position.x = initial_x_distribution(engine);
+                                particle_cloud.poses[i].position.y = initial_y_distribution(engine);
+                                particle_cloud.poses[i].position.z = 0.0;
+                                particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
+                                particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
+
+                            }
+                            rest_counter = 0;
                         }
                     }
+                    // if (cnt > 60 && sum_likelyhood < th) //最初は膨張しない
+                    // {
+                        // cout << "------膨張リセット-----" << endl;
+                        // for (int i = 0; i < PARTICLE_NUM; i++)
+                        // {
+                        //     double roll, pitch, yaw;
+                        //     geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+                        //     //ガウス分布（平均、標準偏差）
+                        //     std::normal_distribution<> initial_x_distribution(particle_cloud.poses[i].position.x, 0.01); //sigmaをいじれば初期のパーティクルのばらつきが決まる
+                        //     std::normal_distribution<> initial_y_distribution(particle_cloud.poses[i].position.y, 0.01);
+                        //     std::normal_distribution<> initial_theta_distribution(yaw, 0.01); //姿勢の散らばり
+
+                        //     particle_cloud.poses[i].position.x = initial_x_distribution(engine);
+                        //     particle_cloud.poses[i].position.y = initial_y_distribution(engine);
+                        //     particle_cloud.poses[i].position.z = 0.0;
+                        //     particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
+                        //     particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
+
+                        // }
+                    // }
                 }
             }
         }
