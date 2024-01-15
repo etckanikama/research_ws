@@ -5,8 +5,8 @@
   <!--beego無しのマップを保存してあるので、このあとにworldは保存しないようにする  -->
   <!-- 事前に保存済みの画像を貼り付けたworldを開く（sb_map.world) -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-  <arg name="world_name" value="$(find sim)/worlds/after_set_covering_route1_tougou.world"/>
-  <!-- <arg name="world_name" value="$(find sim)/worlds/oregatukutta_1.5_hige.world"/> -->
+  <!-- <arg name="world_name" value="$(find sim)/worlds/after_set_covering_route1_tougou.world"/> -->
+  <arg name="world_name" value="$(find sim)/worlds/oregatukutta_1.5_hige.world"/>
   <!-- <arg name="world_name" value="$(find sim)/worlds/three_stacked_white_lane_map.world"/> -->
 
     <!-- <arg name="world_name" value="$(find sim)/worlds/after_set_covering_route1.world"/> -->

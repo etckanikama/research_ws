@@ -85,7 +85,7 @@ for key, value in Fy.items():
 #     # plt.plot(subset['x'], subset['y'], 'o', color=color, label=f'{color} points')
 #     plt.plot(subset['y'], subset['x'], 'o', color=color)
 
-# 矢印の長さ
+# # 矢印の長さ
 arrow_length = 0.01
 
 for color in choices:

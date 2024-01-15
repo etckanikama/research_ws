@@ -138,7 +138,7 @@ for key in origin_F_key:
     # keyがorigin_fxに入ってたらfx, origin_fyに入ってたらfyをstatatusに加えて白線ひげ地点として出力する
     # print(origin_F[key][0], origin_F[key][1])
 print(hige_candidate)
-fig = plt.figure()
+fig = plt.figure(figsize=(10, 6))
 ax = fig.add_subplot(111)
 #################描画############################
 # 全ての Fx と Fy の点をプロット
@@ -161,7 +161,7 @@ for key, value in Fy.items():
 for index in origin_F_key:
     key = str(index)
     # plt.plot(origin_F[key][0], origin_F[key][1], 'cx', markersize=10)  # 'ro' means red color, circle marker
-    # plt.plot(origin_F[key][1],origin_F[key][0], 'cx', markersize=10)
+    plt.plot(origin_F[key][1],origin_F[key][0], 'cx', markersize=15)
 
 
 # plt.xticks(range(-4,4,1))
