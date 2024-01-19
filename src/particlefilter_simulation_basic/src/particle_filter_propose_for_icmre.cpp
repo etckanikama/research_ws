@@ -94,7 +94,7 @@ geometry_msgs::Quaternion rpy_to_geometry_quat(double roll, double pitch, double
 {
     tf::Quaternion quat = tf::createQuaternionFromRPY(roll, pitch, yaw);
     geometry_msgs::Quaternion geometry_quat;
-    quaternionTFToMsg(quat, geometry_quat);
+    quaternionTFToMsg(quat, geometry_quat); 
     return geometry_quat;
 }
 

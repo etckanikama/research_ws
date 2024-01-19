@@ -25,6 +25,8 @@
 #include <pcl/point_types.h>
 #include <gazebo_msgs/ModelStates.h>
 #include <limits>
+#include <cstdlib>  // getenvを使うために必要
+#include <sstream> // std::ostringstreamを使用するために必要
 
 // シミュレータ環境におけるパーティクルフィルタを用いた位置推定の検証
 /*
@@ -41,7 +43,8 @@
 using namespace std;
 
 
-std::ofstream ofs("/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/result.csv");
+
+// std::ofstream ofs("/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/result.csv");
 
 ros::Time point_timestamp; //初期化
 
@@ -55,7 +58,7 @@ geometry_msgs::Twist cmd_vel;
 
 // 軌跡の保存用csvファイル
 // std::ofstream ofs("ccc.csv");
-double beego_x, beego_y, beego_z;
+double beego_x, beego_y, beego_z, beego_yaw;
 double beego_orientation_x, beego_orientation_y, beego_orientation_z, beego_orientation_w;
 double beego_linear_x, beego_angular_z;
 bool beego_pose_available = false;
@@ -104,9 +107,9 @@ std::mt19937 engine(seed());
 // double sigma_v_omega = 0.1;  //直進1mで生じる回転の誤差0.05
 // double sigma_omega_omega = 0.4;   //回転1radで生じる回転の誤差0.1
 
-double sigma_v_v = 0.05;  // 直進1mで生じる距離の標準偏差0.03
+double sigma_v_v = 0.1;  // 直進1mで生じる距離の標準偏差0.03
 double sigma_omega_v = 0.1; // 直進1mで生じる回転の誤差0.001
-double sigma_v_omega = 0.05;  //回転1radで生じる直進の誤差0.05
+double sigma_v_omega = 0.1;  //回転1radで生じる直進の誤差0.05
 double sigma_omega_omega = 0.1;    //回転1radで生じる回転の誤差0.1
 
 std::normal_distribution<> dist_v_v(0.0, sigma_v_v);
@@ -116,7 +119,7 @@ std::normal_distribution<> dist_omega_omega(0.0, sigma_omega_omega);
 
 
 // // パーティクル数
-const int PARTICLE_NUM  = 1000; 
+const int PARTICLE_NUM  = 500; 
 double coeff = 0.01; //尤度係数：実機0.1,⇛gazebo:0.01
 double beta = 2.0; // 改良の尤度計算の係数
 double Mth = 300; //最低限含まれてほしい点群数のしきい値    
@@ -126,10 +129,44 @@ double sigma_py_th =0.15; //y方向の標準偏差のしきい値:白線の幅(0
 
 std::vector<double> particle_value(PARTICLE_NUM); // particleの重み
 double theta_pt[PARTICLE_NUM]= {0.0};// // パーティクルの姿勢
-
+// const int polygon_num = 40; //もともとのひげの数:25,1.5のひげの数:40, 統合ひげ:37
+// // 左奥角から時計周りに定義
+// double rectangles[polygon_num][4][2] = {
+//         {{9.125, 0.545},{9.125, 0.47},{0.0, 0.47},{0.0, 0.545}},
+//         {{9.125, 1.935},{9.125, 0.545},{9.05, 0.545},{9.05, 1.935}},
+//         {{10.205, 1.935},{10.205, 1.86},{9.125, 1.86},{9.125, 1.935}},//3番目
+//         {{10.205,3.01},{10.205,1.935},{10.13,1.935},{10.13,3.01}},
+//         {{11.355,3.01},{11.355,1.76},{11.28,1.76},{11.28,3.01}},
+//         {{12.6,1.835},{12.6,1.76},{11.355,1.76},{11.355,1.835}},
+//         {{12.6,0.825},{12.6,0.75},{11.41,0.75},{11.41,0.825}},
+//         {{11.485,0.75},{11.485,-3.6},{11.41,-3.6},{11.41,0.75}},//8番目
+//         {{10.095,-0.545},{10.095,-3.6},{10.02,-3.6},{10.02,-0.545}},
+//         {{10.095, -0.47},{10.095,-0.545},{0,-0.545},{0,-0.47}},
+//         {{9.38,-1.465},{9.38,-3.6},{9.30,-3.6},{9.30,-1.465}},
+//         {{9.305,-1.465},{9.305,-1.540},{8.055,-1.540},{8.055,-1.465}},
+//         {{8.035,-1.465},{8.035,-3.60},{7.96,-3.60},{7.96,-1.465}},
+//         {{7.16,-1.465},{7.16,-3.61},{7.08,-3.61},{7.08,-1.465}},
+//         {{7.085,-1.465},{7.085,-1.540},{6.125,-1.540},{6.125,-1.465}},//15番目
+//         {{6.125,-1.465},{6.125,-3.61},{6.050,-3.61},{6.050,-1.465}},
+//         {{5.250, -1.465},{5.250,-3.61},{5.175,-3.61},{5.175,-1.465}},
+//         {{5.175,-1.465},{5.175,-1.540},{4.225,-1.540},{4.225,-1.465}},
+//         {{4.225,-1.465},{4.225,-3.61},{4.15,-3.61},{4.15,-1.465}},//19番目
+//         {{3.335, -1.465},{3.335, -3.61},{3.26,-3.61},{3.26, -1.465}},
+//         {{3.26,-1.465},{3.26,-1.540},{2.325,-1.540},{2.325,-1.465}},
+//         {{2.325, -1.465},{2.325, -3.60},{2.25,-3.60},{2.25,-1.465}},
+//         {{1.420,-1.465},{1.420,-3.61},{1.345,-3.61},{1.345,-1.465}},
+//         {{1.345,-1.465},{1.345,-1.540},{0.545,-1.540},{0.545,-1.465}},
+//         {{0.545,-1.465},{0.545, -3.60},{0.47,-3.60},{0.47,-1.465}},
+// // {{8.761401098901098, 0.8075000000000001}, {8.761401098901098, 0.20750000000000007}, {8.686401098901099, 0.20750000000000007}, {8.686401098901099, 0.8075000000000001}}, {{7.2572802197802195, 0.8075000000000001}, {7.2572802197802195, 0.20750000000000007}, {7.182280219780221, 0.20750000000000007}, {7.182280219780221, 0.8075000000000001}}, {{3.2462912087912086, 0.8075000000000001}, {3.2462912087912086, 0.20750000000000007}, {3.171291208791209, 0.20750000000000007}, {3.171291208791209, 0.8075000000000001}}, {{5.79165, -0.20750000000000007}, {5.79165, -0.8075000000000001}, {5.7166500000000005, -0.8075000000000001}, {5.7166500000000005, -0.20750000000000007}}, {{4.378349999999999, -0.20750000000000007}, {4.378349999999999, -0.8075000000000001}, {4.30335, -0.8075000000000001}, {4.30335, -0.20750000000000007}}, {{2.3593500000000005, -0.20750000000000007}, {2.3593500000000005, -0.8075000000000001}, {2.2843500000000003, -0.8075000000000001}, {2.2843500000000003, -0.20750000000000007}}, {{11.7475, 0.1805232558139536}, {11.7475, 0.10552325581395358}, {11.1475, 0.10552325581395358}, {11.1475, 0.1805232558139536}}, {{10.357500000000002, -2.4423333333333335}, {10.357500000000002, -2.5173333333333336}, {9.7575, -2.5173333333333336}, {9.7575, -2.4423333333333335}}, {{10.357500000000002, -3.5625}, {10.357500000000002, -3.6375}, {9.7575, -3.6375}, {9.7575, -3.5625}}
+// // // 統合ひげ
+// // {{4.249038461538461, 0.8075000000000001}, {4.249038461538461, 0.20750000000000007}, {4.174038461538462, 0.20750000000000007}, {4.174038461538462, 0.8075000000000001}}, {{1.341071428571429, 0.8075000000000001}, {1.341071428571429, 0.20750000000000007}, {1.2660714285714287, 0.20750000000000007}, {1.2660714285714287, 0.8075000000000001}}, {{0.0375, 0.8075000000000001}, {0.0375, 0.20750000000000007}, {-0.0375, 0.20750000000000007}, {-0.0375, 0.8075000000000001}}, {{9.4865, 2.1975}, {9.4865, 1.5975}, {9.4115, 1.5975}, {9.4115, 2.1975}}, {{8.61825, -0.20750000000000007}, {8.61825, -0.8075000000000001}, {8.54325, -0.8075000000000001}, {8.54325, -0.20750000000000007}}, {{7.305899999999999, -0.20750000000000007}, {7.305899999999999, -0.8075000000000001}, {7.2309, -0.8075000000000001}, {7.2309, -0.20750000000000007}}, {{5.79165, -0.20750000000000007}, {5.79165, -0.8075000000000001}, {5.7166500000000005, -0.8075000000000001}, {5.7166500000000005, -0.20750000000000007}}, {{2.76315, -0.20750000000000007}, {2.76315, -0.8075000000000001}, {2.68815, -0.8075000000000001}, {2.68815, -0.20750000000000007}}, {{11.7475, -0.12296511627906978}, {11.7475, -0.1979651162790698}, {11.1475, -0.1979651162790698}, {11.1475, -0.12296511627906978}}, {{11.7475, -2.6520348837209298}, {11.7475, -2.72703488372093}, {11.1475, -2.72703488372093}, {11.1475, -2.6520348837209298}}, {{10.357500000000002, -1.4240000000000002}, {10.357500000000002, -1.499}, {9.7575, -1.499}, {9.7575, -1.4240000000000002}}, {{10.357500000000002, -3.5625}, {10.357500000000002, -3.6375}, {9.7575, -3.6375}, {9.7575, -3.5625}}
+// // 1.5のひげ
+// // {{10.3575, -3.5075}, {10.3575, -3.5825}, {9.757499999999999, -3.5825}, {9.757499999999999, -3.5075}}, {{3.0375, 0.8074999999999999}, {3.0375, 0.20749999999999996}, {2.9625, 0.20749999999999996}, {2.9625, 0.8074999999999999}}, {{6.0375, -0.20749999999999996}, {6.0375, -0.8074999999999999}, {5.9625, -0.8074999999999999}, {5.9625, -0.20749999999999996}}, {{3.0375, -0.20749999999999996}, {3.0375, -0.8074999999999999}, {2.9625, -0.8074999999999999}, {2.9625, -0.20749999999999996}}, {{7.5375, -0.20749999999999996}, {7.5375, -0.8074999999999999}, {7.4625, -0.8074999999999999}, {7.4625, -0.20749999999999996}}, {{1.5375, 0.8074999999999999}, {1.5375, 0.20749999999999996}, {1.4625, 0.20749999999999996}, {1.4625, 0.8074999999999999}}, {{1.5375, -0.20749999999999996}, {1.5375, -0.8074999999999999}, {1.4625, -0.8074999999999999}, {1.4625, -0.20749999999999996}}, {{11.775, -0.7125}, {11.775, -0.7875}, {11.175, -0.7875}, {11.175, -0.7125}}, {{11.775, -2.2125}, {11.775, -2.2875}, {11.175, -2.2875}, {11.175, -2.2125}}, {{10.3575, -2.0075}, {10.3575, -2.0825}, {9.757499999999999, -2.0825}, {9.757499999999999, -2.0075}}, {{9.0375, -0.20749999999999996}, {9.0375, -0.8074999999999999}, {8.9625, -0.8074999999999999}, {8.9625, -0.20749999999999996}}, {{6.0375, 0.8074999999999999}, {6.0375, 0.20749999999999996}, {5.9625, 0.20749999999999996}, {5.9625, 0.8074999999999999}}, {{7.5375, 0.8074999999999999}, {7.5375, 0.20749999999999996}, {7.4625, 0.20749999999999996}, {7.4625, 0.8074999999999999}}, {{4.5375, 0.8074999999999999}, {4.5375, 0.20749999999999996}, {4.4625, 0.20749999999999996}, {4.4625, 0.8074999999999999}}, {{4.5375, -0.20749999999999996}, {4.5375, -0.8074999999999999}, {4.4625, -0.8074999999999999}, {4.4625, -0.20749999999999996}}
+// {{3.0375, 0.8074999999999999}, {3.0375, 0.20749999999999996}, {2.9625, 0.20749999999999996}, {2.9625, 0.8074999999999999}},{{1.5375, 0.8074999999999999}, {1.5375, 0.20749999999999996}, {1.4625, 0.20749999999999996}, {1.4625, 0.8074999999999999}}
+//         };
 
 // // 白線のポリゴン情報マップ(x_bottom, x_top, y_right, y_left)
-const int POLYGON_NUM = 40; // 通常マップ：25, 1.5ひげマップ:40, 統合ひげ:37
+const int POLYGON_NUM = 40 ; // 通常マップ：25, 1.5ひげマップ:40, 統合ひげ:37
 double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.125, 0.545, 1.935}, {9.125, 10.205, 1.86, 1.935}, {10.13, 10.205, 1.935, 3.01}, {11.28, 11.355, 1.76, 3.01}, {11.355, 12.6, 1.76, 1.835}, {11.41, 12.6, 0.75, 0.825}, {11.41, 11.485, 0.75, -3.61}, {10.02, 10.095, -0.545, -3.61}, {0, 10.095, -0.47, -0.545},
                                             {0.47, 0.545, -1.465, -3.61},{0.545, 1.345,-1.465, -1.540},{1.345, 1.420, -1.465, -3.61},{2.25, 2.325, -1.465, -3.61},{2.325, 3.26,-1.465, -1.540},{3.26, 3.335, -1.465, -3.61},{4.15, 4.225, -1.465, -3.61},{4.225, 5.175,-1.465, -1.540},{5.175, 5.250, -1.465, -3.61},{6.050, 6.125, -1.465, -3.61},
                                             {6.125, 7.085,-1.465, -1.540},{7.08, 7.16, -1.465, -3.61},{7.96, 8.035, -1.465, -3.61},{8.055, 9.305,-1.465, -1.540},{9.30, 9.38, -1.465, -3.61},
@@ -151,7 +188,24 @@ double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05, 9.
                                             {9.757499999999999, 10.3575, -3.5825, -3.5075}, {2.9625, 3.0375, 0.20749999999999996, 0.8074999999999999}, {5.9625, 6.0375, -0.8074999999999999, -0.20749999999999996}, {2.9625, 3.0375, -0.8074999999999999, -0.20749999999999996}, {7.4625, 7.5375, -0.8074999999999999, -0.20749999999999996}, {1.4625, 1.5375, 0.20749999999999996, 0.8074999999999999}, {1.4625, 1.5375, -0.8074999999999999, -0.20749999999999996}, {11.175, 11.775, -0.7875, -0.7125}, {11.175, 11.775, -2.2875, -2.2125}, {9.757499999999999, 10.3575, -2.0825, -2.0075}, {8.9625, 9.0375, -0.8074999999999999, -0.20749999999999996}, {5.9625, 6.0375, 0.20749999999999996, 0.8074999999999999}, {7.4625, 7.5375, 0.20749999999999996, 0.8074999999999999}, {4.4625, 4.5375, 0.20749999999999996, 0.8074999999999999}, {4.4625, 4.5375, -0.8074999999999999, -0.20749999999999996}
 
                                             }; 
+// double WHITE_POLYGON_MAP[POLYGON_NUM][4] = {
+//                                             // {4.174038461538462, 4.249038461538461, 0.20750000000000007, 0.8075000000000001}, {1.2660714285714287, 1.341071428571429, 0.20750000000000007, 0.8075000000000001}, {-0.0375, 0.0375, 0.20750000000000007, 0.8075000000000001}, {9.4115, 9.4865, 1.5975, 2.1975}, {8.54325, 8.61825, -0.8075000000000001, -0.20750000000000007}, {7.2309, 7.305899999999999, -0.8075000000000001, -0.20750000000000007}, {5.7166500000000005, 5.79165, -0.8075000000000001, -0.20750000000000007}, {2.68815, 2.76315, -0.8075000000000001, -0.20750000000000007}, {11.1475, 11.7475, -0.1979651162790698, -0.12296511627906978}, {11.1475, 11.7475, -2.72703488372093, -2.6520348837209298}, {9.7575, 10.357500000000002, -1.499, -1.4240000000000002}, {9.7575, 10.357500000000002, -3.6375, -3.5625}
+//                                             // 1.5のひげ
+//                                              {2.9625, 3.0375, 0.20749999999999996, 0.8074999999999999},  {1.4625, 1.5375, 0.20749999999999996, 0.8074999999999999},
 
+//                                             }; 
+bool isPointInPolygon(double px, double py, double polygon[][2], int vertices) {
+    bool inside = false;
+    for (int i = 0, j = vertices - 1; i < vertices; j = i++) {
+        double xi = polygon[i][0], yi = polygon[i][1];
+        double xj = polygon[j][0], yj = polygon[j][1];
+
+        bool intersect = ((yi > py) != (yj > py)) &&
+                         (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+    return inside;
+}
 
 // roll, pitch, yawからクォータニオンにする関数
 geometry_msgs::Quaternion rpy_to_geometry_quat(double roll, double pitch, double yaw)
@@ -191,11 +245,9 @@ void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
     // PointCloud2メッセージをPCLのPointCloud型に変換する
     point_timestamp = msg->header.stamp;
-    if (flg == 0)
-    {
-        pcl::fromROSMsg(*msg, downsampled_cloud);
-        flg = 1;
-    }
+
+    pcl::fromROSMsg(*msg, downsampled_cloud);
+
 }
 
 // modelStatesCallback関数
@@ -217,6 +269,16 @@ void modelStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
         beego_orientation_y = msg->pose[beego_index].orientation.y;
         beego_orientation_z = msg->pose[beego_index].orientation.z;
         beego_orientation_w = msg->pose[beego_index].orientation.w;
+        tf::Quaternion q(
+            beego_orientation_x,
+            beego_orientation_y,
+            beego_orientation_z,
+            beego_orientation_w);
+        tf::Matrix3x3 m(q);
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+        beego_yaw = yaw;
+
 
         // linear.x と angular.z の値を取得
         beego_linear_x = msg->twist[beego_index].linear.x;
@@ -305,8 +367,27 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "particle_node_gazebo");
     ros::NodeHandle nh;
-    
 
+    
+    // 環境変数からホームディレクトリのパスを取得
+    char* homeDir = getenv("HOME");
+    if (homeDir == nullptr) {
+        std::cerr << "ホームディレクトリが見つかりません。" << std::endl;
+        return 1;
+    }
+    // ファイルパスを構築
+    std::string filepath1 = std::string(homeDir) + "/research_ws/src/sim/src/particle_result_csv/result.csv";
+    std::string filepath2 = std::string(homeDir) + "/research_ws/src/sim/src/particle_result_csv/v_ω.csv";
+
+    // 以降、ファイル操作は変更なし
+    std::ofstream ofs1(filepath1, std::ios::out | std::ios::trunc);
+    std::ofstream ofs2(filepath2, std::ios::out | std::ios::trunc);
+    // ヘッダーの追加
+    ofs1 << "Count" << "," <<"TimeStamp" << "," << "RobotX" << "," << "RobotY" << "," << "BeegoX" << "," << "BeegoY" << "," << "BeegoYaw"
+    << "," << "EstimateOdomX"<< "," << "EstimateOdomY"<< "," << "LikelihoodState" << "," << "MaxLikelihood" << "," << "SumLikelihood"
+    << "," << "index" << "," << "ParticlePosX_" << "," << "ParticlePosY_" << "," << "ParticlePosYAW_" << "," << "ParticleLikelihood_" 
+    << "," << "input_V" << "," << "input_ω" << "," << "Px-BeegoX" << "," <<"Pyaw-BeegoYaw" <<endl;
+    
     std::cout << "gazebo"<< std::endl;
 //     // Publisher
     ros::Publisher self_localization_pub = nh.advertise<nav_msgs::Odometry>("self_position", 10); // robotにモータに指令値を送るpublisherの宣言。
@@ -376,7 +457,6 @@ int main(int argc, char **argv)
         if (DT==0 || DT > 130) DT =  1.0 / 10.0; //最初だけ0と意味わからん数値が入るやつを防ぐ
 
         
-        
         double max_likelyhood = 0; // 最大尤度
         double sum_likelyhood = 0; //尤度の総和
 
@@ -390,7 +470,7 @@ int main(int argc, char **argv)
 
         double likelyhood_array[PARTICLE_NUM]; //尤度を格納する配列
 
-        // パーティクルの位置に状態遷移モデルの適用
+        //----------------------------- パーティクルの位置に状態遷移モデルの適用------------------------------------------------------------
         for (int i = 0; i < PARTICLE_NUM; i++)
         {
             // ノイズをのせたvとomegaを生成
@@ -408,14 +488,22 @@ int main(int argc, char **argv)
             particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0,0, yaw + omega_noise * DT);
         
         }
-        // 現在時刻の取得と表示
-        ros::Time now = ros::Time::now();
-        // ROS_INFO_STREAM("Current time: " << now);
-            // 時間の比較
+        
+        // // 必ず真値にパーティクルをのせる（debug用）
+        // particle_cloud.poses[0].position.x = beego_x;
+        // particle_cloud.poses[0].position.y = beego_y;
+        // particle_cloud.poses[0].orientation = rpy_to_geometry_quat(0,0, beego_yaw);
+        
+        // -----------------------------------------------------------------------------------------------------------------
+
+        //---------------------------------------- 尤度の計算条件--------------------------------------------------------
+        ros::Time now = ros::Time::now();// 現在時刻の取得と表示
         ros::Duration diff = now - point_timestamp;
-        cout << "点群の遅延時間: " << diff.toSec() << " seconds" << endl;;
+        cout << "点群の遅延時間: " << diff.toSec() << " seconds" << endl;
+        
         if (diff.toSec() < DelayThreshold) //遅延許容誤差：0.15以上の遅延では尤度計算を行わない
         {
+            cout << "全白線点群数 " << downsampled_cloud.points.size() << endl;
             // 尤度計算
             if (downsampled_cloud.points.size() > Mth) //最低限Mth以上含まれている時だけ尤度計算を行う
             {
@@ -447,10 +535,11 @@ int main(int argc, char **argv)
                 // // -----------------------------------------------------
                 // std::cout << downsampled_cloud.points.size() << std::endl;
                 // std::cout << "x方向の標準偏差 " << sigma_px << " " << "y方向の標準偏差" << sigma_py << std::endl;
+
                 if ((sigma_px > sigma_px_th) && (sigma_py > sigma_py_th)) //この条件を突破したら尤度計算が始まる
                 {
-                    // 尤度更新を行う状態にセット
-                    likelihood_state = 1;
+                    
+                    likelihood_state = 1;// 尤度更新を行う状態にセット
 
                     // 尤度計算用の変数
                     double line_vertical_small = 0;
@@ -465,7 +554,8 @@ int main(int argc, char **argv)
                         double roll, pitch, yaw;
                         geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
                         int match_count = 0; //尤度のマッチ数
-                        
+                        // int a_match_count = 0; //別の方法のマッチ数
+
                         for (int j = 0; j < downsampled_cloud.points.size(); j++)//尤度計算の中のループ
                         {
                             // particle一つ一つを使って白線点群を絶対座標に変換
@@ -503,101 +593,90 @@ int main(int argc, char **argv)
                                     break;
                                 }
                             }
+                            // // // 内包判定(仮)
+                            // for (int i = 0; i < polygon_num; ++i) 
+                            // {
+                            //     if (isPointInPolygon(line_glx, line_gly, rectangles[i], 4)) 
+                            //     {
+                            //         a_match_count++;
+                            //     }
+                            // }
                         }
+                        // それぞれのmatchカウントの数
+                        // cout << "全白線点群数 "<< downsampled_cloud.points.size() << " " <<"パーティクル_"<< i <<"のマッチ数 " << match_count << endl;
 
                         likelihood_value = (1 - coeff)*(double(match_count) / double(downsampled_cloud.points.size())) + coeff; // m/M今まで
                         // likelihood_value = (1 - coeff)*(double(match_count) / (beta*(double(downsampled_cloud.points.size()) - double(match_count)) + double(match_count))) + coeff;   // m
                         // // likelihood_value = 1 / (1 + PARTICLE_NUM * coeff) * (double(match_count) / double(downsampled_cloud.points.size())) + coeff;
                         particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
-                        likelyhood_array[i] = likelihood_value;
-
+                        likelyhood_array[i] = likelihood_value; //尤度配列に尤度を格納
                         // std::cout << likelihood_value << std::endl;
                     }
-
-                    double maxValue = std::numeric_limits<double>::lowest();
-                    int maxIndex = 0;
-                    for (int i = 0; i < PARTICLE_NUM; i++)
-                    {
-                        // 最大の尤度を見つける
-                        if(likelyhood_array[i] > maxValue)
-                        {
-                            maxValue = likelyhood_array[i];
-                            maxIndex = i;
-                        }
-                        sum_likelyhood += likelyhood_array[i]; //純粋に尤度を位置から格納している：尤度の和
-                    }
-
-                    max_likelyhood = maxValue;
-                    likelyhood_array[maxIndex] = 0.0; //尤度の格納配列を0で初期化
-                    cout << "最大の尤度 " << max_likelyhood << endl;
-                    cout << "尤度の和 " << sum_likelyhood << endl;
-
-
-                    // 一回のループにおける尤度が出る
-                    // 膨張リセットの判定:最大尤度が0.5以下なら膨張リセット
-                    // 膨張リセットの判定：尤度の合計が380以下なら膨張リセット
-                    double th = 380; // デフォルトの閾値
-                    static int rest_counter = 0;
-                    if (cnt > 60)
-                    {
-                        if (sum_likelyhood < th) 
-                        {
-                            rest_counter++; 
-                        }
-                        else
-                        {
-                            rest_counter = 0;
-                        }
-
-                        if (rest_counter >= 5)
-                        {
-                            cout << "------膨張リセット-----" << endl;
-                            for (int i = 0; i < PARTICLE_NUM; i++)
-                            {
-                                double roll, pitch, yaw;
-                                geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-                                //ガウス分布（平均、標準偏差）
-                                std::normal_distribution<> initial_x_distribution(particle_cloud.poses[i].position.x, 0.01); //sigmaをいじれば初期のパーティクルのばらつきが決まる
-                                std::normal_distribution<> initial_y_distribution(particle_cloud.poses[i].position.y, 0.01);
-                                std::normal_distribution<> initial_theta_distribution(yaw, 0.01); //姿勢の散らばり
-
-                                particle_cloud.poses[i].position.x = initial_x_distribution(engine);
-                                particle_cloud.poses[i].position.y = initial_y_distribution(engine);
-                                particle_cloud.poses[i].position.z = 0.0;
-                                particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
-                                particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
-
-                            }
-                            rest_counter = 0;
-                        }
-                    }
-                    // if (cnt > 60 && sum_likelyhood < th) //最初は膨張しない
-                    // {
-                        // cout << "------膨張リセット-----" << endl;
-                        // for (int i = 0; i < PARTICLE_NUM; i++)
-                        // {
-                        //     double roll, pitch, yaw;
-                        //     geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-                        //     //ガウス分布（平均、標準偏差）
-                        //     std::normal_distribution<> initial_x_distribution(particle_cloud.poses[i].position.x, 0.01); //sigmaをいじれば初期のパーティクルのばらつきが決まる
-                        //     std::normal_distribution<> initial_y_distribution(particle_cloud.poses[i].position.y, 0.01);
-                        //     std::normal_distribution<> initial_theta_distribution(yaw, 0.01); //姿勢の散らばり
-
-                        //     particle_cloud.poses[i].position.x = initial_x_distribution(engine);
-                        //     particle_cloud.poses[i].position.y = initial_y_distribution(engine);
-                        //     particle_cloud.poses[i].position.z = 0.0;
-                        //     particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
-                        //     particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
-
-                        // }
-                    // }
                 }
             }
         }
+        // -------------------------------------1ループにおける尤度計算条件：終了--------------------------
         
-        // SAIDAIYUUDO
-        // cout << "max yuudo "  << max_likelyhood << endl;
-            
+        //-----------------------------1ループにおける尤度配列から最大尤度と尤度の総和を求める-----------------------------------------
+        double maxValue = std::numeric_limits<double>::lowest();
+        int maxIndex = 0;
+        for (int i = 0; i < PARTICLE_NUM; i++)
+        {
+            // 最大の尤度を見つける
+            if(likelyhood_array[i] > maxValue)
+            {
+                maxValue = likelyhood_array[i];
+                maxIndex = i;
+            }
+            sum_likelyhood += likelyhood_array[i]; //純粋に尤度を位置から格納している：尤度の和
+        }
+        max_likelyhood = maxValue;
+        // likelyhood_array[maxIndex] = 0.0; //尤度の格納配列を0で初期化⇛ループの最後で良い
+        cout << "最大の尤度 " << max_likelyhood << endl;
+        cout << "尤度の和 " << sum_likelyhood << endl;
+        // --------------------------------------------------------------------------------------------------------------------------------
+
+        // --------------------------------------膨張リセット---------------------------------------------
+        // 一回のループにおける尤度が出る
+        // 膨張リセットの判定:最大尤度が0.5以下なら膨張リセット
+        // 膨張リセットの判定：尤度の合計が380以下なら膨張リセット
+        // double th = 30; // デフォルトの閾値
+        // static int rest_counter = 0;
+        // if (cnt > 60)
+        // {
+        //     if (sum_likelyhood < th) 
+        //     {
+        //         rest_counter++; 
+        //     }
+        //     else
+        //     {
+        //         rest_counter = 0;
+        //     }
+
+        //     if (rest_counter >= 5)
+        //     {
+        //         cout << "------膨張リセット-----" << endl;
+        //         for (int i = 0; i < PARTICLE_NUM; i++)
+        //         {
+        //             double roll, pitch, yaw;
+        //             geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+        //             //ガウス分布（平均、標準偏差）
+        //             std::normal_distribution<> initial_x_distribution(particle_cloud.poses[i].position.x, 0.01); //sigmaをいじれば初期のパーティクルのばらつきが決まる
+        //             std::normal_distribution<> initial_y_distribution(particle_cloud.poses[i].position.y, 0.01);
+        //             std::normal_distribution<> initial_theta_distribution(yaw, 0.01); //姿勢の散らばり
+
+        //             particle_cloud.poses[i].position.x = initial_x_distribution(engine);
+        //             particle_cloud.poses[i].position.y = initial_y_distribution(engine);
+        //             particle_cloud.poses[i].position.z = 0.0;
+        //             particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
+        //             particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
+
+        //         }
+        //         rest_counter = 0;
+        //     }
+        // }
+        // ------------------------------------------------------------------------------------------------------------------------
+
 
         // 重みの正規化 : particle_valueの値を正規化
         likelihood_value_nomalization();
@@ -625,7 +704,7 @@ int main(int argc, char **argv)
         
         // ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
-        // 最大値を尤度＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿￥
+        // 最大値を尤度とする--------------------------------------------------------------------------------------------------
         double max_estimate_odom_x = 0.0;
         double max_estimate_odom_y = 0.0;
         double max_estimate_theta  = 0.0;
@@ -652,15 +731,36 @@ int main(int argc, char **argv)
         max_estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, max_estimate_theta);
         // ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
         
-        // ROS_INFO_STREAM("PointCloud timestamp: " << point_timestamp);
-        std::cout << "真値 x " << beego_x << " " << "真値 y " << beego_y << std::endl; 
+        // 標準出力
+        // std::cout << "paticle[0] x "<< particle_cloud.poses[0].position.x << " " <<"particle[0] y " << particle_cloud.poses[0].position.y << " " << "尤度 " <<likelyhood_array[0] << std::endl;
+        std::cout << "真値 x " << beego_x << " " << "真値 y " << beego_y << " " <<"真値 yaw " << beego_yaw <<std::endl; 
         std::cout << "重み付け推定値 x " << estimate_odom_x << " "<< "重み付け推定値 y " << estimate_odom_y << std::endl;
         std::cout << "max推定値 x " << max_estimate_odom_x << " "<< "max推定値 y " << max_estimate_odom_y << std::endl;
         std::cout << "オドメトリ x " << robot_x << " "<< "オドメトリ y " << robot_y << std::endl;
         std::cout << "v  " << v << " " << "omega " << omega << std::endl;
         std::cout << "最大の重み " << particle_value[max_value_index] << std::endl;
         
+        // csv出力
+        // ofs1 << "-------------------------------------------------------------------------" << std::endl;
 
+        for (int i = 0; i < PARTICLE_NUM; i++)
+        {
+            // std::ostringstream pos_x_label, pos_y_label, pos_yaw_label, likelihood_label;
+            // pos_x_label << "ParticlePosX_[" << i <<"]";
+            // pos_y_label << "ParticlePosY_[" << i <<"]";
+            // pos_yaw_label << "ParticlePosYAW_[" << i <<"]";
+            // likelihood_label << "ParticleLikelihood_[" << i <<"]";
+
+            double roll, pitch, yaw;
+            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            // cnt:ループ数
+            ofs1 << cnt << "," << time_stamping << "," << robot_x << "," << robot_y << "," << beego_x << "," << beego_y << "," << beego_yaw << ","<< estimate_odom_x << "," << estimate_odom_y << "," 
+                << likelihood_state << "," << max_likelyhood << "," << sum_likelyhood << "," << i << ","<< particle_cloud.poses[i].position.x 
+                << "," << particle_cloud.poses[i].position.y << "," << yaw << "," << likelyhood_array[i] << "," << v << "," << omega 
+                << "," << particle_cloud.poses[i].position.x - beego_x << "," << yaw - beego_yaw << std::endl;
+        }
+        
+        ofs2 << cnt <<", " << time_stamping <<", " << beego_x <<", " << estimate_odom_x<< ", " << v << ", " << omega << std::endl;
 
 
         // //走行中だけリサンプリングを行う
@@ -683,9 +783,9 @@ int main(int argc, char **argv)
         else
         {
             std::cout << "尤度更新しない" << std::endl;
-        }
+        }   
 
-        ofs << time_stamping << ", " << robot_x << ", " << robot_y << ", " << beego_x << ", " << beego_y << ", " << estimate_odom_x << ", " << estimate_odom_y << ", " << likelihood_state << ", "<<max_likelyhood << std::endl;
+
         cout << "----------------------------------------------------------------------------"<<endl;
 
         self_localization_pub.publish(posi);
@@ -695,7 +795,7 @@ int main(int argc, char **argv)
 
         tf::StampedTransform transform_esti_pose;
         transform_esti_pose.setOrigin(tf::Vector3(estimate_posi.pose.pose.position.x, estimate_posi.pose.pose.position.y, estimate_posi.pose.pose.position.z));
-        transform_esti_pose.setRotation(tf::Quaternion(estimate_posi.pose.pose.orientation.x,estimate_posi.pose.pose.orientation.y,estimate_posi.pose.pose.orientation.z,estimate_posi.pose.pose.orientation.w));
+        transform_esti_pose.setRotation(tf::Quaternion(estimate_posi.pose   .pose.orientation.x,estimate_posi.pose.pose.orientation.y,estimate_posi.pose.pose.orientation.z,estimate_posi.pose.pose.orientation.w));
         // ROS_INFO_STREAM(estimate_posi.pose.pose.position.x);    
         transform_esti_pose.stamp_ = ros::Time::now();
         transform_esti_pose.frame_id_ = "map";
@@ -708,30 +808,16 @@ int main(int argc, char **argv)
         max_estimate_position_pub.publish(max_estimate_posi);
 
 
-        // if (beego_pose_available) {
-        //     geometry_msgs::PoseWithCovarianceStamped pose_msg;
-        //     pose_msg.header.stamp = ros::Time::now();
-        //     pose_msg.header.frame_id = "map";
-        //     pose_msg.pose.pose.position.x = beego_x;
-        //     pose_msg.pose.pose.position.y = beego_y;
-        //     // pose_msg.pose.pose.position.z = beego_z;
-        //     pose_msg.pose.pose.position.z = 0.0; //camera3なので、一番した 
-        //     pose_msg.pose.pose.orientation.x = beego_orientation_x;
-        //     pose_msg.pose.pose.orientation.y = beego_orientation_y;
-        //     pose_msg.pose.pose.orientation.z = beego_orientation_z;
-        //     pose_msg.pose.pose.orientation.w = beego_orientation_w;
-
-        //     // Covariance is left as default (all zeros)
-        //     // If you have covariance data, fill it here
-
-        //     pose_pub.publish(pose_msg);
-        // }
 
         start = current; // 次のループのために現在時刻を更新
+        likelyhood_array[maxIndex] = 0.0; //尤度の格納配列を0で初期化
         rate.sleep();
         cnt++;
         
         
+        
     }
+    ofs1.close();
+    ofs2.close();
 
 }
