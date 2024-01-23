@@ -97,6 +97,17 @@ class LineDetection:
 		# Median filter size ----------------
 		self.median_rgb_size	= rospy.get_param('~median_rgb_size', MEDIAN_RGB_SIZE)
 		self.median_hsv_size	= rospy.get_param('~median_hsv_size', MEDIAN_HSV_SIZE)
+		
+		# 地図によってトピック名を変える
+		map_param = rospy.get_param('~map_param', 'origin')
+        # トピック名を決定
+		topic_name = "/camera1/color/image_raw"  # デフォルト
+		if map_param == "tou":
+			topic_name = "/camera2/color/image_raw"
+		elif map_param == "hihuku":
+			topic_name = "/camera3/color/image_raw"
+		print("map_param=",map_param)
+		print("topic_name=",topic_name)
 
 		# Homograpy Matrix (DHAパラメータ) ---
 		# the_src_pts		= np.array([(66.0, 17.0), (548.0, 9.0), (138.0, 304.0), (592.0, 303.0)], dtype=np.float32)
@@ -125,8 +136,8 @@ class LineDetection:
 		# Subscriber -----------------------------------------------------------
 		#シミュレーションのカメラ
 		# self.image_sub = rospy.Subscriber("/beego/my_robo/camera1/image_raw", Image, self.subFrontRGBImage, queue_size=1)
-		self.image_sub = rospy.Subscriber("/camera1/color/image_raw", Image, self.subFrontRGBImage, queue_size=1)
-
+		self.image_sub = rospy.Subscriber("/camera2/color/image_raw", Image, self.subFrontRGBImage, queue_size=1)
+		# camera2 : 1.5ひげの地図用
 
 		# Publisher ------------------------------------------------------------
 		# self.front_hsv_image_pub				= rospy.Publisher('/front_camera/hsv_image', Image, queue_size=1)				# Front HSV Image
@@ -225,26 +236,15 @@ class LineDetection:
 				downsampled_points = []
 				for point in downsampled.points:
 					downsampled_points.append((point[0],point[1],point[2]))
-					# print(point[0],point[1])
-				# print("x:{0}, y{1}".format(downsampled_points[0],downsampled_points[0]))
-				# print(downsampled_points)
+
 				downsampled_msg = pc2.create_cloud_xyz32(header, downsampled_points)
 				downsampled_msg.fields = fields
-				# PointCloud2メッセージを作成
-				# cloud_msg = pc2.create_cloud_xyz32(header, the_points_array)
-				# cloud_msg.fields = fields
-				# print("cloud_msg:",type(cloud_msg))
+
 				self.line_points_downsampling_pub.publish(downsampled_msg)
 
 				#---------------------------------------------------------------
 				#		Publish line points & images
 				#---------------------------------------------------------------
-				# white line point publish
-				# self.line_points_pub.publish(the_points)
-				# hsv mask image
-				# the_hsv_mask_msg	= self.bridge.cv2_to_imgmsg(self.front_hsv_mask_img, encoding="mono8")
-				# self.front_hsv_mask_image_pub.publish(the_hsv_mask_msg)
-				# hsv median mask image
 				the_hsv_median_mask_msg	= self.bridge.cv2_to_imgmsg(self.front_hsv_median_mask_img, encoding="mono8")
 				self.front_hsv_median_mask_image_pub.publish(the_hsv_median_mask_msg)
 

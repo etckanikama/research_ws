@@ -22,11 +22,11 @@
   </material>
 
 <!-- ロボットに追加のオブジェクトでカメラの重みで倒れないようにする -->
-  <!-- <link name="extra_weight">
+  <link name="extra_weight">
     <visual>
-      <origin xyz="0 0 0.15" rpy="0 0 0"/> 位置を調整
+      <origin xyz="0 0 0.15" rpy="0 0 0"/> //位置を調整
       <geometry>
-        <box size="0.1 0.1 0.1"/> サイズを設定
+        <box size="0.1 0.1 0.1"/> //サイズを設定
       </geometry>
       <material name="gray"/>
     </visual>
@@ -38,7 +38,7 @@
     </collision>
     <inertial>
       <origin xyz="0 0 0.15" rpy="0 0 0"/>
-      <mass value="25.0"/> 重量を設定
+      <mass value="25.0"/> // 重量を設定 
       <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
     </inertial>
   </link>
@@ -46,8 +46,8 @@
   <joint name="extra_weight_joint" type="fixed">
     <parent link="base_link"/>
     <child link="extra_weight"/>
-    <origin xyz="0 0 0.1" rpy="0 0 0"/> 位置を調整
-  </joint> -->
+    <origin xyz="0 0 0.1" rpy="0 0 0"/> //位置を調整
+  </joint>
   
 
   
@@ -375,13 +375,13 @@
     <origin rpy="0 0.3926991 0" xyz="0.3 -${0.0175 + 0.015} 0.21"/>
   </xacro:sensor_d435>
 
-  <!-- <xacro:sensor_d435 name="camera2" parent="base_footprint" topics_ns="camera2">
+  <xacro:sensor_d435 name="camera2" parent="base_footprint" topics_ns="camera2">
     <origin rpy="0 0.3926991 0" xyz="0.3 -${0.0175 + 0.015} -0.79"/>
   </xacro:sensor_d435>
- -->
-  <!-- <xacro:sensor_d435 name="camera3" parent="base_footprint" topics_ns="camera3">
+
+  <xacro:sensor_d435 name="camera3" parent="base_footprint" topics_ns="camera3">
     <origin rpy="0 0.3926991 0" xyz="0.3 -${0.0175 + 0.015} -1.79"/>
-  </xacro:sensor_d435> -->
+  </xacro:sensor_d435>
 
 <!-- <gazebo reference="camera_link">
 		<sensor type="camera" name="camera1">

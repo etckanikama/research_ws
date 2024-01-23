@@ -46,7 +46,7 @@ void modelStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg)
             pose_msg.header.stamp = ros::Time::now();
             pose_msg.header.frame_id = "map"; // map フレームを設定
             pose_msg.pose.pose = msg->pose[i]; // 位置と姿勢を設定
-
+            pose_msg.pose.pose.position.z = 0;//z軸は常に０で表示する（強制的に）
             // メッセージを publish
             pose_with_cov_pub.publish(pose_msg);
 

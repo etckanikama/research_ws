@@ -1,11 +1,17 @@
 <launch>
+    <!-- パラメータの定義：地図によってトピック名を変える⇛候補（origin,tou(1.5),hihuku） -->
+    <arg name="map_param" default="tou"/>
 
-    <node name="line_detection" pkg="sim" type="line_detection_opencv5_homography_timer_for_gazebo.py" />
+    <node name="line_detection" pkg="sim" type="line_detection_opencv5_homography_timer_for_gazebo.py" output="screen"  >
+        <param name="map_param" value="$(arg map_param)"/>
+    </node>
     <!-- white_lane.launch(gazebo)の起動 -->
     <!-- <include file="$(find sim)/launch/white_lane.launch"/> -->
-    <node name="rectangle_marker_node" pkg="sim" type="sample_marker_publisher.cpp" output="screen"/>
+    <node name="rectangle_marker_node" pkg="sim" type="sample_marker_publisher.cpp" output="screen">
+        <param name="map_param" value="$(arg map_param)"/>
+    </node>
 
-    <node name="beego_odom_publisher" pkg="sim" type="beego_odom_publisher.cpp" output="screen" />
+    <node name="beego_odom_publisher" pkg="sim" type="beego_odom_publisher.cpp" />
     
     <!-- beego/odomをmapフレームにしてpublishするノード -->
     <node name="static_tf_pub_map_to_odom" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 map beego/odom 10" />
