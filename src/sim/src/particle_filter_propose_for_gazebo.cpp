@@ -70,6 +70,7 @@ double DelayThreshold = 0.2; //点群の遅延を許容する計算性能
 
 double robot_x = 0.0; //オドメトリによるx座標
 double robot_y = 0.0; //オドメトリによるy座標
+double robot_yaw; // オドメトリによるyaw
 
 // 尤度更新の状態→デフォルトしない(0),する(1)
 int likelihood_state = 0;
@@ -80,26 +81,10 @@ std::random_device seed;
 std::mt19937 engine(seed());  
 
 // // 実機のパーティクルに付与するノイズ
-// double sigma_v_v = 0.1;  // 直進1mで生じる距離の標準偏差
-// double sigma_omega_v = 0.01; // 回転1radで生じる距離の誤差
-// double sigma_v_omega = 0.2;  //直進1mで生じる回転の誤差
-// double sigma_omega_omega = 0.2;   //回転1radで生じる回転の誤差
-
-// double sigma_v_v = 0.2;  // 直進1mで生じる距離の標準偏差
-// double sigma_omega_v = 0.1; // 回転1radで生じる距離の誤差
-// double sigma_v_omega = 0.1;  //直進1mで生じる回転の誤差
-// double sigma_omega_omega = 3.0;   //回転1radで生じる回転の誤差
-
-// 今の所一番良い？
-// double sigma_v_v = 0.01;  // 直進1mで生じる距離の標準偏差0.03
-// double sigma_omega_v = 0.001; // 回転1radで生じる距離の誤差0.001
-// double sigma_v_omega = 0.1;  //直進1mで生じる回転の誤差0.05
-// double sigma_omega_omega = 0.4;   //回転1radで生じる回転の誤差0.1
-
 double sigma_v_v = 0.1;  // 直進1mで生じる距離の標準偏差0.03
 double sigma_omega_v = 0.1; // 直進1mで生じる回転の誤差0.001
 double sigma_v_omega = 0.1;  //回転1radで生じる直進の誤差0.05
-double sigma_omega_omega = 0.1;    //回転1radで生じる回転の誤差0.1
+double sigma_omega_omega = 0.3;    //回転1radで生じる回転の誤差0.1
 
 std::normal_distribution<> dist_v_v(0.0, sigma_v_v);
 std::normal_distribution<> dist_omega_v(0.0, sigma_omega_v);
@@ -185,6 +170,15 @@ void velCallback(const nav_msgs::Odometry::ConstPtr &msg)
     omega = msg->twist.twist.angular.z;
     robot_x = msg->pose.pose.position.x;
     robot_y = msg->pose.pose.position.y;
+    tf::Quaternion q(
+        msg->pose.pose.orientation.x,
+        msg->pose.pose.orientation.y,
+        msg->pose.pose.orientation.z,
+        msg->pose.pose.orientation.w);
+    tf::Matrix3x3 m(q);
+    double roll, pitch;
+    m.getRPY(roll, pitch, robot_yaw); // Yaw 角を取得
+
 }
 
 // // cbPoint
@@ -360,10 +354,12 @@ int main(int argc, char **argv)
     std::ofstream ofs1(filepath1, std::ios::out | std::ios::trunc);
     std::ofstream ofs2(filepath2, std::ios::out | std::ios::trunc);
     // ヘッダーの追加
-    ofs1 << "Count" << "," <<"TimeStamp" << "," << "RobotX" << "," << "RobotY" << "," << "BeegoX" << "," << "BeegoY" << "," << "BeegoYaw"
-    << "," << "EstimateOdomX"<< "," << "EstimateOdomY"<< "," << "LikelihoodState" << "," << "MaxLikelihood" << "," << "SumLikelihood"
+    ofs1 << "Count" << "," <<"TimeStamp" << "," << "RobotX" << "," << "RobotY" << "," << "RobotYaw" << "," << "BeegoX" << "," << "BeegoY" << "," << "BeegoYaw"
+    << "," << "EstimateOdomX"<< "," << "EstimateOdomY"<< "," << "EstimateOdomYaw"<< "," << "LikelihoodState" << "," << "MaxLikelihood" << "," << "SumLikelihood"
     << "," << "index" << "," << "ParticlePosX_" << "," << "ParticlePosY_" << "," << "ParticlePosYAW_" << "," << "ParticleLikelihood_" 
-    << "," << "input_V" << "," << "input_ω" << "," << "Px-BeegoX" << "," << "Py-BeegoY" << ","  <<"Pyaw-BeegoYaw" <<endl;
+    << "," << "input_V" << "," << "input_ω" << "," << "Px-BeegoX" << "," << "Py-BeegoY" << ","  <<"Pyaw-BeegoYaw" 
+    << "," << "RobotX-BeegoX" << "," << "RobotY-BeegoY" << "," << "RobotYaw-BeegoYaw" << "," << "EstimateOdomX-BeegoX" << "," << "EstimateOdomY-BeegoY" 
+    << "," << "EstimateOdomYaw-BeegoYaw" << endl;
     // -------------------------------------------------------------------------    
 
     // -----------------------------コマンドライン引数に従ってマップを変更する------------
@@ -762,13 +758,15 @@ int main(int argc, char **argv)
 
         for (int i = 0; i < PARTICLE_NUM; i++)
         {
-            double roll, pitch, yaw;
-            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            double roll, pitch, particle_i_yaw;
+            geometry_quat_to_rpy(roll, pitch, particle_i_yaw, particle_cloud.poses[i].orientation); //yaw角に変換
             // cnt:ループ数
-            ofs1 << cnt << "," << time_stamping << "," << robot_x << "," << robot_y << "," << beego_x << "," << beego_y << "," << beego_yaw << ","<< estimate_odom_x << "," << estimate_odom_y << "," 
-                << likelihood_state << "," << max_likelyhood << "," << sum_likelyhood << "," << i << ","<< particle_cloud.poses[i].position.x 
-                << "," << particle_cloud.poses[i].position.y << "," << yaw << "," << likelyhood_array[i] << "," << v << "," << omega 
-                << "," << particle_cloud.poses[i].position.x - beego_x << "," << particle_cloud.poses[i].position.y - beego_y << "," << yaw - beego_yaw << std::endl;
+            ofs1 << cnt << "," << time_stamping << "," << robot_x << "," << robot_y << "," << robot_yaw << "," << beego_x << "," << beego_y << "," << beego_yaw 
+                << ","<< estimate_odom_x << "," << estimate_odom_y << "," << estimate_theta << "," << likelihood_state << "," << max_likelyhood << "," << sum_likelyhood 
+                << "," << i << ","<< particle_cloud.poses[i].position.x << "," << particle_cloud.poses[i].position.y << "," << yaw << "," << likelyhood_array[i] 
+                << "," << v << "," << omega << "," << particle_cloud.poses[i].position.x - beego_x << "," << particle_cloud.poses[i].position.y - beego_y << "," << particle_i_yaw - beego_yaw 
+                << "," << robot_x - beego_x << "," << robot_y - beego_y << "," << robot_yaw - beego_yaw << "," << estimate_odom_x - beego_x <<"," << estimate_odom_y - beego_y 
+                << "," << estimate_theta - beego_yaw << std::endl;
         }
         
         ofs2 << cnt <<", " << time_stamping <<", " << beego_x <<", " << estimate_odom_x<< ", " << v << ", " << omega << std::endl;

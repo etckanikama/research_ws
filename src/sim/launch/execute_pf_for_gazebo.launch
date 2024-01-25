@@ -1,6 +1,6 @@
 <launch>
     <!-- パラメータの定義：地図によってトピック名を変える⇛候補（origin,tou(1.5),hihuku） -->
-    <arg name="map_param" default="tou"/>
+    <arg name="map_param" default="hihuku"/>
 
     <node name="line_detection" pkg="sim" type="line_detection_opencv5_homography_timer_for_gazebo.py" output="screen"  >
         <param name="map_param" value="$(arg map_param)"/>

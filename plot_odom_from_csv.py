@@ -72,5 +72,5 @@ for t, state in zip(time[::step], likelihood_state[::step]):
 # plt.plot(time[::step],amcl_y[::step],linewidth=3,c='green')
 # plt.plot(time[::step],propose_y[::step],linewidth=3,c='orange')
 # plt.legend(fontsize=15)
-plt.savefig("amcl_sabun_kairyou_y.png")
+# plt.savefig("amcl_sabun_kairyou_y.png")
 plt.show()

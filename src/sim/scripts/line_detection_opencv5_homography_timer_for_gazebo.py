@@ -101,11 +101,11 @@ class LineDetection:
 		# 地図によってトピック名を変える
 		map_param = rospy.get_param('~map_param', 'origin')
         # トピック名を決定
-		topic_name = "/camera1/color/image_raw"  # デフォルト
+		topic_name = "/camera3/color/image_raw"  # デフォルト
 		if map_param == "tou":
 			topic_name = "/camera2/color/image_raw"
 		elif map_param == "hihuku":
-			topic_name = "/camera3/color/image_raw"
+			topic_name = "/camera1/color/image_raw"
 		print("map_param=",map_param)
 		print("topic_name=",topic_name)
 
@@ -136,7 +136,7 @@ class LineDetection:
 		# Subscriber -----------------------------------------------------------
 		#シミュレーションのカメラ
 		# self.image_sub = rospy.Subscriber("/beego/my_robo/camera1/image_raw", Image, self.subFrontRGBImage, queue_size=1)
-		self.image_sub = rospy.Subscriber("/camera2/color/image_raw", Image, self.subFrontRGBImage, queue_size=1)
+		self.image_sub = rospy.Subscriber(topic_name, Image, self.subFrontRGBImage, queue_size=1)
 		# camera2 : 1.5ひげの地図用
 
 		# Publisher ------------------------------------------------------------
