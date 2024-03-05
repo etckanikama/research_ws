@@ -27,9 +27,9 @@
 
 
   <!-- threee_stacked_white_lane_map.wold ⇛ z=2.0 -->
-  <arg name="initial_x" default="0.0"/>
-  <arg name="initial_y" default="0.0"/>
-  <arg name="initial_yaw" default="0.0"/>
+  <arg name="initial_x" default="10.7"/>
+  <arg name="initial_y" default="-3.3"/>
+  <arg name="initial_yaw" default="1.57"/>
   <include file="$(find sim)/launch/beego.launch">
     <arg name="x" default= "$(arg initial_x)" />
     <arg name="y" default= "$(arg initial_y)"/>

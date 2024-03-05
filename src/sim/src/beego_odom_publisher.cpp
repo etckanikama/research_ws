@@ -7,15 +7,22 @@
 #include <tf/transform_broadcaster.h> // tfライブラリのインクルード
 
 // グローバル変数
-double robot_x, robot_y, yaw;
+// double init_x = 10.7, init_y = -3.3, init_yaw = 1.57; // 初期値
+double init_x = 0.0, init_y = 0.0, init_yaw = 0.0; // 初期値
 ros::Publisher cloud_pub; // グローバル変数としてパブリッシャーを宣言
 ros::Publisher pose_with_cov_pub; // PoseWithCovarianceStamped メッセージ用のパブリッシャー
+ros::Publisher pose_pub; // robot_pose トピック用のパブリッシャー
 tf::TransformBroadcaster *br;
+
+double normalizeYaw(double yaw) {
+    return atan2(sin(yaw), cos(yaw));
+}
 // Odometry メッセージのコールバック関数
 void velCallback(const nav_msgs::Odometry::ConstPtr& msg)
 {
-    robot_x = msg->pose.pose.position.x;
-    robot_y = msg->pose.pose.position.y;
+    // オドメトリからの相対位置と姿勢を取得
+    double odom_x = msg->pose.pose.position.x;
+    double odom_y = msg->pose.pose.position.y;
 
     tf::Quaternion q(
         msg->pose.pose.orientation.x,
@@ -23,8 +30,28 @@ void velCallback(const nav_msgs::Odometry::ConstPtr& msg)
         msg->pose.pose.orientation.z,
         msg->pose.pose.orientation.w);
     tf::Matrix3x3 m(q);
-    double roll, pitch;
-    m.getRPY(roll, pitch, yaw); // Yaw 角を取得
+    double roll, pitch, odom_yaw;
+    m.getRPY(roll, pitch, odom_yaw); // Yaw 角を取得
+
+    // グローバル座標の計算
+    double global_x = init_x + (odom_x * cos(init_yaw) - odom_y * sin(init_yaw));
+    double global_y = init_y + (odom_x * sin(init_yaw) + odom_y * cos(init_yaw));
+    double global_yaw = normalizeYaw(init_yaw + odom_yaw);  
+
+    // グローバル座標での PoseWithCovarianceStamped メッセージの作成
+    geometry_msgs::PoseWithCovarianceStamped pose_msg;
+    pose_msg.header.stamp = ros::Time::now();
+    pose_msg.header.frame_id = "map"; // map フレームを設定
+    pose_msg.pose.pose.position.x = global_x;
+    pose_msg.pose.pose.position.y = global_y;
+    tf::Quaternion q_global = tf::createQuaternionFromYaw(global_yaw);
+    pose_msg.pose.pose.orientation.x = q_global.x();
+    pose_msg.pose.pose.orientation.y = q_global.y();
+    pose_msg.pose.pose.orientation.z = q_global.z();
+    pose_msg.pose.pose.orientation.w = q_global.w();
+
+    // メッセージを robot_pose トピックに publish
+    pose_pub.publish(pose_msg);
 }
 
 // Gazebo Model States コールバック関数
@@ -82,7 +109,7 @@ int main(int argc, char **argv)
     ros::Subscriber odom_sub = nh.subscribe("/beego/diff_drive_controller/odom", 10, velCallback);
 
     // 新しいトピックのパブリッシャー
-    ros::Publisher pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("robot_pose", 10);
+    pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("robot_pose", 10);
     pose_with_cov_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("beego_pose_with_cov", 10);
     
     ros::Subscriber model_states_sub = nh.subscribe("/gazebo/model_states", 10, modelStatesCallback);
@@ -93,21 +120,21 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        // 現在の robot_x, robot_y, yaw を使ってメッセージを作成
-        geometry_msgs::PoseWithCovarianceStamped pose_msg;
-        pose_msg.header.stamp = ros::Time::now();
-        pose_msg.header.frame_id = "map"; // map フレームを設定
-        pose_msg.pose.pose.position.x = robot_x;
-        pose_msg.pose.pose.position.y = robot_y;
-        tf::Quaternion q = tf::createQuaternionFromYaw(yaw);
-        pose_msg.pose.pose.orientation.x = q.x();
-        pose_msg.pose.pose.orientation.y = q.y();
-        pose_msg.pose.pose.orientation.z = q.z();
-        pose_msg.pose.pose.orientation.w = q.w();
-        std::cout << "オドメトリ x " << robot_x << " " << "オドメトリ y " << robot_y << std::endl;
+        // // 現在の robot_x, robot_y, yaw を使ってメッセージを作成
+        // geometry_msgs::PoseWithCovarianceStamped pose_msg;
+        // pose_msg.header.stamp = ros::Time::now();
+        // pose_msg.header.frame_id = "map"; // map フレームを設定
+        // pose_msg.pose.pose.position.x = robot_x;
+        // pose_msg.pose.pose.position.y = robot_y;
+        // tf::Quaternion q = tf::createQuaternionFromYaw(yaw);
+        // pose_msg.pose.pose.orientation.x = q.x();
+        // pose_msg.pose.pose.orientation.y = q.y();
+        // pose_msg.pose.pose.orientation.z = q.z();
+        // pose_msg.pose.pose.orientation.w = q.w();
+        // std::cout << "オドメトリ x " << robot_x << " " << "オドメトリ y " << robot_y << std::endl;
 
-        // メッセージを publish
-        pose_pub.publish(pose_msg);
+        // // メッセージを publish
+        // pose_pub.publish(pose_msg);
 
         ros::spinOnce();
         loop_rate.sleep();

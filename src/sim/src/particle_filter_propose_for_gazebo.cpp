@@ -27,6 +27,7 @@
 #include <limits>
 #include <cstdlib>  // getenvを使うために必要
 #include <sstream> // std::ostringstreamを使用するために必要
+#include <cmath> // std::fmod関数のために必要
 
 // シミュレータ環境におけるパーティクルフィルタを用いた位置推定の検証
 /*
@@ -85,7 +86,6 @@ double sigma_v_v = 0.1;  // 直進1mで生じる距離の標準偏差0.03
 double sigma_omega_v = 0.1; // 直進1mで生じる回転の誤差0.001
 double sigma_v_omega = 0.1;  //回転1radで生じる直進の誤差0.05
 double sigma_omega_omega = 0.3;    //回転1radで生じる回転の誤差0.1
-
 std::normal_distribution<> dist_v_v(0.0, sigma_v_v);
 std::normal_distribution<> dist_omega_v(0.0, sigma_omega_v);
 std::normal_distribution<> dist_v_omega(0.0, sigma_v_omega);
@@ -144,6 +144,20 @@ double one_five_map[ONE_FIVE_POLYGON_NUM][4] = {{0.0, 9.125, 0.47, 0.545}, {9.05
                                             {9.757499999999999, 10.3575, -3.5825, -3.5075}, {2.9625, 3.0375, 0.20749999999999996, 0.8074999999999999}, {5.9625, 6.0375, -0.8074999999999999, -0.20749999999999996}, {2.9625, 3.0375, -0.8074999999999999, -0.20749999999999996}, {7.4625, 7.5375, -0.8074999999999999, -0.20749999999999996}, {1.4625, 1.5375, 0.20749999999999996, 0.8074999999999999}, {1.4625, 1.5375, -0.8074999999999999, -0.20749999999999996}, {11.175, 11.775, -0.7875, -0.7125}, {11.175, 11.775, -2.2875, -2.2125}, {9.757499999999999, 10.3575, -2.0825, -2.0075}, {8.9625, 9.0375, -0.8074999999999999, -0.20749999999999996}, {5.9625, 6.0375, 0.20749999999999996, 0.8074999999999999}, {7.4625, 7.5375, 0.20749999999999996, 0.8074999999999999}, {4.4625, 4.5375, 0.20749999999999996, 0.8074999999999999}, {4.4625, 4.5375, -0.8074999999999999, -0.20749999999999996}
                                             }; 
 
+
+// pf_yaw:各パーティクルの姿勢、estimate_yaw:いち時刻前の推定姿勢（最初は初期値）
+double normalizeYaw(double pf_yaw, double estimate_yaw) {
+ //角度差を計算
+ double delta = pf_yaw - estimate_yaw; 
+  while(delta > M_PI){
+    delta -= 2.0*M_PI;
+  }
+  while(delta < -M_PI){
+    delta+=2.0*M_PI;
+  }
+
+  return estimate_yaw + delta;
+}
 
 // roll, pitch, yawからクォータニオンにする関数
 geometry_msgs::Quaternion rpy_to_geometry_quat(double roll, double pitch, double yaw)
@@ -225,7 +239,6 @@ void modelStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
         beego_yaw = yaw;
-
 
         // linear.x と angular.z の値を取得
         beego_linear_x = msg->twist[beego_index].linear.x;
@@ -343,7 +356,7 @@ int main(int argc, char **argv)
         return 1;
     }
     // ファイルパスを構築
-    std::string folderPath1 = std::string(homeDir) + "/research_ws/src/sim/src/particle_result_csv/" + arg1 + "_map";
+    std::string folderPath1 = std::string(homeDir) + "/research_ws/src/sim/src/particle_result_csv/" + arg1 + "_map/path1"; // pathは書き換えが必要
     std::string filepath1 = folderPath1 + "/" + arg2 + ".csv";
     
     // ファイルパスを構築
@@ -409,7 +422,8 @@ int main(int argc, char **argv)
         std::cout << "gazebo origin map"<< std::endl;
 
     }
-//     // Publisher
+    
+    // Publisher
     ros::Publisher self_localization_pub = nh.advertise<nav_msgs::Odometry>("self_position", 10); // robotにモータに指令値を送るpublisherの宣言。
     ros::Publisher particle_cloud_pub = nh.advertise<geometry_msgs::PoseArray>("particle_cloud", 5); // リサンプリング後のパーティクル
     ros::Publisher esitimate_position_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("estimate_position",5);// posewithcoverianceで推定値をpublish
@@ -428,8 +442,8 @@ int main(int argc, char **argv)
     nav_msgs::Odometry posi;
     tf::TransformBroadcaster broadcaster;
     
-    double init_x = 0.0, init_y = 0.0, init_yaw = 0.0;// rosbagの初期値にしたがって変更
-
+    // double init_x = 10.7, init_y = -3.3, init_yaw = 1.57;// rosbagの初期値にしたがって変更path2
+    double init_x = 0.0, init_y = 0.0, init_yaw = 0.0;// rosbagの初期値にしたがって変更path1
     
 
 
@@ -454,7 +468,6 @@ int main(int argc, char **argv)
         particle_cloud.poses[i].position.z = 0.0;
         particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
         particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
-
 
     }
 
@@ -496,14 +509,13 @@ int main(int argc, char **argv)
             double v_noise,omega_noise;
             double roll, pitch, yaw;
             geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-            // v_noise = beego_linear_x + dist_v_v(engine) * sqrt(abs(beego_linear_x)/DT) + dist_v_omega(engine) * sqrt(abs(beego_angular_z)/DT); //gazebo_model_sateのv,ω
             v_noise = v + dist_v_v(engine) * sqrt(abs(v)/DT) + dist_v_omega(engine) * sqrt(abs(omega)/DT);
             omega_noise = omega + dist_omega_v(engine) * sqrt(abs(v)/DT) + dist_omega_omega(engine) * sqrt(abs(omega)/DT);
-            // omega_noise = beego_angular_z + dist_omega_v(engine) * sqrt(abs(beego_linear_x)/DT) + dist_omega_omega(engine) * sqrt(abs(beego_angular_z)/DT);//gazebo_model_sateのv,ω
 
             particle_cloud.poses[i].position.x = particle_cloud.poses[i].position.x + v_noise * cos(yaw)*DT;
             particle_cloud.poses[i].position.y = particle_cloud.poses[i].position.y + v_noise * sin(yaw)*DT;
             particle_cloud.poses[i].position.z = 0.0; 
+
             particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0,0, yaw + omega_noise * DT);
         
         }
@@ -618,8 +630,6 @@ int main(int argc, char **argv)
                     // cout << "全白線点群数 "<< downsampled_cloud.points.size() << " " <<"パーティクル_"<< i <<"のマッチ数 " << match_count << endl;
 
                     likelihood_value = (1 - coeff)*(double(match_count) / double(downsampled_cloud.points.size())) + coeff; // m/M今まで
-                    // likelihood_value = (1 - coeff)*(double(match_count) / (beta*(double(downsampled_cloud.points.size()) - double(match_count)) + double(match_count))) + coeff;   // m
-                    // // likelihood_value = 1 / (1 + PARTICLE_NUM * coeff) * (double(match_count) / double(downsampled_cloud.points.size())) + coeff;
                     particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
                     likelyhood_array[i] = likelihood_value; //尤度配列に尤度を格納
                     // std::cout << likelihood_value << std::endl;
@@ -649,46 +659,6 @@ int main(int argc, char **argv)
         cout << "尤度の和 " << sum_likelyhood << endl;
         // --------------------------------------------------------------------------------------------------------------------------------
 
-        // --------------------------------------膨張リセット---------------------------------------------
-        // 一回のループにおける尤度が出る
-        // 膨張リセットの判定:最大尤度が0.5以下なら膨張リセット
-        // 膨張リセットの判定：尤度の合計が380以下なら膨張リセット
-        // double th = 30; // デフォルトの閾値
-        // static int rest_counter = 0;
-        // if (cnt > 60)
-        // {
-        //     if (sum_likelyhood < th) 
-        //     {
-        //         rest_counter++; 
-        //     }
-        //     else
-        //     {
-        //         rest_counter = 0;
-        //     }
-
-        //     if (rest_counter >= 5)
-        //     {
-        //         cout << "------膨張リセット-----" << endl;
-        //         for (int i = 0; i < PARTICLE_NUM; i++)
-        //         {
-        //             double roll, pitch, yaw;
-        //             geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-        //             //ガウス分布（平均、標準偏差）
-        //             std::normal_distribution<> initial_x_distribution(particle_cloud.poses[i].position.x, 0.01); //sigmaをいじれば初期のパーティクルのばらつきが決まる
-        //             std::normal_distribution<> initial_y_distribution(particle_cloud.poses[i].position.y, 0.01);
-        //             std::normal_distribution<> initial_theta_distribution(yaw, 0.01); //姿勢の散らばり
-
-        //             particle_cloud.poses[i].position.x = initial_x_distribution(engine);
-        //             particle_cloud.poses[i].position.y = initial_y_distribution(engine);
-        //             particle_cloud.poses[i].position.z = 0.0;
-        //             particle_cloud.poses[i].orientation = rpy_to_geometry_quat(0, 0, initial_theta_distribution(engine)); 
-        //             particle_value[i] = 1.0 / double(PARTICLE_NUM); //最初の重みは均一
-
-        //         }
-        //         rest_counter = 0;
-        //     }
-        // }
-        // ------------------------------------------------------------------------------------------------------------------------
 
 
         // 重みの正規化 : particle_valueの値を正規化
@@ -700,19 +670,22 @@ int main(int argc, char **argv)
         double estimate_odom_y = 0.0;
         double estimate_theta  = 0.0;
 
-        // // 重みづけ平均：自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]ーーーーーーーーーーーーーーーーーーーーー
+        // 重みづけ平均：自己位置を出す処理：自己位置 +＝ 重み[i] * (x,y,theta)[i]ーーーーーーーーーーーーーーーーーーーーー
         for (int i = 0; i < PARTICLE_NUM; i++)
         {
-            double roll, pitch, yaw;
-            geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            double roll, pitch, pf_yaw;
+            geometry_quat_to_rpy(roll, pitch, pf_yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            pf_yaw = normalizeYaw(pf_yaw, estimate_theta); // normalizeYaw(各パーティクルの姿勢, いち時刻前の推定姿勢)
             estimate_odom_x += particle_value[i] * particle_cloud.poses[i].position.x;
             estimate_odom_y += particle_value[i] * particle_cloud.poses[i].position.y;
-            estimate_theta  += particle_value[i] * yaw;
+            estimate_theta  += particle_value[i] * pf_yaw;
+            // cout <<"particle_value_ "<< i << " :" << particle_value[i] <<" "<< "各パーティクルのyaw_" << i  << ":  "<< yaw << endl;
 
         }
         
         estimate_posi.pose.pose.position.x = estimate_odom_x;
         estimate_posi.pose.pose.position.y = estimate_odom_y;
+        // estimate_theta = normalizeYaw(estimate_theta);
         estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
         
         // ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
@@ -733,11 +706,12 @@ int main(int argc, char **argv)
             }
         }
 
-        double roll, pitch, yaw;
-        geometry_quat_to_rpy(roll, pitch, yaw, particle_cloud.poses[max_value_index].orientation); //yaw角に変換
+        double roll, pitch, max_yaw;
+        geometry_quat_to_rpy(roll, pitch, max_yaw, particle_cloud.poses[max_value_index].orientation); //yaw角に変換
+        // max_yaw = normalizeYaw(max_yaw); //正規化
         max_estimate_odom_x =   particle_cloud.poses[max_value_index].position.x;
         max_estimate_odom_y = particle_cloud.poses[max_value_index].position.y;
-        max_estimate_theta  = yaw;
+        max_estimate_theta  = max_yaw;
 
         max_estimate_posi.pose.pose.position.x = max_estimate_odom_x;
         max_estimate_posi.pose.pose.position.y = max_estimate_odom_y;
@@ -747,9 +721,9 @@ int main(int argc, char **argv)
         // 標準出力
         // std::cout << "paticle[0] x "<< particle_cloud.poses[0].position.x << " " <<"particle[0] y " << particle_cloud.poses[0].position.y << " " << "尤度 " <<likelyhood_array[0] << std::endl;
         std::cout << "真値 x " << beego_x << " " << "真値 y " << beego_y << " " <<"真値 yaw " << beego_yaw <<std::endl; 
-        std::cout << "重み付け推定値 x " << estimate_odom_x << " "<< "重み付け推定値 y " << estimate_odom_y << std::endl;
-        std::cout << "max推定値 x " << max_estimate_odom_x << " "<< "max推定値 y " << max_estimate_odom_y << std::endl;
-        std::cout << "オドメトリ x " << robot_x << " "<< "オドメトリ y " << robot_y << std::endl;
+        std::cout << "重み付け推定値 x " << estimate_odom_x << " "<< "重み付け推定値 y " << estimate_odom_y << " " << "重み付け平均 yaw " << estimate_theta <<std::endl;
+        std::cout << "max推定値 x " << max_estimate_odom_x << " "<< "max推定値 y " << max_estimate_odom_y << " " << "max推定値 yaw " << max_estimate_theta <<  std::endl;
+        std::cout << "オドメトリ_x " << robot_x << " "<< "オドメトリ_y " << robot_y << " " << "オドメトリ_yaw " << robot_yaw << std::endl;
         std::cout << "v  " << v << " " << "omega " << omega << std::endl;
         std::cout << "最大の重み " << particle_value[max_value_index] << std::endl;
         
@@ -760,10 +734,11 @@ int main(int argc, char **argv)
         {
             double roll, pitch, particle_i_yaw;
             geometry_quat_to_rpy(roll, pitch, particle_i_yaw, particle_cloud.poses[i].orientation); //yaw角に変換
+            // particle_i_yaw = normalizeYaw(particle_i_yaw); //正規化
             // cnt:ループ数
             ofs1 << cnt << "," << time_stamping << "," << robot_x << "," << robot_y << "," << robot_yaw << "," << beego_x << "," << beego_y << "," << beego_yaw 
                 << ","<< estimate_odom_x << "," << estimate_odom_y << "," << estimate_theta << "," << likelihood_state << "," << max_likelyhood << "," << sum_likelyhood 
-                << "," << i << ","<< particle_cloud.poses[i].position.x << "," << particle_cloud.poses[i].position.y << "," << yaw << "," << likelyhood_array[i] 
+                << "," << i << ","<< particle_cloud.poses[i].position.x << "," << particle_cloud.poses[i].position.y << "," << particle_i_yaw << "," << likelyhood_array[i] 
                 << "," << v << "," << omega << "," << particle_cloud.poses[i].position.x - beego_x << "," << particle_cloud.poses[i].position.y - beego_y << "," << particle_i_yaw - beego_yaw 
                 << "," << robot_x - beego_x << "," << robot_y - beego_y << "," << robot_yaw - beego_yaw << "," << estimate_odom_x - beego_x <<"," << estimate_odom_y - beego_y 
                 << "," << estimate_theta - beego_yaw << std::endl;
