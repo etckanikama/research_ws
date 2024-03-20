@@ -1,0 +1,8 @@
+<launch>
+	<node name="map_server" pkg="map_server" type="map_server" args="$(find localization)/scripts/map_sample.yaml" respawn="false" >
+		<param name="use_map_topic" 	value="true"/>
+	</node>
+
+    <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find localization)/rviz/show_gridmap.rviz" /> -->
+
+</launch>

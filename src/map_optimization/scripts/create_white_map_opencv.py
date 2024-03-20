@@ -5,7 +5,7 @@ import numpy as np
 width = 662
 height = 1263
 # height = 6100
-# 白い背景の画像を作成
+# 茶色い背景の画像を作成
 image = np.full((height, width, 3), (65, 105, 225), dtype=np.uint8)
 # image = np.full((height, width, 3), (0, 0, 0), dtype=np.uint8)
 
@@ -136,10 +136,11 @@ for key in rect_dict.keys():
 
 # 画像内で白情報のcv座標を取得
 print(image.shape)
-h, w,c = image.shape
-print(h, w,c)
+h, w, c = image.shape
+print(h, w, c)
 print(type(image))
 print(image[0,0])
+
 # 白色ピクセルの座標を格納するリスト
 white_pixels = []
 

@@ -8,11 +8,9 @@
 #include <tf/transform_datatypes.h>
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/Joy.h>
-#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <cmath>
 #include <fstream>
 #include <geometry_msgs/Pose.h>
 #include <tf/transform_broadcaster.h>
@@ -336,14 +334,14 @@ int main(int argc, char **argv)
         return 1;
     }
     // コマンドライン引数の検証
-    if (argc != 3) {
+    if (argc != 4) {
         std::cerr << "引数の数が正しくありません。" << std::endl;
         return 1;
     }
 
     std::string arg1 = argv[1]; // 1つ目の引数
     std::string arg2 = argv[2]; // 2つ目の引数
-
+    std::string arg3 = argv[3]; // 3つ目の引数
     // 1つ目の引数が有効な候補かチェック
     if (arg1 != "origin" && arg1 != "1.5" && arg1 != "hihuku") {
         std::cerr << "1つ目の引数が無効です。" << std::endl;
@@ -355,8 +353,13 @@ int main(int argc, char **argv)
         std::cerr << "2つ目の引数が無効です。" << std::endl;
         return 1;
     }
+    // 3つ目の引数が有効な候補かチェック
+    if (arg3 != "path1" && arg3 != "path2") {
+        std::cerr << "3つ目の引数が無効です。" << std::endl;
+        return 1;
+    }
     // ファイルパスを構築
-    std::string folderPath1 = std::string(homeDir) + "/research_ws/src/sim/src/particle_result_csv/" + arg1 + "_map/path1"; // pathは書き換えが必要
+    std::string folderPath1 = std::string(homeDir) + "/research_ws/src/sim/src/particle_result_csv/" + arg1 + "_map/" + arg3; // pathは書き換えが必要
     std::string filepath1 = folderPath1 + "/" + arg2 + ".csv";
     
     // ファイルパスを構築
@@ -396,6 +399,19 @@ int main(int argc, char **argv)
         source_map = origin_map;  // デフォルトの配列を使用
         source_polygon_num = ORIGIN_POLYGON_NUM;
     }
+ 
+    double init_x,init_y,init_yaw;
+
+    if (arg3 == "path1") 
+    {
+        init_x = 0.0, init_y= 0.0, init_yaw = 0.0;
+        cout << "path1:初期値を(0,0,0)に設定" << endl;
+    } 
+    else if (arg3 == "path2")
+    {
+        init_x = 10.7, init_y = -3.3, init_yaw = 1.57;
+        cout << "path2:初期値を(10.7,-3.3,1.57)に設定" << endl;
+    }
 
     // 選択されたマップのポリゴン数を更新
     POLYGON_NUM = source_polygon_num;
@@ -428,24 +444,18 @@ int main(int argc, char **argv)
     ros::Publisher particle_cloud_pub = nh.advertise<geometry_msgs::PoseArray>("particle_cloud", 5); // リサンプリング後のパーティクル
     ros::Publisher esitimate_position_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("estimate_position",5);// posewithcoverianceで推定値をpublish
     ros::Publisher max_estimate_position_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("max_estimate_position",5);// posewithcoverianceで推定値をpublish
-    ros::Publisher pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("beego_pose_cov", 10); //これはgazeboのmodel_stateです
 
     // Subscriber
     ros::Subscriber odom_sub = nh.subscribe("/beego/diff_drive_controller/odom",10, velCallback);//gazeboを挟んだオドメトリ/beego/diff_drive_controller/odom をサブスクライブ
     ros::Subscriber line_points_sub = nh.subscribe("/front_camera/line_points", 1, line_point_cb);
     ros::Subscriber line_downsample_points_sub = nh.subscribe<sensor_msgs::PointCloud2>("/front_camera/down_sample_line_points2", 1, pointCloudCallback);
-    ros::Subscriber sub = nh.subscribe("/gazebo/model_states", 10, modelStatesCallback);
+    ros::Subscriber model_state_sub = nh.subscribe("/gazebo/model_states", 10, modelStatesCallback);
 
 
 
     
     nav_msgs::Odometry posi;
     tf::TransformBroadcaster broadcaster;
-    
-    // double init_x = 10.7, init_y = -3.3, init_yaw = 1.57;// rosbagの初期値にしたがって変更path2
-    double init_x = 0.0, init_y = 0.0, init_yaw = 0.0;// rosbagの初期値にしたがって変更path1
-    
-
 
     posi.header.frame_id = "map";
     estimate_posi.header.frame_id = "map";
@@ -685,7 +695,6 @@ int main(int argc, char **argv)
         
         estimate_posi.pose.pose.position.x = estimate_odom_x;
         estimate_posi.pose.pose.position.y = estimate_odom_y;
-        // estimate_theta = normalizeYaw(estimate_theta);
         estimate_posi.pose.pose.orientation = rpy_to_geometry_quat(0,0, estimate_theta);
         
         // ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
@@ -708,7 +717,6 @@ int main(int argc, char **argv)
 
         double roll, pitch, max_yaw;
         geometry_quat_to_rpy(roll, pitch, max_yaw, particle_cloud.poses[max_value_index].orientation); //yaw角に変換
-        // max_yaw = normalizeYaw(max_yaw); //正規化
         max_estimate_odom_x =   particle_cloud.poses[max_value_index].position.x;
         max_estimate_odom_y = particle_cloud.poses[max_value_index].position.y;
         max_estimate_theta  = max_yaw;
@@ -734,7 +742,6 @@ int main(int argc, char **argv)
         {
             double roll, pitch, particle_i_yaw;
             geometry_quat_to_rpy(roll, pitch, particle_i_yaw, particle_cloud.poses[i].orientation); //yaw角に変換
-            // particle_i_yaw = normalizeYaw(particle_i_yaw); //正規化
             // cnt:ループ数
             ofs1 << cnt << "," << time_stamping << "," << robot_x << "," << robot_y << "," << robot_yaw << "," << beego_x << "," << beego_y << "," << beego_yaw 
                 << ","<< estimate_odom_x << "," << estimate_odom_y << "," << estimate_theta << "," << likelihood_state << "," << max_likelyhood << "," << sum_likelyhood 

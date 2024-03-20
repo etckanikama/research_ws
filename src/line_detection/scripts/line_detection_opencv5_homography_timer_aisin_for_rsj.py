@@ -1,89 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-#############################################################################
-#########################	UNIVERSITY OF TSUKUBA	#########################
-#############################################################################
-################################  Python  ###################################
-#############################################################################
-#############################################################################
-##########  Intelligent Robot Lab., Department of Computer Science  #########
-#############################################################################
-#############################################################################
-###               line_detection_opencv5_homograpy_timer.py               ###
-###                                                                       ###
-###          composed by Ayanori Yorozu                                   ###
-###          at Intelligent Robot Laboratory, University of Tsukuba       ###
-###                                                                       ###
-###                           Copyright (2022), All rights reserved.      ###
-###                                                                       ###
-###          c/o. Faculty of Engineering, Information and Systems,        ###
-###          1-1-1 Tennodai, Tsukuba, Ibaraki 305-8573                    ###
-###          E-mail: yorozu@cs.tsukuba.ac.jp                              ###
-#############################################################################
-#############################################################################
-# 2023.02.25
-# 白線抽出処理をtimerに分離
-# GUIの処理は削除HSV調整する場合にはopencv4_homograpyで調整したパラメータを入力
-# 2022.10.02
-# HSV Median Maskで検出した白線バイナリ画像に対して，
-# 白のpixel座標をH行列で変換し，ロボット座標(front_realsense_link(仮))でPointCloudでpublish
-# ※topicはRealSenseに対応しています，アイシンrosbagに適用する場合にはtopic変更の必要あり
-# 2022.07.19
-# フィルタのパターンを変更 
-# 2022.07.18 
-# フィルタ：メディアン・バイラテラル・（膨張・縮小？）
-# 2値化・HSV領域・輪郭抽出(Canny法)・Hough変換による白線検出方法の検証
-#############################################################################
 
-################################################################################
-#                                   Import                                     #
-################################################################################
-import	sys
-import	rospy
-import	copy
-import	tf
-import	std_msgs
-import	sensor_msgs
-import	geometry_msgs
-import	math
-import	time
-import	numpy as np
-import	cv2
-import	random#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-#############################################################################
-#########################	UNIVERSITY OF TSUKUBA	#########################
-#############################################################################
-################################  Python  ###################################
-#############################################################################
-#############################################################################
-##########  Intelligent Robot Lab., Department of Computer Science  #########
-#############################################################################
-#############################################################################
-###               line_detection_opencv5_homograpy_timer.py               ###
-###                                                                       ###
-###          composed by Ayanori Yorozu                                   ###
-###          at Intelligent Robot Laboratory, University of Tsukuba       ###
-###                                                                       ###
-###                           Copyright (2022), All rights reserved.      ###
-###                                                                       ###
-###          c/o. Faculty of Engineering, Information and Systems,        ###
-###          1-1-1 Tennodai, Tsukuba, Ibaraki 305-8573                    ###
-###          E-mail: yorozu@cs.tsukuba.ac.jp                              ###
-#############################################################################
-#############################################################################
-# 2023.02.25
-# 白線抽出処理をtimerに分離
-# GUIの処理は削除HSV調整する場合にはopencv4_homograpyで調整したパラメータを入力
-# 2022.10.02
-# HSV Median Maskで検出した白線バイナリ画像に対して，
-# 白のpixel座標をH行列で変換し，ロボット座標(front_realsense_link(仮))でPointCloudでpublish
-# ※topicはRealSenseに対応しています，アイシンrosbagに適用する場合にはtopic変更の必要あり
-# 2022.07.19
-# フィルタのパターンを変更 
-# 2022.07.18 
-# フィルタ：メディアン・バイラテラル・（膨張・縮小？）
-# 2値化・HSV領域・輪郭抽出(Canny法)・Hough変換による白線検出方法の検証
 #############################################################################
 
 ################################################################################
@@ -110,7 +27,9 @@ from	sensor_msgs.msg		import Image, CameraInfo
 from	sensor_msgs.msg		import PointCloud
 from	cv_bridge			import CvBridge
 
-
+from	sensor_msgs.msg		import PointCloud,PointCloud2,PointField
+from std_msgs.msg import Header
+import  sensor_msgs.point_cloud2 as pc2
 ################################################################################
 #                             Grobal Definition                                #
 ################################################################################
@@ -143,6 +62,8 @@ SKIP_W_NUM		= 4
 LINE_DETECTION_TIME		= 0.1				# 白線検出処理周期[s]
 IMAGE_SUB_TIME_THRE		= 0.1				# Subscribe時間遅れ許容範囲[s] LINE_DETECTION_TIME以下の値
 
+# 変換後のpointcloudのglobal座標を格納
+points_list = []
 
 
 #################################################################################
@@ -202,6 +123,9 @@ class LineDetection:
 		print("H=", self.H)
 
 
+
+
+
 		# Subscriber -----------------------------------------------------------
 #		self.front_rgb_image_sub	= rospy.Subscriber('/front_camera/image', Image, self.subFrontRGBImage)		# Front RGB Image
 
@@ -219,7 +143,7 @@ class LineDetection:
 		self.front_hsv_median_image_pub			= rospy.Publisher('/front_camera/hsv_median_image', Image, queue_size=1)		# Front HSV Median Image(after RGB median)
 		self.front_hsv_median_mask_image_pub	= rospy.Publisher('/front_camera/hsv_median_mask_image', Image, queue_size=1)	# Front HSV Median Mask Image(after RGB median)
 		self.line_points_pub					= rospy.Publisher('/front_camera/line_points', PointCloud, queue_size=1)		# Line Points
-
+		self.line_points_pc2_pub					= rospy.Publisher('/front_camera/line_points_pc2', PointCloud2, queue_size=1)
 
 		# Timer func ------------------------------------------------------------
 		rospy.Timer(rospy.Duration(LINE_DETECTION_TIME), self.lineDetection)
@@ -261,31 +185,66 @@ class LineDetection:
 				#		Homograpy transform
 				#---------------------------------------------------------------
 				# http://opencv.jp/opencv-2.1/cpp/geometric_image_transformations.html#warpPerspective
+
 				the_color_h		= self.front_hsv_median_mask_img.shape[0]
 				the_color_w		= self.front_hsv_median_mask_img.shape[1]
-				the_points		= PointCloud()
+				# the_points		= PointCloud()
+				# -----------一応、min_area_thresholdのpxel数以下の255以上の数値を消す処理
+				contours, _ = cv2.findContours(self.front_hsv_median_mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+				min_area_threshold = 2000  # Adjust this threshold as needed
+				self.front_hsv_median_mask_img = np.zeros_like(self.front_hsv_median_mask_img)
+				for contour in contours:
+					area = cv2.contourArea(contour)
+					if area >= min_area_threshold:
+						cv2.drawContours(self.front_hsv_median_mask_img, [contour], -1, 255, thickness=cv2.FILLED)
+				# ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+
+				# Print out the total area of white regions and the path to the cleaned image
+				total_white_area = np.sum(self.front_hsv_median_mask_img / 255)  # Convert to a binary scale for area calculation
+				# print(total_white_area)
 				# the_points.header.frame_id	= 'front_realsense_link'
 				# the_points.header.frame_id	= 'dha_esti_pose'
 				# the_points.header.frame_id	= 'custom_amcl_pose'
-				the_points.header.frame_id	= 'map' # 地図に貼り付けるときはmap座標系
+				# the_points.header.frame_id	= 'hdl_pose' # 地図に貼り付けるときはmap座標系:map
+				header = Header()
+				header.stamp = rospy.Time.now()
+				header.frame_id = 'hdl_pose'
+				fields = [
+					PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),
+            		PointField(name="y", offset=4, datatype=PointField.FLOAT32, count=1),
+            		PointField(name="z", offset=8, datatype=PointField.FLOAT32, count=1)
+        		]
+
+				the_points_array = []
 				for the_v in range(0, the_color_h, SKIP_H_NUM):
 					for the_u in range(0, the_color_w, SKIP_W_NUM):
 						if self.front_hsv_median_mask_img[the_v, the_u] > 250:
-							the_p		= Point32()
-							the_p.x		= (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
-							the_p.y		= (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
-							the_p.z		= 0.0
-							if the_p.x <= 2.0:
-								the_points.points.append(the_p)
-								print(the_p)
-
-
+							x = (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
+							y = (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
+							z = 0.0
+							if x <= 3.0:
+								the_points_array.append([x,y,z])	
+						# if self.front_hsv_median_mask_img[the_v, the_u] > 250:
+						# 	the_p		= Point32()
+						# 	the_p.x		= (self.H[0,0]*the_u + self.H[0,1]*the_v + self.H[0,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
+						# 	the_p.y		= (self.H[1,0]*the_u + self.H[1,1]*the_v + self.H[1,2])/(self.H[2,0]*the_u + self.H[2,1]*the_v + self.H[2,2])
+						# 	the_p.z		= 0.0
+						# 	if the_p.x <= 3.0:
+						# 		the_points.points.append(the_p)
+								# point_dict = {'x': the_p.x, 'y': the_p.y, 'z': the_p.z}
+								# points_list.append(point_dict)
+								# print(the_p)	
+				
+				# print(points_list)
 				#---------------------------------------------------------------
 				#		Publish line points & images
 				#---------------------------------------------------------------
 				# white line point publish
-				self.line_points_pub.publish(the_points)
-
+				# self.line_points_pub.publish(the_points)
+				line_msg = pc2.create_cloud_xyz32(header, the_points_array)
+				line_msg.fields = fields
+				self.line_points_pc2_pub.publish(line_msg)
 				# hsv median mask image
 				the_hsv_median_mask_msg	= self.bridge.cv2_to_imgmsg(self.front_hsv_median_mask_img, encoding="mono8")
 				self.front_hsv_median_mask_image_pub.publish(the_hsv_median_mask_msg)

@@ -36,6 +36,7 @@ add_executable(rviz_white_lane_sb_for_gazebo.cpp src/rviz_white_lane_sb_for_gaze
 add_executable(sample_marker_publisher.cpp src/sample_marker_publisher.cpp)
 add_executable(points_sub_distance.cpp src/points_sub_distance.cpp)
 add_executable(beego_odom_publisher.cpp src/beego_odom_publisher.cpp)
+add_executable(gridmap_localization_for_gazebo.cpp src/gridmap_localization_for_gazebo.cpp)
 
 target_link_libraries(beego_odom_publisher.cpp ${catkin_LIBRARIES})
 target_link_libraries(particle_filter_propose_for_gazebo.cpp ${catkin_LIBRARIES})
@@ -44,3 +45,5 @@ target_link_libraries(get_yaw.cpp ${catkin_LIBRARIES})
 target_link_libraries(rviz_white_lane_sb_for_gazebo.cpp ${catkin_LIBRARIES})
 target_link_libraries(sample_marker_publisher.cpp ${catkin_LIBRARIES})
 target_link_libraries(points_sub_distance.cpp  ${catkin_LIBRARIES})
+target_link_libraries(gridmap_localization_for_gazebo.cpp  ${catkin_LIBRARIES})
+

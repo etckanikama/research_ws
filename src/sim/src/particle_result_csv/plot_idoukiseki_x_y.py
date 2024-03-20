@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 import ast 
 import math
 
+path = "path2"
+csv_num = "2"
+
+
+
 # 与えられた四角形のデータ
 rectangles = [
 			[[9.125, 0.545],[9.125, 0.47],[0.0, 0.47],[0.0, 0.545]],
@@ -44,9 +49,9 @@ rectangles = [
 
 
 # CSVファイルを読み込む
-# df = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/hihuku_map/1.csv')
-# df = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/1.5_map/1.csv')
-df = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/origin_map/1.csv')
+# df = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/hihuku_map/'+ path + '/'+csv_num+'.csv')
+# df = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/1.5_map/'+ path + '/'+csv_num+'.csv')
+df = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/origin_map/'+ path + '/'+csv_num+'.csv')
 
 
 beego_x = []

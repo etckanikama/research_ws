@@ -1,8 +1,6 @@
 <launch>
     <!-- パラメータの定義：地図によってトピック名を変える⇛候補（origin,tou(1.5),hihuku） -->
-    <arg name="map_param" default="hihuku"/>
-    <!-- <arg name="init_x" default=/> -->
-    <!-- <arg name="path_init_pose" default="path1"/> //path1 or path2 -->
+    <arg name="map_param" default="origin"/>
 
     <node name="line_detection" pkg="sim" type="line_detection_opencv5_homography_timer_for_gazebo.py" output="screen"  >
         <param name="map_param" value="$(arg map_param)"/>
@@ -19,8 +17,5 @@
     <node name="static_tf_pub_map_to_odom" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 map beego/odom 10" />
 
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find sim)/rviz/gazebo_pf.rviz" />
-
-
-
     
 </launch>

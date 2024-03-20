@@ -4,11 +4,15 @@ import matplotlib.pyplot as plt
 import ast 
 import math
 
+# あるcsvでの推定誤差
+
+path = "path2"
+csv_num = "3"
 
 # CSVファイルを読み込む
-df1 = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/hihuku_map/1.csv')
-df2 = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/1.5_map/1.csv')
-df3 = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/origin_map/1.csv')
+df1 = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/hihuku_map/'+ path + '/'+csv_num+'.csv')
+df2 = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/1.5_map/'+ path + '/'+csv_num+'.csv')
+df3 = pd.read_csv('/home/hirayama-d/research_ws/src/sim/src/particle_result_csv/origin_map/'+ path + '/'+csv_num+'.csv')
 
 df1_estimate_x_beego_x = []
 df1_estimate_y_beego_y = []
@@ -29,9 +33,10 @@ time_stamp = []
 # Countの最大値を取得
 # max_count = df1['Count'].max()
 # 1600
+min_select_count = 80
 select_count = 1800 #曲がってすぐとか
-#データ抽出：最大値まで ---------------------
-for count in range(select_count + 1):
+#データ抽出：どこからどこまでデータを区切るか最大値まで ---------------------
+for count in range(min_select_count,select_count + 1):
 
     filtered_df1 = df1[df1['Count'] == count] # 特定のCount値でデータをフィルタリング
     filtered_df2 = df2[df2['Count'] == count] # 特定のCount値でデータをフィルタリング
@@ -94,7 +99,7 @@ axs[2].grid(linestyle='dotted')
 # axs[2].legend(['Odometry-ground truth', 'Estimate'])
 
 # 全体のタイトルを追加
-plt.suptitle('red:origin , blue: 1.5 ,green:hihuku')
+plt.suptitle(f'{path}-{csv_num}-red:origin , blue: 1.5 ,green:hihuku')
 
 # レイアウトを整える
 plt.tight_layout(rect=[0, 0.03, 1, 0.95]) # 全体のタイトルが切れないように調整
