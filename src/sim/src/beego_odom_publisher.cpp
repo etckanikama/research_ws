@@ -7,8 +7,8 @@
 #include <tf/transform_broadcaster.h> // tfライブラリのインクルード
 
 // グローバル変数
-double init_x = 10.7, init_y = -3.3, init_yaw = 1.57; // 初期値
-// double init_x = 0.0, init_y = 0.0, init_yaw = 0.0; // 初期値
+// double init_x = 10.7, init_y = -3.3, init_yaw = 1.57; // 初期値
+double init_x = 0.0, init_y = 0.0, init_yaw = 0.0; // 初期値
 ros::Publisher cloud_pub; // グローバル変数としてパブリッシャーを宣言
 ros::Publisher pose_with_cov_pub; // PoseWithCovarianceStamped メッセージ用のパブリッシャー
 ros::Publisher pose_pub; // robot_pose トピック用のパブリッシャー

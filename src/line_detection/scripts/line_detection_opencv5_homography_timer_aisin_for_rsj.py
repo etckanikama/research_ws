@@ -42,7 +42,7 @@ import  sensor_msgs.point_cloud2 as pc2
 # V_LOW	= 120
 # V_HIGH	= 255
 # -----------------------------------------------------------------------------
-# HSV range(SB棟10階のパラメータ:realsense)-----------------------------------------------------------
+# HSV range(SB棟10階のパラメータ:realsense:sakigake???)-----------------------------------------------------------
 H_LOW	= 0
 H_HIGH	= 62
 S_LOW	= 0
@@ -114,9 +114,10 @@ class LineDetection:
 		# the_src_pts		= np.array([(66.0, 17.0), (548.0, 9.0), (138.0, 304.0), (592.0, 303.0)], dtype=np.float32)
 		# the_dst_pts		= np.array([(1.5, 0.75), (1.5, -0.5), (0.5, 0.15), (0.5, -0.15)], dtype=np.float32)
 		# self.H		= cv2.getPerspectiveTransform(the_src_pts, the_dst_pts)
+		# 自己位置推定
 		# the_src_pts		= np.array([(122.0, 33.0), (555.0, 23.0), (98.0, 353.0), (572.0, 355.0)], dtype=np.float32)
 		# the_dst_pts		= np.array([(2.5, 1.0), (2.5, -1.0), (0.5, 0.15), (0.5, -0.15)], dtype=np.float32)
-		# さきがけh:0.91,l=0.41パラメータ
+		# # さきがけh:0.91,l=0.41パラメータ：地図作成用
 		the_src_pts		= np.array([(5, 8), (632, 4), (5, 355.0), (636.0, 354.0)], dtype=np.float32)
 		the_dst_pts		= np.array([(3.3, 2.0), (3.3, -1.8), (1.01, 0.7), (1.01, -0.67)], dtype=np.float32)
 		self.H		= cv2.getPerspectiveTransform(the_src_pts, the_dst_pts)
@@ -143,8 +144,10 @@ class LineDetection:
 		self.front_hsv_median_image_pub			= rospy.Publisher('/front_camera/hsv_median_image', Image, queue_size=1)		# Front HSV Median Image(after RGB median)
 		self.front_hsv_median_mask_image_pub	= rospy.Publisher('/front_camera/hsv_median_mask_image', Image, queue_size=1)	# Front HSV Median Mask Image(after RGB median)
 		self.line_points_pub					= rospy.Publisher('/front_camera/line_points', PointCloud, queue_size=1)		# Line Points
-		self.line_points_pc2_pub					= rospy.Publisher('/front_camera/line_points_pc2', PointCloud2, queue_size=1)
-
+		self.line_points_pc2_pub					= rospy.Publisher('/front_camera/down_sample_line_points2', PointCloud2, queue_size=1)
+		
+		# 追加：直線が描かれた画像をpublishするためのPublisher
+		self.line_image_pub = rospy.Publisher('/line_mask_image', Image, queue_size=1)
 		# Timer func ------------------------------------------------------------
 		rospy.Timer(rospy.Duration(LINE_DETECTION_TIME), self.lineDetection)
 
@@ -166,7 +169,7 @@ class LineDetection:
 			if (the_now - self.front_rgb_sub_time) < IMAGE_SUB_TIME_THRE:
 
 				#---------------------------------------------------------------
-				#		Color filtering & masking
+				#		Color filtering & masking　　　　#　　　　
 				#---------------------------------------------------------------
 				# rgb median
 				self.front_rgb_median_img	= cv2.medianBlur(self.front_rgb_img, self.median_rgb_size)
@@ -198,7 +201,27 @@ class LineDetection:
 					if area >= min_area_threshold:
 						cv2.drawContours(self.front_hsv_median_mask_img, [contour], -1, 255, thickness=cv2.FILLED)
 				# ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+				
+				# ---エッジ＆ハフ----
+				# エッジ検出
+				edges = cv2.Canny(self.front_hsv_median_mask_img, 50, 150, apertureSize=3)
+				# ハフ変換で直線を検出
+				lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=100, minLineLength=30, maxLineGap=10)
 
+				# マスク画像のコピーを作成
+				# line_mask_image = self.front_hsv_median_mask_img.copy()
+				line_mask_image = cv2.cvtColor(self.front_hsv_median_mask_img, cv2.COLOR_GRAY2BGR)
+
+				# 検出した直線をマスク画像に描画
+				if lines is not None:
+					for line in lines:
+						x1, y1, x2, y2 = line[0]
+						cv2.line(line_mask_image, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
+				# 直線が描かれた画像をROSメッセージに変換
+				line_image_msg = self.bridge.cv2_to_imgmsg(line_mask_image, encoding="bgr8")
+				# 直線が描かれた画像をpublish
+				self.line_image_pub.publish(line_image_msg)
 
 				# Print out the total area of white regions and the path to the cleaned image
 				total_white_area = np.sum(self.front_hsv_median_mask_img / 255)  # Convert to a binary scale for area calculation
@@ -209,7 +232,8 @@ class LineDetection:
 				# the_points.header.frame_id	= 'hdl_pose' # 地図に貼り付けるときはmap座標系:map
 				header = Header()
 				header.stamp = rospy.Time.now()
-				header.frame_id = 'hdl_pose'
+				header.frame_id = 'hdl_pose' #地図作成用？？
+				# header.frame_id = 'front_realsense_link'
 				fields = [
 					PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),
             		PointField(name="y", offset=4, datatype=PointField.FLOAT32, count=1),

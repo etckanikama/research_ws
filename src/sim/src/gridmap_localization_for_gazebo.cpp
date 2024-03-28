@@ -29,6 +29,10 @@ geometry_msgs::PoseArray particle_cloud; // poseArrayの値の入れ方：https:
 geometry_msgs::Twist cmd_vel;
 geometry_msgs::PoseWithCovarianceStamped estimate_posi,max_estimate_posi;
 
+double beego_x, beego_y, beego_z, beego_yaw;
+double beego_orientation_x, beego_orientation_y, beego_orientation_z, beego_orientation_w;
+double beego_linear_x, beego_angular_z;
+bool beego_pose_available = false;
 
 // 初期速度指令値
 double v = 0.0;//joyconから得られるliniear.xなどによって更新はされる
@@ -133,6 +137,43 @@ void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
 
 }
 
+// modelStatesCallback関数
+void modelStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
+    int beego_index = -1;
+    for (size_t i = 0; i < msg->name.size(); ++i) {
+        if (msg->name[i] == "beego") {
+            beego_index = i;
+            break;
+        }
+    }
+
+    if (beego_index != -1) {
+        beego_x = msg->pose[beego_index].position.x;
+        beego_y = msg->pose[beego_index].position.y;
+        beego_z = msg->pose[beego_index].position.z;
+        // cout << "beego_xxxxxxxxxxxxxxxxxxx:" << " " << beego_x << endl;
+        beego_orientation_x = msg->pose[beego_index].orientation.x;
+        beego_orientation_y = msg->pose[beego_index].orientation.y;
+        beego_orientation_z = msg->pose[beego_index].orientation.z;
+        beego_orientation_w = msg->pose[beego_index].orientation.w;
+        tf::Quaternion q(
+            beego_orientation_x,
+            beego_orientation_y,
+            beego_orientation_z,
+            beego_orientation_w);
+        tf::Matrix3x3 m(q);
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+        beego_yaw = yaw;
+
+        // linear.x と angular.z の値を取得
+        beego_linear_x = msg->twist[beego_index].linear.x;
+        beego_angular_z = msg->twist[beego_index].angular.z;
+
+        beego_pose_available = true;
+    }
+}
+
 // センサー座標系の点群をグローバル座標系に変換
 void transformPointCloudToGlobal(const pcl::PointCloud<pcl::PointXYZ>& input_cloud,
                                  const geometry_msgs::Pose& pose,
@@ -154,14 +195,15 @@ int convertToMapFrame(pcl::PointCloud<pcl::PointXYZ> &cloud) {
         return -1; // 地図情報がない場合はエラー値を返す
     }
 
-    int match_count = 0; // 障害物と一致した点の数
+    int match_count = 0; // 障害物（白線ピクセル）と一致した点の数
 
     for (size_t i = 0; i < cloud.points.size(); ++i) {
         // 座標変換
         int pixel_x = (int)((cloud.points[i].x - map_origin.position.x) / map_resolution);
         int pixel_y = (int)((cloud.points[i].y - map_origin.position.y) / map_resolution);
 
-        if (pixel_x >= 0 && pixel_x < map_width && pixel_y >= 0 && pixel_y < map_height) {
+        if (pixel_x >= 0 && pixel_x < map_width && pixel_y >= 0 && pixel_y < map_height) 
+        {
             // ピクセルインデックスの計算
             int index = pixel_y * map_width + pixel_x;
             // ピクセルの値を取得
@@ -171,10 +213,10 @@ int convertToMapFrame(pcl::PointCloud<pcl::PointXYZ> &cloud) {
             if (value == 100) {
                 match_count++;
             }
-        //     // 点の座標とピクセルの値（障害物、自由空間、または未知）を出力
-        //     cout << "Point " << i << " (x: " << cloud.points[i].x << ", y: " << cloud.points[i].y << ") ";
-        //     cout << "corresponds to pixel (" << pixel_x << ", " << pixel_y << ") ";
-        //     cout << "with value: " << value << endl;
+            // 点の座標とピクセルの値（障害物、自由空間、または未知）を出力
+            // cout << "Point " << i << " (x: " << cloud.points[i].x << ", y: " << cloud.points[i].y << ") ";
+            // cout << "corresponds to pixel (" << pixel_x << ", " << pixel_y << ") ";
+            // cout << "with value: " << value << endl;
         } 
         else 
         {
@@ -276,6 +318,8 @@ int main(int argc, char **argv) {
     particle_cloud.poses.resize(PARTICLE_NUM);
 
     double init_x=0.0,init_y=0.0,init_yaw=0.0;
+    // double init_x = 10.7, init_y = -3.3, init_yaw = 1.57; // 初期値
+
 
     nav_msgs::Odometry posi;
     tf::TransformBroadcaster broadcaster;
@@ -372,7 +416,7 @@ int main(int argc, char **argv) {
                 transformPointCloudToGlobal(downsampled_cloud, particle_cloud.poses[i], global_pointcloud);// パーティクルを使って点群座標をグローバル座標に変換
                 
                 int match_count = convertToMapFrame(global_pointcloud);
-                cout << "パーティクル：" << i << " のときのmatch_count " << match_count << endl; 
+                // cout << "パーティクル：" << i << " のときのmatch_count " << match_count << endl; 
                 
                 likelihood_value = (1 - coeff)*(double(match_count) / double(downsampled_cloud.points.size())) + coeff; // m/M今まで
                 particle_value[i] *= likelihood_value; //前回の重みｘ尤度＝今回の重み
@@ -486,7 +530,7 @@ int main(int argc, char **argv) {
         {
             std::cout << "尤度更新しない" << std::endl;
         }   
-        
+
         cout << "----------------------------------------------------------------------------"<<endl;
 
         self_localization_pub.publish(posi);

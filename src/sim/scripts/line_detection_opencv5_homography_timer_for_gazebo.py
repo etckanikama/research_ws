@@ -198,10 +198,10 @@ class LineDetection:
 				header = Header()
 				header.stamp = self.front_rgb_sub_time #画像のタイムスタンプ
 				# header.frame_id = "fixed_paritcle_posi" #尤度分布用
-				# header.frame_id = "dha_esti_pose" #gazeboでpf位置推定用
+				header.frame_id = "dha_esti_pose" #gazeboでpf位置推定用
 				# header.frame_id	= 'beego/odom'
 				# header.frame_id  = "beego_frame" # gazeboの真値用
-				header.frame_id = "grid_dha_esti_pose" #gridマップでのpf推定値
+				# header.frame_id = "grid_dha_esti_pose" #gridマップでのpf推定値
 				fields = [
 					PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),
             		PointField(name="y", offset=4, datatype=PointField.FLOAT32, count=1),

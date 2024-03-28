@@ -21,6 +21,7 @@ def map_colors(pixel):
 
 # Apply the mapping
 mapped_img = gray_img.point(map_colors)
+# ⇛ここが何しているのか分からない
 
 # Save the mapped image as PGM
 pgm_file_path = 'mapped_sample.pgm'
@@ -29,7 +30,7 @@ mapped_img.save(pgm_file_path, format='PPM')
 # Create the YAML file content
 yaml_content = {
     'image': pgm_file_path,
-    'resolution': 0.01,  # Assuming a resolution of 0.1m/pixel
+    'resolution': 0.01,  # Assuming a resolution of 0.01m/pixel
     'origin': [0.0, 361, 0.0],  # Assuming the origin is at the bottom-left corner
     'occupied_thresh': 0.65,  # Threshold above which the space is considered occupied
     'free_thresh': 0.196,  # Threshold below which the space is considered free
