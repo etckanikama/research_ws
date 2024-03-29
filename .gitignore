@@ -10,3 +10,4 @@ src/beego_gazebo/
 *.bag
 src/velodyne/
 src/LeGO-LOAM/
+src/yp-robot-params/

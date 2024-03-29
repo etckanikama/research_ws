@@ -15,7 +15,7 @@ python3 recmmend_hige_polygon.py
 
 # ポリゴン情報をros座標系からcv座標系に変換
 ```
-python3 create_white_map_opencv.py
+python3 ros_to_cv_coodinate.py
 ```
 
 # 実際に画像化

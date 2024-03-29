@@ -9,7 +9,7 @@ height = 1263
 image = np.full((height, width, 3), (65, 105, 225), dtype=np.uint8)
 # image = np.full((height, width, 3), (0, 0, 0), dtype=np.uint8)
 
-# 矩形の座標を辞書型で定義
+# 矩形の座標を辞書型で定義(cv座標系)
 rect_dict = {   0: [[246.5, 350.5], [254.0, 350.5], [254.0, 1263.0], [246.5, 1263.0]],
                 1: [[107.5, 350.5], [246.5, 350.5], [246.5, 358.0], [107.5, 357.5]],
                 2: [[107.5, 242.5], [115.0, 242.5], [115.0, 350.5], [107.5, 350.5]],
@@ -141,14 +141,14 @@ print(h, w, c)
 print(type(image))
 print(image[0,0])
 
-# 白色ピクセルの座標を格納するリスト
-white_pixels = []
+# # 白色ピクセルの座標を格納するリスト
+# white_pixels = []
 
-for y in range(height):
-    for x in range(width):
-        b, g, r = image[y,x]
-        if b == 255 and g == 255 and r == 255:
-            white_pixels.append((x,y))
+# for y in range(height):
+#     for x in range(width):
+#         b, g, r = image[y,x]
+#         if b == 255 and g == 255 and r == 255:
+#             white_pixels.append((x,y))
 
 
 # # 矩形の切り抜き

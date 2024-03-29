@@ -29,7 +29,7 @@ rosrun ypspur_ros_bridge ypspur_ros_bridge
 ④rosbagの保存  
 
 ```
-roslaunch loclization rosbag_save_for_AMCL_propose.launch
+roslaunch localization rosbag_save_for_AMCL_propose.launch
 ```
 
 # LeGO-loamで3d-lidarの点群地図を保存
@@ -106,7 +106,7 @@ python3 plot_transformed_point.py
 map_serverで画像ファイルを読み込めるようにpng画像をpgmとyamlファイルに変換する必要がある。  
 地図原点とサイズ、解像度を指定することでグリッドマップを作成できるプログラム  
 ```
-cd localization
+cd localization/scripts
 python3 conv_png2pgm_yaml.py
 ```
 白線位置を黒色に、それ以外を走行可能領域としてグレーとした画像を作成する
@@ -152,4 +152,4 @@ gazebo走行データを再生(処理が遅くなる可能性があるので0.5�
 ```
 rosbag play -r 0.5 01_2024-01-20-09-15-27_three_stacked.bag
 ```
-
+gazebo上で自己位置推定を回す際はフレームのリンクが固定しないようにしてください[参照](gazebo_link_fixed.md)

@@ -11,6 +11,7 @@
         <param name="map_param" value="$(arg map_param)"/>
     </node>
 
+    <!-- 真値用 -->
     <node name="beego_odom_publisher" pkg="sim" type="beego_odom_publisher.cpp" />
     
     <!-- beego/odomをmapフレームにしてpublishするノード -->

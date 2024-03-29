@@ -5,6 +5,8 @@ cd reserch_ws
 souce devel/setup.bush (全ターミナルで通す)
 rosparam set /use_sim_time true (全ターミナルで通す)
 ```
+gazebo上で自己位置推定を回す際はフレームのリンクが固定しないようにしてください[参照](gazebo_link_fixed.md)
+
 # 指定の地図環境の呼び出し
 launchファイル内のmap_paramを検証したい地図になるように書き換えて実行（被覆地図：hihuku,等間隔地図:tou, 元の地図:origin）
 ```
